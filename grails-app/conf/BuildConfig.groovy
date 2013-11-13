@@ -2,6 +2,8 @@ grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 
+grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
+grails.plugin.location.'banner-core'="../banner_core.git"
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
     inherits("global") {
@@ -23,7 +25,7 @@ grails.project.dependency.resolution = {
     }
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
-
+        compile ":spring-security-core:1.2.7.3"
         // runtime 'mysql:mysql-connector-java:5.1.21'
     }
 
