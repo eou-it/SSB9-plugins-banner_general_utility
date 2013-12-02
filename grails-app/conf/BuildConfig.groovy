@@ -5,35 +5,44 @@ grails.project.test.reports.dir = "target/test-reports"
 grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
 grails.plugin.location.'banner-core'="../banner_core.git"
 grails.project.dependency.resolution = {
-    // inherit Grails' default dependencies
-    inherits("global") {
-        // uncomment to disable ehcache
-        // excludes 'ehcache'
-    }
-    log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
-    legacyResolve false // whether to do a secondary resolve on plugin installation, not advised and here for backwards compatibility
-    repositories {
-        grailsCentral()
-        // uncomment the below to enable remote dependency resolution
-        // from public Maven repositories
-        //mavenLocal()
-        //mavenCentral()
-        //mavenRepo "http://snapshots.repository.codehaus.org"
-        //mavenRepo "http://repository.codehaus.org"
-        //mavenRepo "http://download.java.net/maven/2/"
-        //mavenRepo "http://repository.jboss.com/maven2/"
-    }
-    dependencies {
-        // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
-        compile ":spring-security-core:1.2.7.3"
-        // runtime 'mysql:mysql-connector-java:5.1.21'
+
+    inherits( "global" ) {
     }
 
+    log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
+
     plugins {
-        build(":tomcat:$grailsVersion",
-              ":release:2.2.0",
-              ":rest-client-builder:1.0.3") {
-            export = false
+        compile ":hibernate:$grailsVersion"
+        compile ":spring-security-core:1.2.7.3"
+        compile ':functional-test:1.2.7'
+        compile ':resources:1.1.6'
+        compile ':markdown:1.0.0.RC1'
+    }
+
+    distribution = {
+    }
+
+    repositories {
+        if (System.properties['PROXY_SERVER_NAME']) {
+            mavenRepo "${System.properties['PROXY_SERVER_NAME']}"
+        } else
+        {
+            grailsPlugins()
+            grailsHome()
+            grailsCentral()
+            mavenCentral()
+            mavenRepo "http://repository.jboss.org/maven2/"
+            mavenRepo "http://repository.codehaus.org"
         }
     }
+
+    dependencies {
+    }
+
 }
+
+// CodeNarc rulesets
+codenarc.ruleSetFiles="rulesets/banner.groovy"
+codenarc.reportName="target/CodeNarcReport.html"
+codenarc.propertiesFile="grails-app/conf/codenarc.properties"
+

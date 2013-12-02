@@ -1,23 +1,28 @@
-class @plugin.name @GrailsPlugin {
-    // the plugin version
-    def version = "@plugin.version@"
+class BannerGeneralUtilityGrailsPlugin {
+    String version = "2.5.1"
+
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "@grails.version@ > *"
-    // resources that are excluded from plugin packaging
-    def pluginExcludes = [
-            "grails-app/views/error.gsp"
+    def grailsVersion = "2.2.1 > *"
+
+    // the other plugins this plugin depends on
+    def dependsOn = [ 'springSecurityCore': '1.2.7.3',
     ]
 
-    // TODO Fill in these fields
-    def title = "@plugin.title@" // Headline display name of the plugin
-    def author = "Your name"
-    def authorEmail = ""
-    def description = '''\
-Brief summary/description of the plugin.
-'''
+    // resources that are excluded from plugin packaging
+    def pluginExcludes = ["grails-app/views/error.gsp"]
 
-    // URL to the plugin's documentation
-    def documentation = "http://grails.org/plugin/@plugin.short.name@"
+    def author = "ellucian"
+    def authorEmail = ""
+    def title = "Banner Core Framework Plugin"
+    def description = '''This plugin adds Spring Security (aka Acegi) and a custom
+                         |DataSource implementation (BannerDataSource) that together
+                         |provide for authentication and authorization based upon
+                         |Banner Security configuration. In addition, this plugin provides
+                         |additional framework support (e.g., injecting CRUD methods into
+                         |services, providing base test classes) to facilitate development of
+                         |Banner web applications.'''.stripMargin()
+
+    def documentation = ""
 
     // Extra (optional) plugin metadata
 
