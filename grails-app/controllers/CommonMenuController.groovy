@@ -15,6 +15,9 @@ class CommonMenuController {
     private final log = Logger.getLogger(getClass())
 
     static final String BANNER_INB_URL = "bannerInbUrl"
+    static final String MAGELLAN = "MAGELLAN"
+    static final String SERVER_DESIGNATION = "SERVER_DESIGNATION"
+    static final String INB = "INB"
     static final String BANNER_TITLE = "Banner"
     static final String MENU_TYPE_BANNER = "Banner"
     static final String MENU_TYPE_PERSONAL = "Personal"
@@ -181,7 +184,7 @@ class CommonMenuController {
         def subMenu
         def finalMenu
         def adminList
-        def selfServiceList
+        //def selfServiceList
         def finalList = []
         def searchVal
 
@@ -194,7 +197,6 @@ class CommonMenuController {
             //finalList.addAll(selfServiceList)
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]
-
         finalMenu = [ data: subMenu ]
         // Support JSON-P callback
         if( params.callback ) {
@@ -205,53 +207,16 @@ class CommonMenuController {
     }
 
     private def getMenuData(def mnuName){
-        def menuType
-        def mnuParams
         def list
-        def finalList = []
-
         if (mnuName != null) {
             list = getMenuList(mnuName)
-            list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
-
-            list.each {a ->
-                if (a.type == "MENU")
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_BANNER+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
-
-                if (a.type == "FORM" ){
-                    if (a.uiVersion =="banner8admin")
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
-                    else
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption +"&global_variables={{params}}",type: "PAGE",menu:a.menu)
-
-                }
-            }
-
-        }
-        else {
+        } else {
             list = getFirstLevelMenuList()
-            list.each {it -> it.menu = getParent(getMenu(),it, BANNER_TITLE)}
-
-            list.each {a ->
-                if (a.type == "MENU")
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_BANNER+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
-
-                if (a.type == "FORM" ){
-                    if (a.uiVersion =="banner8admin")
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
-                    else
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page+"&global_variables={{params}}",type: "PAGE",menu:a.menu)
-
-                }
-            }
-
         }
-        return finalList
+        list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
+        return composeMenuStructure(list, MENU_TYPE_BANNER)
     }
 
-    /**
-     * Driver for banner menu
-     */
     private def getMenu() {
         def list
 
@@ -266,13 +231,8 @@ class CommonMenuController {
         return list
     }
 
-
-    /**
-     * Returns first menu item for a specified menu
-     */
     private def getFirstLevelMenuList() {
         def mnuList
-        def childrenList =[]
         log.debug("Menu Controller getmenu")
         mnuList = getMenu()
         def childMenu = mnuList.findAll{a -> a.level == 1 }
@@ -282,9 +242,7 @@ class CommonMenuController {
         }
         return childMenu
     }
-    /**
-     * Returns menu itesm for a specified menu
-     */
+
     private def getMenuList(def menuName) {
         def mnuList
         def childMenu  =[]
@@ -299,9 +257,7 @@ class CommonMenuController {
         }
         return childMenu
     }
-    /**
-     * This method derives the menu parent structure
-     */
+
     private def getParent(List map, Menu mnu, String rootMenu) {
         def parentChain
         def level = mnu.level
@@ -321,17 +277,12 @@ class CommonMenuController {
         else
             return rootMenu
     }
-    /**
-     * This method derives the child menu structure
-     */
+
     private def getChildren(List map, Menu mnu) {
-        def children
         def temp = map.findAll{ it -> it.seq > mnu.seq && it.parent == mnu.name}
-        return temp
+        return removeDuplicateEntries(temp)
     }
-    /**
-     * Driver for personal menu
-     */
+
     private def getPersonalMenu() {
         def list
         log.debug("Menu Controller getmenu")
@@ -355,9 +306,6 @@ class CommonMenuController {
         return list
     }
 
-    /**
-     * Returns first menu item for a specified menu
-     */
     private def getFirstLevelPersonalMenuList() {
         def mnuList
         log.debug("Menu Controller getmenulist")
@@ -369,9 +317,7 @@ class CommonMenuController {
         }
         return childMenu
     }
-    /**
-     * Returns menu itesm for a specified menu
-     */
+
     private def getPersonalMenuList(def menuName) {
         def mnuList
         def childMenu  =[]
@@ -386,48 +332,18 @@ class CommonMenuController {
         }
         return childMenu
     }
+
     private def getPersonalMenuData(def mnuName){
-        def finalList = []
-        def list
-        if (mnuName != null) {
+       def list
+       if (mnuName != null) {
             list = getPersonalMenuList(mnuName)
-            list.each {it -> it.menu = getParent(getPersonalMenu(),it,MY_BANNER_TITLE)}
-
-            list.each {a ->
-                if (a.type == "MENU")
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_PERSONAL+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
-
-                if (a.type == "FORM" ){
-                    if (a.uiVersion =="banner8admin")
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
-                    else
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption + "&global_variables={{params}}",type: "PAGE",menu:a.menu)
-
-                }
-            }
-        }
-        else {
+       } else {
             list = getFirstLevelPersonalMenuList()
-            list.each {it -> it.menu = getParent(getPersonalMenu(),it,MY_BANNER_TITLE)}
-
-            list.each {a ->
-                if (a.type == "MENU")
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_PERSONAL+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
-
-                if (a.type == "FORM" ){
-                    if (a.uiVersion =="banner8admin")
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
-                    else
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption +"&global_variables={{params}}",type: "PAGE",menu:a.menu)
-
-                }
-            }
-        }
-        return finalList
+       }
+       list.each {it -> it.menu = getParent(getPersonalMenu(),it,MY_BANNER_TITLE)}
+       return composeMenuStructure(list, MENU_TYPE_PERSONAL)
     }
-    /**
-     * Driver for banner menu
-     */
+
     private def getSelfServiceMenu( menuName, menuTrail, pidm ) {
         if (log.isDebugEnabled()) log.debug("Menu Controller getmenu")
 
@@ -438,7 +354,6 @@ class CommonMenuController {
         }
         return session[currentMenu]
     }
-
 
     private def getSelfServiceMenuData(def mnuName){
         def list
@@ -476,27 +391,10 @@ class CommonMenuController {
 
     private def getAdminMenuSearchResults(searchVal){
 
-        def subMenu
-        def finalMenu
-        def finalList = []
-
         def list = menuService.gotoCombinedMenu(searchVal)
-
+        list = removeDuplicateEntries(list)
         list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
-
-        list.each {a ->
-            if (a.type == "MENU")
-                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_BANNER+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
-
-            if (a.type == "FORM" ){
-                if (a.uiVersion =="banner8admin")
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
-                else
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption +"&global_variables={{params}}",type: "PAGE",menu:a.menu)
-
-            }
-        }
-        return finalList
+        return composeMenuStructure(list, MENU_TYPE_BANNER)
     }
 
     private def getSelfServiceMenuSearchResults(searchVal){
@@ -524,7 +422,7 @@ class CommonMenuController {
         return finalList
     }
 
-    def getServerURL() {
+    private def getServerURL() {
         boolean includePort = true
         String scheme = request.getScheme();
         String serverName = request.getServerName();
@@ -542,24 +440,45 @@ class CommonMenuController {
         return redirectUrl
     }
 
-    def getBannerInbUrl(){
+    private def getBannerInbUrl(){
         def bannerInbUrl
 
-        if(!session.getAttribute("bannerInbUrl")){
-
+        if(!session.getAttribute(BANNER_INB_URL)){
             if (!isSsbEnabled()){
-                bannerInbUrl = personalPreferenceService.fetchPersonalPreference("MAGELLAN","SERVER_DESIGNATION","INB")[0]
-                session.setAttribute("bannerInbUrl", bannerInbUrl.value)
+                bannerInbUrl = personalPreferenceService.fetchPersonalPreference(MAGELLAN,SERVER_DESIGNATION,INB)[0]
+                session.setAttribute(BANNER_INB_URL, bannerInbUrl.value)
             }
         }
-
-        bannerInbUrl = session.getAttribute("bannerInbUrl")
-
+        bannerInbUrl = session.getAttribute(BANNER_INB_URL)
         return bannerInbUrl
     }
 
     private def isSsbEnabled() {
         ConfigurationHolder.config.ssbEnabled instanceof Boolean ? ConfigurationHolder.config.ssbEnabled : false
+    }
+
+    private def removeDuplicateEntries(list){
+        def map = [:]
+        list.each {it ->
+            if(map.get(it.caption) ==null) map.put(it.caption, it)
+        }
+       map.values().asList()
+    }
+
+    private def composeMenuStructure(list, type){
+        def finalList = []
+        list.each {a ->
+            if (a.type == "MENU")
+                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+type+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
+
+            if (a.type == "FORM" ){
+                if (a.uiVersion =="banner8admin")
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
+                else
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption +"&global_variables={{params}}",type: "PAGE",menu:a.menu)
+            }
+        }
+        return finalList
     }
 
 }
