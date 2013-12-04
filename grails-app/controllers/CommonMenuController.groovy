@@ -1,12 +1,12 @@
 /*******************************************************************************
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
-import org.springframework.security.core.context.SecurityContextHolder
-import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+
 import grails.converters.JSON
 import net.hedtech.banner.menu.Menu
 import org.apache.log4j.Logger
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.springframework.security.core.context.SecurityContextHolder
 
 class CommonMenuController {
     def menuService
@@ -39,30 +39,24 @@ class CommonMenuController {
     }
 
     def getMenuStructure = {
-
-        def path
-        def subMenu
-        def nodes = []
-        def finalList = []
-        def finalMenu
+        String path
+        Map subMenu
+        List nodes = []
+        List finalList = []
+        Map finalMenu
 
         path = request.parameterMap["s"][0]
         nodes = path.split('/')
-        def root = nodes[0]
+        String root = nodes[0]
         nodes.each { a ->
-
             if(a == BANNER_TITLE){
                 subMenu = getSubMenuData(root, root, root)
-
             } else {
                 subMenu = getSubMenuData(a, root, a)
             }
-
             finalList.add(subMenu)
         }
-
         subMenu = [ name:"root", caption:"root", items: finalList ]
-
         finalMenu = [ data: subMenu ]
         // Support JSON-P callback
         if( params.callback ) {
@@ -73,11 +67,11 @@ class CommonMenuController {
     }
 
     def list = {
-        def mnuName
-        def mnuType
-        def caption
-        def subMenu
-        def finalMenu
+        String mnuName
+        String mnuType
+        String caption
+        Map subMenu
+        Map finalMenu
 
         if (request.parameterMap["menu"])
             mnuName = request.parameterMap["menu"][0]
@@ -101,64 +95,45 @@ class CommonMenuController {
 
 
     }
-    private def getSubMenuData(def mnuName,def mnuType,def caption ){
+    private def getSubMenuData(String mnuName,String mnuType,String caption ){
 
-        def subMenu
-        def adminList
-        def personalList
-        def selfServiceList
-
-        def finalList = []
-
+        Map subMenu
+        List adminList
+        List personalList
+        List selfServiceList
+        List finalList
         if (mnuName){
 
             if (mnuType == MENU_TYPE_BANNER){
-
-                if (mnuName == BANNER_TITLE)
-                    adminList = getMenuData()
-                else
-                    adminList = getMenuData(mnuName)
-
+                adminList = getMenuData(mnuName)
                 finalList = adminList
 
             } else if (mnuType == MENU_TYPE_PERSONAL){
-
-                if (mnuName == MY_BANNER_TITLE)
-                    personalList = getPersonalMenuData(null)
-                else
-                    personalList = getPersonalMenuData(mnuName)
-
+                personalList = getPersonalMenuData(mnuName)
                 finalList = personalList
             } else {
-
-                if (mnuName == BANNER_SELF_SERVICE_TITLE)
-                    selfServiceList = getSelfServiceMenuData(null)
-                else
-                    selfServiceList = getSelfServiceMenuData(mnuName)
-
+                selfServiceList = getSelfServiceMenuData(mnuName)
                 finalList = selfServiceList
             }
-
             subMenu = [name:mnuName,caption:caption , items: finalList]
 
         } else {
             finalList =  rootMenu()
             subMenu = [ name:"root", caption:"root", items: finalList ]
         }
-
         return subMenu
     }
 
-    def rootMenu = {
-        def finalMenu
-        def subMenu
-        def adminMenu
-        def personalMenu
-        def selfServiceMenu
-        def adminList
-        def personalList
-        def selfServiceList
-        def finalList = []
+    private def rootMenu = {
+        Map finalMenu
+        Map subMenu
+        Map adminMenu
+        Map personalMenu
+        Map selfServiceMenu
+        List adminList =[]
+        List personalList =[]
+        List selfServiceList =[]
+        List finalList = []
 
         adminList = getMenuData()
         //selfServiceList = getSelfServiceMenuData()
@@ -181,12 +156,12 @@ class CommonMenuController {
 
     def search = {
 
-        def subMenu
-        def finalMenu
-        def adminList
+        Map subMenu
+        Map finalMenu
+        List adminList
         //def selfServiceList
-        def finalList = []
-        def searchVal
+        List finalList = []
+        String searchVal
 
         if(request.parameterMap["q"])
             searchVal = request.parameterMap["q"][0]
@@ -206,9 +181,9 @@ class CommonMenuController {
         }
     }
 
-    private def getMenuData(def mnuName){
-        def list
-        if (mnuName != null) {
+    private def getMenuData(String mnuName){
+        List list
+        if ((mnuName != null) && (mnuName != BANNER_TITLE)) {
             list = getMenuList(mnuName)
         } else {
             list = getFirstLevelMenuList()
@@ -218,7 +193,7 @@ class CommonMenuController {
     }
 
     private def getMenu() {
-        def list
+        List list
 
         log.debug("Menu Controller getmenu")
         if (session[COMBINED_MENU_LIST] == null) {
@@ -232,7 +207,7 @@ class CommonMenuController {
     }
 
     private def getFirstLevelMenuList() {
-        def mnuList
+        List mnuList
         log.debug("Menu Controller getmenu")
         mnuList = getMenu()
         def childMenu = mnuList.findAll{a -> a.level == 1 }
@@ -243,9 +218,9 @@ class CommonMenuController {
         return childMenu
     }
 
-    private def getMenuList(def menuName) {
-        def mnuList
-        def childMenu  =[]
+    private def getMenuList(String menuName) {
+        List mnuList
+        List childMenu  =[]
         log.debug("Menu Controller getmenulist")
         mnuList = getMenu()
 
@@ -258,10 +233,10 @@ class CommonMenuController {
         return childMenu
     }
 
-    private def getParent(List map, Menu mnu, String rootMenu) {
-        def parentChain
+    private def getParent(List list, Menu mnu, String rootMenu) {
+        String parentChain
         def level = mnu.level
-        def temp = map.findAll{ it -> it.seq <= mnu.seq }
+        List temp = list.findAll{ it -> it.seq <= mnu.seq }
         temp.reverseEach {
             if (  it.level < level )  {
                 level = it.level
@@ -278,15 +253,15 @@ class CommonMenuController {
             return rootMenu
     }
 
-    private def getChildren(List map, Menu mnu) {
-        def temp = map.findAll{ it -> it.seq > mnu.seq && it.parent == mnu.name}
+    private def getChildren(List list, Menu mnu) {
+        List temp = list.findAll{ it -> it.seq > mnu.seq && it.parent == mnu.name}
         return removeDuplicateEntries(temp)
     }
 
     private def getPersonalMenu() {
-        def list
+        List list
         log.debug("Menu Controller getmenu")
-        def pidm
+        String pidm
         try {
             pidm = SecurityContextHolder?.context?.authentication?.principal?.pidm
         }
@@ -295,7 +270,7 @@ class CommonMenuController {
             log.debug("Non logged in user.")
         }
 
-        def personalMenuList = pidm ? PERSONAL_COMBINED_MENU_LIST + pidm : PERSONAL_COMBINED_MENU_LIST
+        String personalMenuList = pidm ? PERSONAL_COMBINED_MENU_LIST + pidm : PERSONAL_COMBINED_MENU_LIST
         if (session[personalMenuList] == null) {
             list = menuService.personalCombinedMenu()
             session[personalMenuList] = list
@@ -307,7 +282,7 @@ class CommonMenuController {
     }
 
     private def getFirstLevelPersonalMenuList() {
-        def mnuList
+        List mnuList
         log.debug("Menu Controller getmenulist")
         mnuList = getPersonalMenu()
         def childMenu = mnuList.findAll{a -> a.level == 1 }
@@ -318,9 +293,9 @@ class CommonMenuController {
         return childMenu
     }
 
-    private def getPersonalMenuList(def menuName) {
-        def mnuList
-        def childMenu  =[]
+    private def getPersonalMenuList(String menuName) {
+        List mnuList
+        List childMenu  =[]
         log.debug("Menu Controller getmenulist")
         mnuList = getPersonalMenu()
 
@@ -333,9 +308,9 @@ class CommonMenuController {
         return childMenu
     }
 
-    private def getPersonalMenuData(def mnuName){
-       def list
-       if (mnuName != null) {
+    private def getPersonalMenuData(String mnuName){
+       List list
+       if ((mnuName != null) && (mnuName != MY_BANNER_TITLE)) {
             list = getPersonalMenuList(mnuName)
        } else {
             list = getFirstLevelPersonalMenuList()
@@ -347,7 +322,7 @@ class CommonMenuController {
     private def getSelfServiceMenu( menuName, menuTrail, pidm ) {
         if (log.isDebugEnabled()) log.debug("Menu Controller getmenu")
 
-        def currentMenu = menuName ? menuName : BANNER_SELF_SERVICE_TITLE
+        String currentMenu = menuName ? menuName : BANNER_SELF_SERVICE_TITLE
         currentMenu = pidm ? currentMenu + pidm : currentMenu
         if (session[currentMenu] == null) {
             session[currentMenu] = selfServiceMenuService.combinedMenu(menuName, menuTrail, pidm)
@@ -355,13 +330,13 @@ class CommonMenuController {
         return session[currentMenu]
     }
 
-    private def getSelfServiceMenuData(def mnuName){
-        def list
-        def menuName
-        def menu
-        def finalList = []
+    private def getSelfServiceMenuData(String mnuName){
+        List list
+        String menuName
+        String menu
+        List finalList = []
 
-        if (mnuName != null) {
+        if ((mnuName != null) && (mnuName != BANNER_SELF_SERVICE_TITLE)) {
             menuName = mnuName
         }
         def pidm
@@ -391,17 +366,15 @@ class CommonMenuController {
 
     private def getAdminMenuSearchResults(searchVal){
 
-        def list = menuService.gotoCombinedMenu(searchVal)
+        List list = menuService.gotoCombinedMenu(searchVal)
         list = removeDuplicateEntries(list)
         list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
         return composeMenuStructure(list, MENU_TYPE_BANNER)
     }
 
     private def getSelfServiceMenuSearchResults(searchVal){
-        def subMenu
-        def finalMenu
-        def finalList = []
-        def pidm
+        List finalList = []
+        String pidm
 
         try {
             pidm = SecurityContextHolder?.context?.authentication?.principal?.pidm
@@ -410,7 +383,7 @@ class CommonMenuController {
             if (log.isDebugEnabled()) log.debug("Non User has logged in")
             pidm = null
         }
-        def list = selfServiceMenuService.gotoCombinedMenu(searchVal, pidm)
+        List list = selfServiceMenuService.gotoCombinedMenu(searchVal, pidm)
         list.each {a ->
             if (a.type == "MENU"){
                 finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() + "/commonMenu?type="+MENU_TYPE_SELF_SERVICE+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
@@ -441,7 +414,7 @@ class CommonMenuController {
     }
 
     private def getBannerInbUrl(){
-        def bannerInbUrl
+        String bannerInbUrl
 
         if(!session.getAttribute(BANNER_INB_URL)){
             if (!isSsbEnabled()){
@@ -458,7 +431,7 @@ class CommonMenuController {
     }
 
     private def removeDuplicateEntries(list){
-        def map = [:]
+        Map map = [:]
         list.each {it ->
             if(map.get(it.caption) ==null) map.put(it.caption, it)
         }
@@ -466,7 +439,7 @@ class CommonMenuController {
     }
 
     private def composeMenuStructure(list, type){
-        def finalList = []
+        List finalList = []
         list.each {a ->
             if (a.type == "MENU")
                 finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+type+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
