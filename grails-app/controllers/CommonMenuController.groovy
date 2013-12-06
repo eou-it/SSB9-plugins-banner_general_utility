@@ -4,6 +4,7 @@
 
 import grails.converters.JSON
 import net.hedtech.banner.menu.Menu
+import net.hedtech.banner.utility.CommonUIApp
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -449,7 +450,7 @@ class CommonMenuController {
                 if (a.uiVersion =="banner8admin")
                     finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
                 else
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption +"&global_variables={{params}}" + ( grailsApplication?.config?.commonUiApp ?  "&commonUiApp=" + grailsApplication?.config?.commonUiApp : "" ),type: "PAGE",menu:a.menu)
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption +"&global_variables={{params}}" + (CommonUIApp.isEnabled() ?  "&CommonUIApp=true" : "" ),type: "PAGE",menu:a.menu)
             }
         }
         return finalList
