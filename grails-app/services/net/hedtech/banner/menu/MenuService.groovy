@@ -371,7 +371,7 @@ class MenuService {
      * @param pageName
      * @return Form name
      */
-    def getPageCaptionForPage(String pageName) {
+    public String getPageCaptionForPage(String pageName) {
         String pageCaption = ""
         boolean mnuPrf = getMnuPref()
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -391,13 +391,30 @@ class MenuService {
      * @param pageName
      * @return Form name
      */
-    def getAppNameForPage(String pageName) {
+    public String getAppNameForPage(String pageName) {
         String appName = ""
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         sql.eachRow("select * from gubpage, gubmodu where gubpage_gubmodu_code = gubmodu_code and gubpage_name = ?", [pageName]) {
             appName = it.gubmodu_name
         }
         return appName
+    }
+
+    /**
+     * This returns DB INSTANCE NAME for an institution
+     * @param institution key // default INST
+     * @return Form name
+     */
+    public String getInstitutionDBInstanceName(String institutionKey) {
+
+        if(!institutionKey) institutionKey = "INST"
+
+        String institutionDBInstanceName = ""
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.eachRow("select GUBINST_INSTANCE_NAME from GUBINST where GUBINST_KEY = ?", [institutionKey]) {
+            institutionDBInstanceName = it.GUBINST_INSTANCE_NAME
+        }
+        return institutionDBInstanceName
     }
 
 }
