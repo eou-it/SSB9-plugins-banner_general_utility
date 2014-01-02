@@ -2,8 +2,8 @@ package net.hedtech.banner.utility
 
 import grails.util.Holders
 
-class CommonUIApp {
+class GeneralMenu {
     public static boolean isEnabled(){
-        return Holders?.grailsApplication?.config?.CommonUIApp
+        return Holders?.grailsApplication?.config?.GeneralMenu
     }
 }

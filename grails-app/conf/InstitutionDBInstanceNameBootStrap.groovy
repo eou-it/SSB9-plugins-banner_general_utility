@@ -3,7 +3,7 @@
  ****************************************************************************** */
 
 import org.apache.log4j.Logger
-import net.hedtech.banner.utility.CommonUIApp
+import net.hedtech.banner.utility.GeneralMenu
 
 
 /**
@@ -19,7 +19,7 @@ class InstitutionDBInstanceNameBootStrap {
 
     def init = { servletContext ->
 
-        if(CommonUIApp.isEnabled()){
+        if(GeneralMenu.isEnabled()){
             def dbInstanceName = menuService.getInstitutionDBInstanceName();
             servletContext.setAttribute("dbInstanceName", dbInstanceName)
         }
