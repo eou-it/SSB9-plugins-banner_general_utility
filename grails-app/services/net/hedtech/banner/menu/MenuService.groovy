@@ -160,7 +160,7 @@ class MenuService {
      * This is returns map of all personal items based on user access
      * @return Map of menu objects that a user has access
      */
-    private def getMnuPref() {
+    def getMnuPref() {
         boolean isMnuPref = false
         try {
             SecurityContextHolder.context?.authentication?.principal?.pidm
@@ -415,6 +415,28 @@ class MenuService {
             institutionDBInstanceName = it.GUBINST_INSTANCE_NAME
         }
         return institutionDBInstanceName
+    }
+
+    def getReleasePref() {
+        boolean isReleasePref = false
+        try {
+            if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).releaseCb == 'Y')
+                isReleasePref = true
+        }catch (Exception e) {
+            // ignore
+        }
+        return isReleasePref
+    }
+
+    def getDBInstancePref() {
+        boolean isDBInstancePref = false
+        try {
+            if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).dbaseInstitutionCb == 'Y')
+                isDBInstancePref = true
+        }catch (Exception e) {
+            // ignore
+        }
+        return isDBInstancePref
     }
 
 }
