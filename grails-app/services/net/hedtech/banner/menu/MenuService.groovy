@@ -439,4 +439,15 @@ class MenuService {
         return isDBInstancePref
     }
 
+    def getFormNamePref() {
+        boolean isDBInstancePref = false
+        try {
+            if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameCb == 'Y')
+                isDBInstancePref = true
+        }catch (Exception e) {
+            // ignore
+        }
+        return isDBInstancePref
+    }
+
 }
