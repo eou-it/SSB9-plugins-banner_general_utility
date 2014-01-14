@@ -58,7 +58,7 @@ class CommonMenuController {
             }
             finalList.add(subMenu)
         }
-        subMenu = [ name:"root", caption:"root", items: finalList ]
+        subMenu = [ name:"root", caption:"root", items: finalList, _link:null]
         finalMenu = [ data: subMenu ]
         // Support JSON-P callback
         if( params.callback ) {
@@ -86,13 +86,13 @@ class CommonMenuController {
 
 
         subMenu = getSubMenuData(mnuName, mnuType, caption)
-        finalMenu = [ data: subMenu ]
+        //finalMenu = [ data: subMenu ]
 
         // Support JSON-P callback
         if( params.callback ) {
-            render text: "${params.callback} && ${params.callback}(${finalMenu as JSON});", contentType: "text/javascript"
+            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
         } else {
-            render finalMenu as JSON
+            render subMenu as JSON
         }
 
 
@@ -117,15 +117,43 @@ class CommonMenuController {
                 selfServiceList = getSelfServiceMenuData(mnuName)
                 finalList = selfServiceList
             }
-            subMenu = [name:mnuName,caption:caption , items: finalList]
+            subMenu = [name:mnuName,caption:caption,items: finalList, _links:getLinks(mnuName,mnuType,caption)]
 
         } else {
             finalList =  rootMenu()
-            subMenu = [ name:"root", caption:"root", items: finalList ]
+            subMenu = [ name:"root", caption:"root", items: finalList , _links:getLinks(mnuName,mnuType,caption)]
         }
         return subMenu
     }
 
+    private def getLinks(String mnuName,String mnuType,String caption) {
+
+        Map self
+        Map parent
+        String pName
+        String pCaption
+
+        def parentMnu = getParent(mnuName)
+        if(parentMnu !=null){
+            pName = parentMnu.name
+            pCaption = parentMnu.caption
+        } else if(parentMnu == null && mnuName != BANNER_TITLE && mnuType == MENU_TYPE_BANNER ){
+            pName = BANNER_TITLE
+            pCaption =BANNER_TITLE
+        } else if(parentMnu == null && mnuName != MY_BANNER_TITLE && mnuType == MENU_TYPE_PERSONAL ){
+            pName = MY_BANNER_TITLE
+            pCaption =MY_BANNER_TITLE
+        } else {
+            pName = "root"
+            pCaption = "root"
+        }
+
+
+        self = [href:getMenuLink(mnuName,caption,mnuType)]
+        parent = [name:pName, caption: pCaption, href: getMenuLink(pName, pCaption,mnuType )]
+
+        return [self: self, parent:parent]
+    }
     private def rootMenu = {
         Map finalMenu
         Map subMenu
@@ -174,12 +202,12 @@ class CommonMenuController {
             //finalList.addAll(selfServiceList)
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]
-        finalMenu = [ data: subMenu ]
+        //finalMenu = [ data: subMenu ]
         // Support JSON-P callback
         if( params.callback ) {
-            render text: "${params.callback} && ${params.callback}(${finalMenu as JSON});", contentType: "text/javascript"
+            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
         } else {
-            render finalMenu as JSON
+            render subMenu as JSON
         }
     }
 
@@ -260,6 +288,64 @@ class CommonMenuController {
         return removeDuplicateEntries(temp)
     }
 
+    private def getMenuItem(String menuName) {
+        List mnuList
+        def mnu
+        log.debug("Menu Controller getParentUrl")
+        mnuList = getMenu()
+
+        for (it in mnuList) {
+            if(it.name == menuName){
+                mnu = it
+                break;
+            }
+        }
+        return mnu
+    }
+
+    private def getParent(mnuName) {
+        List mnuList
+        def mnu
+        def parent
+        log.debug("Menu Controller getParentUrl")
+        if ((mnuName != null) && (mnuName != BANNER_TITLE) && (mnuName != MY_BANNER_TITLE)) {
+            mnuList = getMenu()
+            mnu = getMenuItem(mnuName)
+
+            for (it in mnuList) {
+                if(it.seq <= mnu.seq && it.name == mnu.parent){
+                    parent = it
+                    break;
+                }
+            }
+        }
+        return parent
+    }
+
+    private def getMenuLink(mnuName,caption,type) {
+        def mnu
+        String link
+        log.debug("Menu Controller getParentUrl")
+        if ((mnuName != null) && (mnuName != BANNER_TITLE) && (mnuName != MY_BANNER_TITLE)) {
+            mnu = getMenuItem(mnuName)
+
+            if(mnu != null)
+                link = getServerURL() +"/commonMenu?type="+type+"&menu="+mnu.name+"&caption="+caption
+            else
+                link = getServerURL() +"/commonMenu?"
+
+        } else if(mnuName == BANNER_TITLE) {
+            link = getServerURL() +"/commonMenu?type="+type+"&menu="+BANNER_TITLE+"&caption="+caption
+
+        } else if(mnuName == MY_BANNER_TITLE){
+            link = getServerURL() +"/commonMenu?type="+type+"&menu="+MY_BANNER_TITLE+"&caption="+caption
+        } else {
+
+            link = getServerURL() +"/commonMenu?"
+        }
+        return link
+    }
+
     private def getPersonalMenu() {
         List list
         log.debug("Menu Controller getmenu")
@@ -311,14 +397,14 @@ class CommonMenuController {
     }
 
     private def getPersonalMenuData(String mnuName){
-       List list
-       if ((mnuName != null) && (mnuName != MY_BANNER_TITLE)) {
+        List list
+        if ((mnuName != null) && (mnuName != MY_BANNER_TITLE)) {
             list = getPersonalMenuList(mnuName)
-       } else {
+        } else {
             list = getFirstLevelPersonalMenuList()
-       }
-       list.each {it -> it.menu = getParent(getPersonalMenu(),it,MY_BANNER_TITLE)}
-       return composeMenuStructure(list, MENU_TYPE_PERSONAL)
+        }
+        list.each {it -> it.menu = getParent(getPersonalMenu(),it,MY_BANNER_TITLE)}
+        return composeMenuStructure(list, MENU_TYPE_PERSONAL)
     }
 
     private def getSelfServiceMenu( menuName, menuTrail, pidm ) {
@@ -438,7 +524,7 @@ class CommonMenuController {
         list.each {it ->
             if(map.get(it.caption) ==null) map.put(it.caption, it)
         }
-       map.values().asList()
+        map.values().asList()
     }
 
     private def composeMenuStructure(list, type){
@@ -451,7 +537,7 @@ class CommonMenuController {
                 if (a.uiVersion =="banner8admin")
                     finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
                 else
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + (menuService.getMnuPref() ? "&pageName="+ a.caption : "" ) +"&global_variables={{params}}" + (GeneralMenu.isEnabled() ?  "&GeneralMenu=true" : "" ),type: "PAGE",menu:a.menu)
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption +"&global_variables={{params}}" + (GeneralMenu.isEnabled() ?  "&GeneralMenu=true" : "" ),type: "PAGE",menu:a.menu)
             }
         }
         return finalList

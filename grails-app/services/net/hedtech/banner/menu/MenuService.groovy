@@ -353,7 +353,7 @@ class MenuService {
 
             mnu.level = it.gutpmnu_level
             mnu.type = it.gubobjs_objt_code
-            mnu.parent = it.gubmodu_name
+            mnu.parent = setParent(mnu.level, dataMap)
             mnu.url = it.gubmodu_url
             mnu.module = it.gubmodu_name
             mnu.seq = it.gutpmnu_seq_no
