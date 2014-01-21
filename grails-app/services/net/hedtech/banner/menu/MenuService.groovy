@@ -386,6 +386,27 @@ class MenuService {
         return pageCaption
     }
 
+
+    /**
+     * This returns page caption for a given page name on a Title Bar in Seamless Navigation Mode.
+     * @param pageName
+     * @return Form name
+     */
+    public String getPageCaptionForPageTitleBar(String pageName) {
+        String pageCaption = ""
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.eachRow("select * from gubpage, gubobjs where gubpage_code = gubobjs_name and gubpage_name = ?", [pageName]) {
+            if (it.gubobjs_desc != null)  {
+                String caption = it.gubobjs_desc.replaceAll(/\&/, "&amp;")
+                pageCaption = caption
+                if (getFormNamePref())
+                    pageCaption = caption + " (" + it.gubpage_code + ")"
+            }
+        }
+        return pageCaption
+    }
+
+
     /**
      * This  returns page caption for a given page name
      * @param pageName
