@@ -4,6 +4,6 @@ import grails.util.Holders
 
 class GeneralMenu {
     public static boolean isEnabled(){
-        return Holders?.grailsApplication?.config?.GeneralMenu
+        return Holders?.grailsApplication?.config?.applicationNavigator
     }
 }
