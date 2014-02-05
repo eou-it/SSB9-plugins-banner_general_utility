@@ -3,6 +3,7 @@
  ****************************************************************************** */
 package net.hedtech.banner.menu
 
+import net.hedtech.banner.utility.GeneralMenu
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -46,12 +47,14 @@ class MenuService {
         def mnuPrf = getMnuPref()
         Sql sql
         def parent
+        String param = getMenuProcedureParam()
         log.debug("Personal Menu started")
         sql = new Sql(sessionFactory.getCurrentSession().connection())
-        sql.execute("Begin gukmenu.p_bld_pers_menu('BAN9'); End;")
+        sql.execute("Begin gukmenu.p_bld_pers_menu('"+param+"'); End;")
+
         log.debug("After gukmenu.p_bld_pers_menu sql.execute")
         sql.eachRow("select * from gutpmnu,gubmodu,gubpage,gubobjs where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
-                " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubobjs_ui_version IN ('A','C') AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
+                " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
 
             def mnu = new Menu()
 
@@ -118,12 +121,14 @@ class MenuService {
         def menuMap = []
         def mnuPrf = getMnuPref()
         Sql sql
+        String param = getMenuProcedureParam()
         log.debug("Process Menu started")
         sql = new Sql(sessionFactory.getCurrentSession().connection())
         log.debug(sql.useConnection.toString())
-        sql.execute("Begin gukmenu.p_bld_prod_menu('BAN9'); End;")
+        sql.execute("Begin gukmenu.p_bld_prod_menu('"+param+"'); End;")
+
         sql.eachRow("select * from gutmenu,gubmodu,gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
-                " gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','C') and gubpage_gubmodu_code  = gubmodu_code (+) " +
+                " gubobjs_name = gutmenu_value AND gubpage_gubmodu_code  = gubmodu_code (+) " +
                 " order by gutmenu_seq_no", {
             def mnu = new Menu()
             def clnMenu = true
@@ -184,12 +189,14 @@ class MenuService {
         def dataMap = []
         def mnuPrf = getMnuPref()
         Sql sql
+        String param = getMenuProcedureParam()
         log.debug("Goto Menu started")
         sql = new Sql(sessionFactory.getCurrentSession().connection())
         log.debug(sql.useConnection.toString())
-        sql.execute( "Begin gukmenu.p_bld_prod_menu('BAN9'); End;" )
+        sql.execute( "Begin gukmenu.p_bld_prod_menu('"+param+"'); End;" )
+
         def searchValWild = "%" + searchVal + "%"
-        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','C')  and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)", [searchValWild, searchValWild, searchValWild]) {
+        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)", [searchValWild, searchValWild, searchValWild]) {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.pageName = it.gubpage_name
@@ -222,7 +229,7 @@ class MenuService {
         log.debug( sql.useConnection.toString() )
         sql.execute( "Begin gukmenu.p_bld_prod_menu('MAG'); End;" )
         def searchValWild = "%" +searchVal +"%"
-        sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','B','C')  and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)",[searchValWild,searchValWild,searchValWild] ) {
+        sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)",[searchValWild,searchValWild,searchValWild] ) {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.name = it.gutmenu_value
@@ -269,7 +276,7 @@ class MenuService {
         log.debug(sql.useConnection.toString())
         sql.execute("Begin gukmenu.p_bld_prod_menu('MAG'); End;")
         sql.eachRow("select * from gutmenu,gubmodu,gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
-                " gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','B','C') and gubpage_gubmodu_code  = gubmodu_code (+) " +
+                " gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) " +
                 " order by gutmenu_seq_no", {
             def mnu = new Menu()
             def clnMenu = true
@@ -328,7 +335,7 @@ class MenuService {
         sql.execute("Begin gukmenu.p_bld_pers_menu('MAG'); End;")
         log.debug("After gukmenu.p_bld_pers_menu sql.execute" )
         sql.eachRow("select * from gutpmnu,gubmodu,gubpage,gubobjs where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
-                " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubobjs_ui_version IN ('A','B','C') AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
+                " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
 
             def mnu = new Menu()
             def page = it.gutpmnu_value.split("\\|")[1]
@@ -446,6 +453,16 @@ class MenuService {
             // ignore
         }
         return formNamePref
+    }
+
+    def getMenuProcedureParam(){
+        String param
+        if(GeneralMenu.enabled){
+            param = "MAG"
+        } else {
+            param = "BAN9"
+        }
+        return param
     }
 
 }
