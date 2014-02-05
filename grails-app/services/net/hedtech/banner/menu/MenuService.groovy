@@ -54,7 +54,7 @@ class MenuService {
 
         log.debug("After gukmenu.p_bld_pers_menu sql.execute")
         sql.eachRow("select * from gutpmnu,gubmodu,gubpage,gubobjs where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
-                " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
+                " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubobjs_ui_version NOT IN ('B') AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
 
             def mnu = new Menu()
 
@@ -128,7 +128,7 @@ class MenuService {
         sql.execute("Begin gukmenu.p_bld_prod_menu('"+param+"'); End;")
 
         sql.eachRow("select * from gutmenu,gubmodu,gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
-                " gubobjs_name = gutmenu_value AND gubpage_gubmodu_code  = gubmodu_code (+) " +
+                " gubobjs_name = gutmenu_value AND gubobjs_ui_version NOT IN ('B') AND gubpage_gubmodu_code  = gubmodu_code (+) " +
                 " order by gutmenu_seq_no", {
             def mnu = new Menu()
             def clnMenu = true
@@ -196,7 +196,7 @@ class MenuService {
         sql.execute( "Begin gukmenu.p_bld_prod_menu('"+param+"'); End;" )
 
         def searchValWild = "%" + searchVal + "%"
-        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)", [searchValWild, searchValWild, searchValWild]) {
+        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubobjs_ui_version NOT IN ('B') AND gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)", [searchValWild, searchValWild, searchValWild]) {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.pageName = it.gubpage_name
