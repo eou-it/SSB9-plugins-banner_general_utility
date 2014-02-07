@@ -443,7 +443,7 @@ class CommonMenuController {
                 if (a.uiVersion =="banner8admin")
                     finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
                 else
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&global_variables={{params}}" + (GeneralMenu.isEnabled() ?  "&GeneralMenu=true" : "" ),type: "PAGE",menu:a.menu)
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&global_variables={{params}}&GeneralMenu=true",type: "PAGE",menu:a.menu)
             }
         }
         return finalList
