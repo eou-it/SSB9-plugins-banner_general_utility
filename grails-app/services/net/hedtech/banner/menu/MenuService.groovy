@@ -229,7 +229,7 @@ class MenuService {
         log.debug( sql.useConnection.toString() )
         sql.execute( "Begin gukmenu.p_bld_prod_menu('MAG'); End;" )
         def searchValWild = "%" +searchVal +"%"
-        sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)",[searchValWild,searchValWild,searchValWild] ) {
+        sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?) order by gutmenu_objt_code, gutmenu_value",[searchValWild,searchValWild,searchValWild] ) {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.name = it.gutmenu_value
