@@ -53,13 +53,12 @@ class MenuService {
         sql.execute("Begin gukmenu.p_bld_pers_menu('"+param+"'); End;")
 
         log.debug("After gukmenu.p_bld_pers_menu sql.execute")
+
+        log.debug("Personal Menu executed")
         sql.eachRow("select * from gutpmnu,gubmodu,gubpage,gubobjs where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
-                " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubobjs_ui_version NOT IN ('B') AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
-
+                " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
             def mnu = new Menu()
-
             mnu.formName = it.gutpmnu_value.split("\\|")[1]
-
             mnu.pageName = it.gubpage_name
             mnu.caption = it.gutpmnu_label
             if (mnuPrf)
@@ -75,8 +74,6 @@ class MenuService {
             dataMap.add(mnu)
         }
         );
-
-        log.debug("Personal Menu executed")
         sql.connection.close()
         RequestContextHolder.currentRequestAttributes().request.session.setAttribute("personalMenuList", dataMap)
         return dataMap
@@ -128,7 +125,7 @@ class MenuService {
         sql.execute("Begin gukmenu.p_bld_prod_menu('"+param+"'); End;")
 
         sql.eachRow("select * from gutmenu,gubmodu,gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
-                " gubobjs_name = gutmenu_value AND gubobjs_ui_version NOT IN ('B') AND gubpage_gubmodu_code  = gubmodu_code (+) " +
+                " gubobjs_name = gutmenu_value AND gubpage_gubmodu_code  = gubmodu_code (+) " +
                 " order by gutmenu_seq_no", {
             def mnu = new Menu()
             def clnMenu = true
@@ -196,7 +193,7 @@ class MenuService {
         sql.execute( "Begin gukmenu.p_bld_prod_menu('"+param+"'); End;" )
 
         def searchValWild = "%" + searchVal + "%"
-        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubobjs_ui_version NOT IN ('B') AND gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)", [searchValWild, searchValWild, searchValWild]) {
+        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url,gubobjs_ui_version,gutmenu_objt_code  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)", [searchValWild, searchValWild, searchValWild]) {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.pageName = it.gubpage_name
@@ -209,6 +206,7 @@ class MenuService {
                     mnu.caption = mnu.caption + " (" + mnu.formName + ")"
             }
             dataMap.add(mnu)
+
         }
         log.debug("GotoMenu executed")
         sql.connection.close()
@@ -246,7 +244,7 @@ class MenuService {
             mnu.type = it.gutmenu_objt_code
             mnu.parent = it.gutmenu_prior_obj
             mnu.url = it.gubmodu_url
-            mnu.uiVersion = (it.gubobjs_ui_version == "B") ? "banner8admin" : "bannerXEadmin"
+            mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
             dataMap.add( mnu )
         }
         log.debug( "GotoMenu executed" )
@@ -300,7 +298,7 @@ class MenuService {
                 mnu.parent = it.gutmenu_prior_obj
                 mnu.url = it.gubmodu_url
                 mnu.seq = it.gutmenu_seq_no
-                mnu.uiVersion = (it.gubobjs_ui_version == "B") ? "banner8admin" : "bannerXEadmin"
+                mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
                 dataMap.add(mnu)
             }
         });
@@ -364,7 +362,7 @@ class MenuService {
             mnu.url = it.gubmodu_url
             mnu.module = it.gubmodu_name
             mnu.seq = it.gutpmnu_seq_no
-            mnu.uiVersion = (it.gubobjs_ui_version == "B") ? "banner8admin" : "bannerXEadmin"
+            mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
             dataMap.add(mnu)
             //}
         });
@@ -458,7 +456,7 @@ class MenuService {
     def getMenuProcedureParam(){
         String param
         if(GeneralMenu.enabled){
-            param = "MAG"
+            param = "MAGMAIN"
         } else {
             param = "BAN9"
         }
