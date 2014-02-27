@@ -231,7 +231,7 @@ class MenuService {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.name = it.gutmenu_value
-            mnu.page = (it.gubobjs_ui_version == "B") ? it.gutmenu_value : it.gubpage_name
+            mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? it.gutmenu_value : it.gubpage_name
             //mnu.page = it.gubpage_name
             mnu.menu = getFormName(it.gubpage_name)
             if (it.gutmenu_desc != null)  {
@@ -285,7 +285,7 @@ class MenuService {
             if (clnMenu) {
                 mnu.formName = it.gutmenu_value
                 mnu.name = it.gutmenu_value
-                mnu.page = (it.gubobjs_ui_version == "B") ? it.gutmenu_value : it.gubpage_name
+                mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? it.gutmenu_value : it.gubpage_name
                 //mnu.page = it.gubpage_name
                 mnu.menu = getFormName(it.gubpage_name)
                 if (it.gutmenu_desc != null)  {
@@ -347,7 +347,7 @@ class MenuService {
             //if (mnuPrf) {
             mnu.formName = it.gutpmnu_value.split("\\|")[1]
             mnu.name = page
-            mnu.page = (it.gubobjs_ui_version == "B") ? page : it.gubpage_name
+            mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? page : it.gubpage_name
             //mnu.page = it.gubpage_name
             mnu.menu = getFormName(it.gubpage_name)
             if (it.gutpmnu_label != null)
