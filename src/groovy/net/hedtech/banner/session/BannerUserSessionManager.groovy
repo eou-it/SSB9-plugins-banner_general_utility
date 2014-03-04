@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.session
 
@@ -10,8 +10,6 @@ import org.apache.log4j.Logger
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
- * TODO to move to banner-core. its derived classes can continue to reside in the UI plugins.
- *
  * A utility class that provides methods to retrieve
  * information about the web- application.
  */

@@ -58,7 +58,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull mnu
         assertNotNull mnu.caption
         assert mnu.name == "SCACRSE"
-        assert mnu.page == "basicCourseInformation"
+        assert mnu.page == "SCACRSE"
     }
 
     void testPersonalCombinedMenu() {

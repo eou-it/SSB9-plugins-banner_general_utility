@@ -43,15 +43,15 @@ class OptionMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         def list
         list = optionMenuService.optionMenuForBlock("basicCourseInformation", "zipBlock")
         assertNotNull list
-        assertEquals 1, list.size()
+        assertEquals 8, list.size()
 
         def mnu = list.get(0)
 
-        assertEquals 7, mnu.seq
-        assertEquals "Course Details[SCADETL]", mnu.menuDesc
+        assertEquals 8, mnu.seq
+        assertEquals "Reg. Restrictions[SCARRES]", mnu.menuDesc
         assertEquals "SCACRSE", mnu.formName
-        assertEquals "SCADETL", mnu.calledFormName
-        assertEquals "courseDetailInformation", mnu.pageName
+        assertEquals "SCARRES", mnu.calledFormName
+        assertEquals "courseRegistrationRestrictions", mnu.pageName
     }
 
     private def dataSetup() {

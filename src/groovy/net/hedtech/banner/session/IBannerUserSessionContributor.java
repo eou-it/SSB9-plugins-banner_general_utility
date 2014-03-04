@@ -1,20 +1,11 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.session;
 
 import java.util.List;
 import java.util.Map;
 
-/**
- * TODO to move to banner-core plugin.
- *
- * Created by IntelliJ IDEA.
- * User: Rajanand.PK
- * Date: 12/10/11
- * Time: 12:32 AM
- * To change this template use File | Settings | File Templates.
- */
 public interface IBannerUserSessionContributor {
 
     /**
