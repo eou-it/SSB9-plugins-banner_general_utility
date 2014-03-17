@@ -63,7 +63,7 @@ class BannerUserSession implements Serializable {
         infoType(nullable:false, maxSize:1000)
         info(nullable:false)
         infoDataType(nullable:false)
-        infoPersisted(nullable:false)
+        //infoPersisted(nullable:false)
     }
 
     Object getInfo () {

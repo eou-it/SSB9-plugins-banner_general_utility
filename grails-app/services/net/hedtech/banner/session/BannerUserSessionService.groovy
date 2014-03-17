@@ -49,7 +49,7 @@ class BannerUserSessionService {
     }
 
     private boolean isNull (info){
-        (info == null || (info instanceof String && info == ""))
+        (info == null)
     }
 
     /**
