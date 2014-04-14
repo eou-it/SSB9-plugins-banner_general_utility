@@ -17,5 +17,6 @@ there is no concept of an 'entity manager' within this project.
     <session-factory>
         <property name="dialect">org.hibernate.dialect.Oracle10gDialect</property>
         <mapping class="net.hedtech.banner.session.BannerUserSession"/>
+        <mapping class="net.hedtech.banner.test.ZipTest"/>
     </session-factory>
 </hibernate-configuration>
