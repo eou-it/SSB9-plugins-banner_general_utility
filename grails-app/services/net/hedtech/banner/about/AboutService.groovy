@@ -4,15 +4,10 @@
 
 package net.hedtech.banner.about
 
-import groovy.sql.Sql
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.core.context.SecurityContextHolder
-
-import java.text.SimpleDateFormat
 
 class AboutService {
 
@@ -22,6 +17,7 @@ class AboutService {
     def sessionFactory
     def menuService
     def resourceProperties
+    def messageSource
 
     private final log = Logger.getLogger(getClass())
 
@@ -30,22 +26,23 @@ class AboutService {
 
         loadResourcePropertiesFile();
 
-        about["Application"] = getAppInfo()
-        about["Copyright"] = getCopyright()
-        about["DB Instance Name"] = getDbInstanceName()
+        about['api'] = getMessage("about.banner.title")
+        about[getMessage("about.banner.application")] = getAppInfo()
+        about[getMessage("about.banner.copyright")] = getCopyright()
+        about[getMessage("about.banner.db.instance.name")] = getDbInstanceName()
         //about << getReleaseInfo()
-        if(getUserName())
-            about["User Name"] = getUserName()
+        if (getUserName())
+            about[getMessage("about.banner.username")] = getUserName()
 
-        if(getMepDescription())
-            about["MEP Description"] = getMepDescription()
+        if (getMepDescription())
+            about[getMessage("about.banner.mep.description")] = getMepDescription()
 
-        about["Plugins"] = getPluginsInfo()
+        about[getMessage("about.banner.plugins")] = getPluginsInfo()
         return about
     }
 
     private void loadResourcePropertiesFile() {
-        String propertyFileName =  ServletContextHolder.servletContext.getRealPath('WEB-INF/classes/release.properties')
+        String propertyFileName = ServletContextHolder.servletContext.getRealPath('WEB-INF/classes/release.properties')
         resourceProperties = new Properties();
         InputStream input = null;
         try {
@@ -78,7 +75,7 @@ class AboutService {
                 mepDescription = user?.mepHomeContextDescription
             }
         } catch (Exception e) {
-           // ignore
+            // ignore
         }
 
         return mepDescription
@@ -87,16 +84,16 @@ class AboutService {
 
     private Map getAppInfo() {
         def appInfo = [:]
-        if(resourceProperties){
-            appInfo['Name'] =  formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
-            appInfo['Version'] =  resourceProperties.getProperty("application.version")
-            appInfo['Build Number'] =  resourceProperties.getProperty("application.build.number")
-            appInfo['Build Time'] =  resourceProperties.getProperty("application.build.time");
+        if (resourceProperties) {
+            appInfo[getMessage("about.banner.name")] = formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
+            appInfo[getMessage("about.banner.version")] = resourceProperties.getProperty("application.version")
+            appInfo[getMessage("about.banner.build.number")] = resourceProperties.getProperty("application.build.number")
+            appInfo[getMessage("about.banner.build.time")] = resourceProperties.getProperty("application.build.time");
             //def appName = grailsApplication.metadata['app.name']
             //appInfo[ appName ] = grailsApplication.metadata['app.version']
         } else {
-            appInfo['Name'] = grailsApplication.metadata['app.name']
-            appInfo['Version'] = grailsApplication.metadata['app.version']
+            appInfo[getMessage("about.banner.name")] = grailsApplication.metadata['app.name']
+            appInfo[getMessage("about.banner.version")] = grailsApplication.metadata['app.version']
         }
         return appInfo
     }
@@ -105,7 +102,7 @@ class AboutService {
         def pluginInfo = [:]
         // plugin details
         def plugins = pluginManager.allPlugins
-        plugins.each{
+        plugins.each {
             String name = formatCamelCaseToEnglish(it.name)
             String version = it.version
             pluginInfo[name] = version
@@ -114,36 +111,27 @@ class AboutService {
     }
 
     private String getCopyright() {
-        grailsApplication.getMainContext().getBean('messageSource').getMessage("net.hedtech.banner.login.copyright1", null, LocaleContextHolder.getLocale()) + " " +  grailsApplication.getMainContext().getBean('messageSource').getMessage("net.hedtech.banner.login.copyright2", null, LocaleContextHolder.getLocale())
+        getMessage("net.hedtech.banner.login.copyright1") + " " + getMessage("net.hedtech.banner.login.copyright2")
     }
 
-    private String getDbInstanceName(){
+    private String getDbInstanceName() {
         menuService.getInstitutionDBInstanceName()
     }
 
-    private String getUserName(){
+    private String getUserName() {
         try {
             SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase()
-        } catch (Exception e){
+        } catch (Exception e) {
             // ignore
         }
     }
 
-    private Map getReleaseInfo(){
-        def releaseInfo = [:]
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        def row = sql.firstRow("select GURVERS_RELEASE, GURVERS_STAGE_DATE from GURVERS ORDER BY GURVERS_STAGE_DATE DESC")
-        releaseInfo["Release"] = row.GURVERS_RELEASE
-        def stageDate = row.GURVERS_STAGE_DATE
-
-        SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy")
-        releaseInfo["Stage Date"] = format.format(stageDate)
-
-        return releaseInfo
+    private String formatCamelCaseToEnglish(value) {
+        value.replaceAll(/(\B[A-Z])/, ' $1').replaceAll("banner", "Banner")
     }
 
-    private String formatCamelCaseToEnglish(value){
-        value.replaceAll(/(\B[A-Z])/,' $1').replaceAll("banner","Banner")
+    private String getMessage(String key) {
+        messageSource.getMessage(key, null, LocaleContextHolder.getLocale())
     }
 
 }
