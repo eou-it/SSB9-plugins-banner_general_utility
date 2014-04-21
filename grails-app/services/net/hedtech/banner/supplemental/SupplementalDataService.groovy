@@ -13,6 +13,9 @@ import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import net.hedtech.banner.supplemental.SupplementalPropertyDiscriminatorContent
 import net.hedtech.banner.supplemental.SupplementalPropertyValue
+import org.hibernate.persister.entity.SingleTableEntityPersister
+import org.hibernate.MappingException
+import groovy.sql.GroovyRowResult
 
 /**
  * DAO for supplemental data. This strategy works against the
@@ -25,6 +28,7 @@ class SupplementalDataService {
     def grailsApplication        // injected by Spring
 
     private final Logger log = Logger.getLogger(getClass())
+    private static final Logger staticLogger = Logger.getLogger(SupplementalDataService.class)
 
     /**
      * Returns the conditions if SDE is enabled for that UI component.
@@ -380,6 +384,174 @@ class SupplementalDataService {
             throw e
         }
     }
+
+
+    public String getMappedDomain(String tableName) {
+
+        Map x = sessionFactory.getAllClassMetadata()
+         for (Iterator i = x.values().iterator(); i.hasNext();) {
+             SingleTableEntityPersister y = (SingleTableEntityPersister) i.next();
+
+             String underlyingTableName = SupplementalDataUtils.getTableName(y.getTableName().toUpperCase())
+
+             if (tableName == underlyingTableName) {
+                 return  y.getName()
+             }
+         }
+    }
+
+
+    /**
+     * Find LOV for a specific lov code and return it in a
+     * generic lookup domain object.
+     *
+     * @param lovCode
+     * @param additionalParams - carries the LOV Table info.
+     * @return  - generic lookup domain object
+     */
+    def static findByLov (String lovCode, additionalParams= [:]) {
+        def lookupDomainList = []
+
+        if (additionalParams) {
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            String query = "SELECT * FROM $lovTable"
+            query += " WHERE ${lovTable}_CODE='$lovCode'"
+
+            if (lovTable == 'GTVSDLV') {
+                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                    query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
+                    query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
+                } else {
+                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                }
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table started")
+            Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+
+            sql.rows(query)?.each { row ->
+                createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            sql.connection.close()
+        }
+        (lookupDomainList == [])?null:lookupDomainList[0]
+    }
+
+    /**
+     * Find all LOV objects belong to a validation table.
+     *
+     * @param additionalParams - info on LOV table
+     * @return  - list of generic lookup domain objects
+     */
+    def static findAllLovs (additionalParams = [:]) {
+        def lookupDomainList = []
+
+        if (additionalParams) {
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            String query = "SELECT * FROM $lovTable"
+
+            if (lovTable == 'GTVSDLV') {
+                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                    query += " where GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
+                    query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
+                } else {
+                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                }
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table started")
+            Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+
+            sql.rows(query)?.each { row ->
+                createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            sql.connection.close()
+        }
+
+        return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
+    }
+
+    /**
+     * Filter LOV objects belong to a validation table based on a filter passed-in
+     *
+     * @param filter
+     * @param additionalParams
+     * @return - list of generic lookup domain objects
+     */
+    def static findAllLovs (filter, additionalParams) {
+        def lookupDomainList = []
+
+        if (additionalParams) {
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            String query = "SELECT * FROM $lovTable"
+            query += " WHERE (upper(${lovTable}_CODE) like upper('%${filter}%')"
+            if (additionalParams.descNotAvailable) {
+                // skip the desc part.
+            } else {
+                query += " OR upper(${lovTable}_DESC) like upper('%${filter}%')"
+            }
+            query += ")"
+
+            if (lovTable == 'GTVSDLV') {
+                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                    query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
+                    query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
+                } else {
+                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                }
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table started")
+            Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+
+            sql.rows(query)?.each { row ->
+                createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            sql.connection.close()
+        }
+        return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
+    }
+
+
+    static def createLookupDomainObject(lovTable, additionalParams, GroovyRowResult row, ArrayList lookupDomainList) {
+        DynamicLookupDomain lookupDomain = new DynamicLookupDomain()
+
+        row.each { prop, propValue ->
+            def modelProperty = SupplementalDataUtils.formatProperty(prop, additionalParams.lovForm)
+            lookupDomain."${modelProperty}" = propValue
+        }
+        lookupDomainList << lookupDomain
+    }
+
+    /**
+     * Find and return the matching domain property names
+     * for the given list of table column names.
+     *
+     * @param domainClass
+     * @param tableColumnNames
+     * @return
+     */
+    def getDomainPropertyNames (Class domainClass, tableColumnNames) {
+        def columnMappings = [:]
+
+        def metadata = ApplicationHolder.getApplication().getMainContext().sessionFactory.getClassMetadata(domainClass)
+        metadata.getPropertyNames().eachWithIndex { propertyName, i ->
+            try {
+                columnMappings[propertyName] = metadata.getPropertyColumnNames(i)[0]
+            } catch (MappingException e){
+                // no mapping for this property; so need to skip it.
+            }
+        }
+
+        columnMappings?.findAll{ String prop, col ->  !prop.startsWith("_")}.keySet()    // returns keys which are prop names.
+    }
+
 
     // ---------------------------- Helper Methods -----------------------------------
 

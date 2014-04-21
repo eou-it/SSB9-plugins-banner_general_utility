@@ -459,6 +459,17 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
+    /**
+     * Tests Mapped Domain for LOV.
+     * */
+    void testFindMappedDomain() {
+        def mappedDomain = supplementalDataService.getMappedDomain("GTVZIPC")
+
+        assertEquals "net.hedtech.banner.test.ZipTest", mappedDomain
+
+    }
+
+
 
     private def updateGORSDAVTable() {
         def sql
