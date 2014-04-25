@@ -4,6 +4,7 @@
 
 import grails.converters.JSON
 import net.hedtech.banner.menu.Menu
+import net.hedtech.banner.security.BannerUser
 import net.hedtech.banner.utility.GeneralMenu
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
@@ -25,6 +26,9 @@ class CommonMenuController {
     static final String MENU_TYPE_PERSONAL = "Personal"
 //    static final String MENU_TYPE_SELF_SERVICE = "SelfService"
     static final String MY_BANNER_TITLE = "My Banner"
+    static final String SSB_BANNER_TITLE = "Banner Self-Service"
+    static final String MENU_TYPE_SSB = "SSB"
+
 //    static final String BANNER_SELF_SERVICE_TITLE = "Banner Self-Service"
     static final String PERSONAL_COMBINED_MENU_LIST = "personalCombinedMenuList"
     static final String COMBINED_MENU_LIST = "combinedMenuList"
@@ -131,21 +135,24 @@ class CommonMenuController {
         Map subMenu
         Map adminMenu
         Map personalMenu
+        Map ssbMenu
         List adminList =[]
         List personalList =[]
         List finalList = []
+        def user = SecurityContextHolder?.context?.authentication?.principal
+        if (user instanceof BannerUser) {
+            if (user.oracleUserName)  {
+                adminList = getMenuData()
+                personalList = getPersonalMenuData()
+                adminMenu = [ name:BANNER_TITLE, caption:BANNER_TITLE, page:BANNER_TITLE ,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_BANNER+"&menu="+BANNER_TITLE+"&caption="+BANNER_TITLE,type: "MENU",items: null,menu:BANNER_TITLE]
+                personalMenu = [ name:MY_BANNER_TITLE, caption:MY_BANNER_TITLE, page:MY_BANNER_TITLE ,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_PERSONAL+"&menu="+MY_BANNER_TITLE+"&caption="+MY_BANNER_TITLE,type: "MENU",items: null,menu:MY_BANNER_TITLE]
+                if (adminList.size() != 0)
+                    finalList.add(adminMenu)
 
-        adminList = getMenuData()
-        personalList = getPersonalMenuData()
-        adminMenu = [ name:BANNER_TITLE, caption:BANNER_TITLE, page:BANNER_TITLE ,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_BANNER+"&menu="+BANNER_TITLE+"&caption="+BANNER_TITLE,type: "MENU",items: null,menu:BANNER_TITLE]
-        personalMenu = [ name:MY_BANNER_TITLE, caption:MY_BANNER_TITLE, page:MY_BANNER_TITLE ,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_PERSONAL+"&menu="+MY_BANNER_TITLE+"&caption="+MY_BANNER_TITLE,type: "MENU",items: null,menu:MY_BANNER_TITLE]
-        if (adminList.size() != 0)
-            finalList.add(adminMenu)
-
-        if (personalList.size() != 0)
-            finalList.add(personalMenu)
-
-
+                if (personalList.size() != 0)
+                    finalList.add(personalMenu)
+            }
+        }
         return finalList
     }
 

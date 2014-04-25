@@ -41,6 +41,8 @@ class SelfServiceMenuController {
             pidm = null
         }
 
+
+
         list = getMenu(menuName, menu, pidm )
 
         def sw = new StringWriter()
@@ -52,6 +54,7 @@ class SelfServiceMenuController {
             }
         }
         render(text: sw.toString(), contentType: "text/xml", encoding: "UTF-8")
+
     }
 
 
