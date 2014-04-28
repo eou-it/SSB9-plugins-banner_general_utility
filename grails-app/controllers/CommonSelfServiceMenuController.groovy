@@ -26,6 +26,7 @@ class CommonSelfServiceMenuController {
     static final String MY_BANNER_TITLE = "My Banner"
     static final String SSB_BANNER_TITLE = "Banner Self-Service"
     static final String MENU_TYPE_SSB = "SSB"
+    static final String Main_Menu = "bmenu.P_MainMnu"
 
 //    static final String BANNER_SELF_SERVICE_TITLE = "Banner Self-Service"
     static final String PERSONAL_COMBINED_MENU_LIST = "personalCombinedMenuList"
@@ -107,7 +108,7 @@ class CommonSelfServiceMenuController {
         else
             self = [href:getServerURL() +"/commonSelfServiceMenu"]
 
-        if (mnuName != null && !mnuName?.equalsIgnoreCase("bmenu.P_MainMnu") )
+        if (mnuName != null && !mnuName?.equalsIgnoreCase(Main_Menu) )
             parent = [name:pName, caption: pCaption, href: getServerURL() +"/commonSelfServiceMenu?menu="+pName]
         else
             parent = [name:SSB_BANNER_TITLE, caption: SSB_BANNER_TITLE, href: getServerURL() +"/commonSelfServiceMenu"]
@@ -119,11 +120,10 @@ class CommonSelfServiceMenuController {
     private def rootMenu = {
         Map ssbMenu
         List finalList = []
-        String mainMnu = "bmenu.P_MainMnu"
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (user instanceof BannerUser) {
             if (user.pidm)  {
-                ssbMenu = [ name:SSB_BANNER_TITLE, caption:SSB_BANNER_TITLE, page:SSB_BANNER_TITLE ,url: getServerURL() +"/commonSelfServiceMenu?type="+MENU_TYPE_SSB+"&menu="+mainMnu+"&caption="+SSB_BANNER_TITLE,type: "MENU",items: null,menu:SSB_BANNER_TITLE]
+                ssbMenu = [ name:SSB_BANNER_TITLE, caption:SSB_BANNER_TITLE, page:SSB_BANNER_TITLE ,url: getServerURL() +"/commonSelfServiceMenu?type="+MENU_TYPE_SSB+"&menu="+Main_Menu+"&caption="+SSB_BANNER_TITLE,type: "MENU",items: null,menu:SSB_BANNER_TITLE]
                 finalList.add(ssbMenu)
             }
         }
@@ -142,8 +142,9 @@ class CommonSelfServiceMenuController {
         if(request.parameterMap["q"])
             searchVal = request.parameterMap["q"][0]
         if(searchVal){
-//            adminList = getAdminMenuSearchResults(searchVal)
-//            finalList.addAll(adminList)
+            def user = SecurityContextHolder?.context?.authentication?.principal
+            adminList = selfServiceMenuService.SearchMenu(searchVal,user.pidm)
+            finalList.addAll(adminList)
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]
         if( params.callback ) {
@@ -174,11 +175,16 @@ class CommonSelfServiceMenuController {
     private def composeMenuStructure(list, type){
         List finalList = []
         list.each {a ->
+            def tempFormName = a.formName
+            def tempParentName = a.parent
+            def tempPageName = a.page
+            def tempName   = a.name
+
             if (a.type == "MENU")
-                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.parent,url: getServerURL() +"/commonSelfServiceMenu?type="+type+"&menu="+a.formName+"&caption="+a.caption,type: "MENU",menu:a.page)
+                finalList.add(name:tempName,page:tempPageName,caption:a.caption,parent:tempParentName,url: getServerURL() +"/commonSelfServiceMenu?type="+type+"&menu="+tempFormName+"&caption="+a.caption,type: "MENU",menu:tempPageName)
 
             if (a.type == "FORM" ){
-                    finalList.add(name:a.name,page:a.parent,caption:a.caption,parent:a.parent,url: a.url,type: "PAGE",menu:a.formName)
+                    finalList.add(name:tempName,page:tempParentName,caption:a.caption,parent:tempParentName,url: a.url,type: "PAGE",menu:tempFormName)
             }
         }
         return finalList
