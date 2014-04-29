@@ -27,17 +27,11 @@ class AboutService {
         loadResourcePropertiesFile();
 
         about['api'] = getMessage("about.banner.title")
-        about[getMessage("about.banner.application")] = getAppInfo()
+        about[getMessage("about.banner.tab.general")] = getAppInfo()
+
+        about[getMessage("about.banner.plugins")] = getPluginsInfo("(banner|i18nCore|sgheZkCore).*")
+        about[getMessage("about.banner.other.plugins")] = getPluginsInfo("(?!(banner|i18nCore|sgheZkCore).*).*")
         about[getMessage("about.banner.copyright")] = getCopyright()
-        about[getMessage("about.banner.db.instance.name")] = getDbInstanceName()
-        //about << getReleaseInfo()
-        if (getUserName())
-            about[getMessage("about.banner.username")] = getUserName()
-
-        if (getMepDescription())
-            about[getMessage("about.banner.mep.description")] = getMepDescription()
-
-        about[getMessage("about.banner.plugins")] = getPluginsInfo()
         return about
     }
 
@@ -85,29 +79,37 @@ class AboutService {
     private Map getAppInfo() {
         def appInfo = [:]
         if (resourceProperties) {
-            appInfo[getMessage("about.banner.name")] = formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
-            appInfo[getMessage("about.banner.version")] = resourceProperties.getProperty("application.version")
-            appInfo[getMessage("about.banner.build.number")] = resourceProperties.getProperty("application.build.number")
-            appInfo[getMessage("about.banner.build.time")] = resourceProperties.getProperty("application.build.time");
+            appInfo[getMessage("about.banner.application.name")] = formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
+            appInfo[getMessage("about.banner.application.version")] = resourceProperties.getProperty("application.version")
+            appInfo[getMessage("about.banner.application.build.number")] = resourceProperties.getProperty("application.build.number")
+            appInfo[getMessage("about.banner.application.build.time")] = resourceProperties.getProperty("application.build.time");
             //def appName = grailsApplication.metadata['app.name']
             //appInfo[ appName ] = grailsApplication.metadata['app.version']
         } else {
-            appInfo[getMessage("about.banner.name")] = grailsApplication.metadata['app.name']
-            appInfo[getMessage("about.banner.version")] = grailsApplication.metadata['app.version']
+            appInfo[getMessage("about.banner.application.name")] = grailsApplication.metadata['app.name']
+            appInfo[getMessage("about.banner.application.version")] = grailsApplication.metadata['app.version']
         }
+        appInfo[getMessage("about.banner.db.instance.name")] = getDbInstanceName()
+        if (getUserName())
+            appInfo[getMessage("about.banner.username")] = getUserName()
+
+        if (getMepDescription())
+            appInfo[getMessage("about.banner.mep.description")] = getMepDescription()
+
         return appInfo
     }
 
-    private Map getPluginsInfo() {
+    private Map getPluginsInfo(def pattern) {
         def pluginInfo = [:]
         // plugin details
-        def plugins = pluginManager.allPlugins
+        def plugins = pluginManager.allPlugins.findAll { plugin -> plugin.name ==~ pattern  }
+        //plugins.collect { def key = it.name; [key: it.value]}
         plugins.each {
             String name = formatCamelCaseToEnglish(it.name)
             String version = it.version
             pluginInfo[name] = version
         }
-        return pluginInfo.sort { it.key }
+        return pluginInfo.sort { formatCamelCaseToEnglish(it.key) }
     }
 
     private String getCopyright() {
