@@ -231,7 +231,6 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         def sdeModelDeleted = supplementalDataService.loadSupplementalDataForModel(model)
         assertEquals 2, sdeModelDeleted.COMMENTS.size()
 
-
         assertNotNull sdeModelDeleted.COMMENTS."2".value   // rebuilt discriminator
         assertEquals "cmment 3", sdeModelDeleted.COMMENTS."2".value
 

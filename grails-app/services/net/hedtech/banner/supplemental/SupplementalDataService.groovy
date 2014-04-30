@@ -130,13 +130,13 @@ class SupplementalDataService {
             )
 
             def resultSetAttributesList = sessionFactory.getCurrentSession().createSQLQuery(
-                    """SELECT DISTINCT govsdav_attr_name as attrName
-	         FROM govsdav WHERE govsdav_table_name= :tableName
+                    """SELECT DISTINCT govsdav_attr_name as attrName ,  govsdav_attr_order as attrOrder
+	         FROM govsdav WHERE govsdav_table_name= :tableName  ORDER BY 2
 	""").setString("tableName", tableName).list()
 
             def supplementalProperties = [:]
             resultSetAttributesList.each() {
-                loadSupplementalProperty(it, supplementalProperties, tableName)
+                loadSupplementalProperty(it[0], supplementalProperties, tableName)
             }
 
             supplementalProperties
@@ -166,6 +166,7 @@ class SupplementalDataService {
             def parentTab
             def dataType
             def value
+            def discList = []
 
             prop.each {
 
@@ -176,6 +177,11 @@ class SupplementalDataService {
                 map.each {
                     def paramMap = it.value
                     log.debug "VALUE: " + it.value
+
+                    //store the attributes with discriminators
+                    if  (paramMap.discMethod == "I") {
+                        discList << attributeName
+                    }
 
                     id = paramMap.id
                     value = paramMap.value
@@ -239,19 +245,25 @@ class SupplementalDataService {
 					              end;
 	                           """)
 
+
                 }
+
             }
 
-            if (disc && disc.isNumber()) {
+
+            //refresh order of discriminators
+
+            discList.unique().each{
                 sql.executeUpdate("""
-                                   update GORSDAV
-                                      set GORSDAV_DISC = rownum
-                                    where  GORSDAV_TABLE_NAME = ${tableName}
-                                      and GORSDAV_PK_PARENTTAB = ${parentTab}
-                                      and GORSDAV_ATTR_NAME = ${attributeName}
-                                   """
-                )
+                                                   update GORSDAV
+                                                        set GORSDAV_DISC = rownum
+                                                        where  GORSDAV_TABLE_NAME = ${tableName}
+                                                        and GORSDAV_PK_PARENTTAB = ${parentTab}
+                                                        and GORSDAV_ATTR_NAME = ${it}
+                                                """)
             }
+
+
         } catch (e) {
             log.error "Failed to save SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
             throw e
