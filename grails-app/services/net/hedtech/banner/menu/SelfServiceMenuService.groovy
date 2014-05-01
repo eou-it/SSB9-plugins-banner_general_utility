@@ -235,21 +235,19 @@ class SelfServiceMenuService {
 
         if (govroles.size() > 0)
             sqlQuery =  " select  TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL	,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED, TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND " +
-                    " from twgrmenu   where  (twgrmenu_name like  "+searchValWild+ " OR twgrmenu_url_text like "+searchValWild+ " OR twgrmenu_url_desc like "+searchValWild+")  and  twgrmenu_enabled = 'Y'   ORDER BY twgrmenu_name "
-        else
-            sqlQuery = "select * from twgrmenu  where  (twgrmenu_name like "+searchValWild+ " OR twgrmenu_url_text like "+searchValWild+" OR twgrmenu_url_desc like "+searchValWild+") and twgrmenu_enabled = 'Y'  and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where " + pidmCondition + " and twgrrole_role = twgrwmrl_role   and twgrmenu_source_ind =  (select nvl( max(twgrmenu_source_ind ),'B')   from twgrmenu where  (twgrmenu_name like "+searchValWild+ " OR twgrmenu_url_text like "+searchValWild+" OR twgrmenu_url_desc like "+searchValWild+") and twgrmenu_source_ind='L') )  or twgrmenu_db_link_ind = 'N')  order by twgrmenu_sequence"
+                    " from twgrmenu   where  (twgrmenu_name like  "+searchValWild+ " OR twgrmenu_url_text like "+searchValWild+ " OR twgrmenu_url_desc like "+searchValWild+")  and  twgrmenu_enabled = 'Y'  and twgrmenu_submenu_ind = 'N'  ORDER BY twgrmenu_name "
 
         def randomSequence = RandomUtils.nextInt(1000);
 
         sql.eachRow(sqlQuery) {
 
             def mnu = new SelfServiceMenu()
-            mnu.page = it.twgrmenu_submenu_ind == "Y" ? null : toggleSeparator(it.twgrmenu_url)
-            mnu.name = toggleSeparator(it.twgrmenu_url)
+            mnu.page = it.twgrmenu_submenu_ind == "Y" ? null : it.twgrmenu_url
+            mnu.name = it.twgrmenu_url
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
-            mnu.caption = toggleSeparator(it.twgrmenu_url_text)
+            mnu.caption = it.twgrmenu_url_text
             mnu.menu = firstMenu
-            mnu.url = it.twgrmenu_db_link_ind == "Y" ? ConfigurationHolder?.config?.banner8?.SS?.url : toggleSeparator(it.twgrmenu_url)
+            mnu.url = ConfigurationHolder?.config?.banner8?.SS?.url + it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.parent =it.twgrmenu_url
             mnu.uiVersion =it.twgrmenu_db_link_ind == "Y" ? "banner8ss" : "banner9ss"

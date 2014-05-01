@@ -106,12 +106,12 @@ class CommonSelfServiceMenuController {
         if (mnuName != null)
             self = [href:getServerURL() +"/commonSelfServiceMenu?menu="+mnuName]
         else
-            self = [href:getServerURL() +"/commonSelfServiceMenu"]
+            self = [href:getServerURL() +"/commonSelfServiceMenu?"]
 
-        if (mnuName != null && !mnuName?.equalsIgnoreCase(Main_Menu) )
-            parent = [name:pName, caption: pCaption, href: getServerURL() +"/commonSelfServiceMenu?menu="+pName]
+        if (mnuName != null && !mnuName?.equalsIgnoreCase(Main_Menu))
+            parent = [name:pName, caption: pCaption, href: getServerURL() +"/commonSelfServiceMenu?menu="+mnuName]
         else
-            parent = [name:SSB_BANNER_TITLE, caption: SSB_BANNER_TITLE, href: getServerURL() +"/commonSelfServiceMenu"]
+            parent = [name:"root", caption: "root", href: getServerURL() +"/commonSelfServiceMenu?"]
 
         return [self: self, parent:parent]
     }
@@ -123,7 +123,7 @@ class CommonSelfServiceMenuController {
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (user instanceof BannerUser) {
             if (user.pidm)  {
-                ssbMenu = [ name:SSB_BANNER_TITLE, caption:SSB_BANNER_TITLE, page:SSB_BANNER_TITLE ,url: getServerURL() +"/commonSelfServiceMenu?type="+MENU_TYPE_SSB+"&menu="+Main_Menu+"&caption="+SSB_BANNER_TITLE,type: "MENU",items: null,menu:SSB_BANNER_TITLE]
+                ssbMenu = [ name:SSB_BANNER_TITLE, caption:SSB_BANNER_TITLE, page:SSB_BANNER_TITLE ,url: getServerURL() +"/commonSelfServiceMenu?menu="+Main_Menu+"&caption="+SSB_BANNER_TITLE+"&type="+SSB_BANNER_TITLE,type: "MENU",items: null,menu:SSB_BANNER_TITLE]
                 finalList.add(ssbMenu)
             }
         }
