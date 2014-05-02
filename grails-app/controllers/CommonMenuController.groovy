@@ -419,10 +419,8 @@ class CommonMenuController {
         def personalPref
 
         if(!session.getAttribute(BANNER_INB_URL)){
-            if (!isSsbEnabled()){
                 personalPref = personalPreferenceService.fetchPersonalPreference(MAGELLAN,SERVER_DESIGNATION,INB)[0]
                 session.setAttribute(BANNER_INB_URL, personalPref.value)
-            }
         }
         bannerInbUrl = session.getAttribute(BANNER_INB_URL)
         return bannerInbUrl
