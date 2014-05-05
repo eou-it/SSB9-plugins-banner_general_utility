@@ -80,7 +80,10 @@ class SupplementalDataService {
 
         def id = model.id
 
+
+
         def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(model.getClass())?.tableName.toUpperCase())
+
 
         if (tableName == null)
             return false
@@ -93,9 +96,11 @@ class SupplementalDataService {
         	l_ex    VARCHAR2(1):='N';
             l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${tableName},${id});
        BEGIN
+            IF l_rowid IS NOT NULL THEN
               l_pkey := gp_goksdif.f_get_pk(${tableName},l_rowid);
 
               l_ex:=gp_goksdif.f_sd_exists(${tableName},l_pkey);
+            END IF;
 
               ${Sql.VARCHAR} := l_ex;
 
@@ -103,7 +108,6 @@ class SupplementalDataService {
             """) {sdeData ->
             sdeDataFound = sdeData
         }
-
         return "Y".equals(sdeDataFound)
     }
 
