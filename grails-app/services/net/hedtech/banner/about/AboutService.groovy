@@ -41,9 +41,10 @@ class AboutService {
         InputStream input = null;
         try {
 
-            input = new FileInputStream(propertyFileName);
-
-            resourceProperties.load(input);
+            if (new File(propertyFileName).exists()){
+                input = new FileInputStream(propertyFileName);
+                resourceProperties.load(input);
+            }
 
         } catch (IOException ex) {
             ex.printStackTrace();
