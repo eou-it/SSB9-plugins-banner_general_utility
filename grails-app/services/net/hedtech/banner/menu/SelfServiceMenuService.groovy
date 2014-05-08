@@ -1,6 +1,6 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.menu
 
 import groovy.sql.Sql
@@ -49,7 +49,9 @@ class SelfServiceMenuService {
         def govroleCriteria
         def govroles = []
         def sqlQuery;
+        String pidmCondition = "twgrrole_pidm is NULL"
         if (pidm) {
+            pidmCondition = "twgrrole_pidm = " + pidm
             sql.eachRow("select govrole_student_ind, govrole_alumni_ind, govrole_employee_ind, govrole_faculty_ind, govrole_finance_ind ,govrole_friend_ind ,govrole_finaid_ind, govrole_bsac_ind from govrole where govrole_pidm = ? ", [pidm]) {
                 if (it.govrole_student_ind == "Y" )  govroles.add ("STUDENT")
                 if (it.govrole_faculty_ind == "Y" )  govroles.add ("FACULTY")
@@ -62,47 +64,32 @@ class SelfServiceMenuService {
             if (govroles.size() > 0) {
 
                 govroles.each {
-                                if (it == govroles.first())
-                                    govroleCriteria = "('" + it.value +"'"
-                                else
-                                    govroleCriteria= govroleCriteria + " ,'" + it.value +"'"
+                    if (it == govroles.first())
+                        govroleCriteria = "('" + it.value +"'"
+                    else
+                        govroleCriteria= govroleCriteria + " ,'" + it.value +"'"
                 }
                 govroleCriteria= govroleCriteria + ")"
             }
         }
-        String pidmCondition = "twgrrole_pidm is NULL"
-        if(pidm) {
-            pidmCondition = "twgrrole_pidm = " + pidm
-        }
 
-        if (govroles.size() > 0)
-            sqlQuery =  " select  TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL	,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED, TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND " +
-                        " from twgrmenu   where  twgrmenu_name = ?  and " +
-                        " twgrmenu_enabled = 'Y'  " +
-                        " and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where twgrrole_pidm = " + pidm +
-                        " and twgrrole_role = twgrwmrl_role " +
-                        " and twgrmenu_source_ind =  (select nvl( max(twgrmenu_source_ind ),'B') from twgrmenu where  twgrmenu_name = ? and twgrmenu_source_ind='L') ) )" +
-                        " union select  TWGRMENU_NAME,TWGRMENU_SEQUENCE	,TWGRMENU_URL_TEXT,TWGRMENU_URL	,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED, "+
-                        " TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND from twgrmenu " +
-                        " where  twgrmenu_name = ?  " +
-                        " and twgrmenu_enabled = 'Y' "+
-                        " and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,govrole where govrole_pidm =  " + pidm + " and " +
-                        " twgrwmrl_role in " +govroleCriteria +" and twgrmenu_source_ind = "+
-                        " ( select nvl( max(twgrmenu_source_ind ),'B') from twgrmenu        where  twgrmenu_name = ? " +
-                        " and twgrmenu_source_ind='L') )) or (twgrmenu_name = ? and twgrmenu_db_link_ind = 'N' and twgrmenu_enabled = 'Y' and twgrmenu_source_ind = " +
-                        " (  select nvl( max(twgrmenu_source_ind ),'B') from twgrmenu  where  twgrmenu_name = ?  " +
-                        " and twgrmenu_source_ind='L')) ORDER BY twgrmenu_sequence "
-
-
-        else
-            sqlQuery = "select * from twgrmenu  where  twgrmenu_name = ? and ? = ? and   twgrmenu_enabled = 'Y'  and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where " + pidmCondition + " and twgrrole_role = twgrwmrl_role   and twgrmenu_source_ind =  (select nvl( max(twgrmenu_source_ind ),'B')   from twgrmenu where  twgrmenu_name = ? and twgrmenu_source_ind='L' and ? = ?) )  or twgrmenu_db_link_ind = 'N')  order by twgrmenu_sequence"
+        sqlQuery = "select  TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL	,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED, TWGRMENU_DB_LINK_IND," +
+                "TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND" +
+                " from twgrmenu   where  twgrmenu_name = ? " +
+                " and twgrmenu_enabled = 'Y' " +
+                " and twgrmenu_source_ind =  (select nvl( max(twgrmenu_source_ind ),'B') from twgrmenu where  twgrmenu_name = ? and twgrmenu_source_ind='L') " +
+                " and (   twgrmenu_url in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
+                " and twgrrole_role = twgrwmrl_role) "
+        sqlQuery = govroleCriteria ? sqlQuery +
+                "      or twgrmenu_url in (select twgrwmrl_name from twgrwmrl, govrole where govrole_pidm = " + pidm +
+                " and twgrwmrl_role in " + govroleCriteria + ") " : sqlQuery
+        sqlQuery = sqlQuery +
+                "      or twgrmenu_db_link_ind = 'N') " +
+                " ORDER BY twgrmenu_sequence"
 
         def randomSequence = RandomUtils.nextInt(1000);
 
-
-
-		
-        sql.eachRow(sqlQuery, [menuName, menuName, menuName, menuName, menuName, menuName]) {
+        sql.eachRow(sqlQuery, [menuName, menuName]) {
 
             def mnu = new SelfServiceMenu()
             mnu.formName = it.twgrmenu_url
