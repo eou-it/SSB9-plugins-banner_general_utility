@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 
 import org.apache.log4j.Logger
@@ -41,6 +41,8 @@ class SelfServiceMenuController {
             pidm = null
         }
 
+
+
         list = getMenu(menuName, menu, pidm )
 
         def sw = new StringWriter()
@@ -48,10 +50,11 @@ class SelfServiceMenuController {
         xml.NavigationEntries {
             list.each { a ->
                 def pageName = a.pageName ? a.pageName : "null"
-                NavigationEntryValueObject(id: a.seq, menu: a.menu, form: a.formName, path: pageName + ".zul", name: a.name, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params: mnuParams, captionProperty: a.captionProperty, pageCaption: a.pageCaption)
+                NavigationEntryValueObject(id: a.seq, menu: a.menu, form: a.formName, path: pageName, name: a.name, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params: mnuParams, captionProperty: a.captionProperty, pageCaption: a.pageCaption)
             }
         }
         render(text: sw.toString(), contentType: "text/xml", encoding: "UTF-8")
+
     }
 
 

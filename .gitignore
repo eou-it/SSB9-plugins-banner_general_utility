@@ -1,3 +1,5 @@
+target
+target/**/*
 target/classes/BannerGeneralUtilityGrailsPlugin$_closure1.class
 target/classes/BannerGeneralUtilityGrailsPlugin$_closure2.class
 target/classes/BannerGeneralUtilityGrailsPlugin$_closure3.class
