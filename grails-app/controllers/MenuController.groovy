@@ -53,6 +53,7 @@ class MenuController {
                   NavigationEntryValueObject(id: a.seq, menu: a.menu, form: a.formName, path: pageName + ".zul", name: a.formName, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params: mnuParams,captionProperty: a.captionProperty, pageCaption: a.pageCaption)
               }
             }
+            header "Expires", "-1"
             render(text:sw.toString(),contentType:"text/xml",encoding:"UTF-8")
     }
     /**
