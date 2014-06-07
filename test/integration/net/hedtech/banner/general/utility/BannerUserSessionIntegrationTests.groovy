@@ -8,6 +8,9 @@ import grails.validation.ValidationException
 import groovy.sql.Sql
 import net.hedtech.banner.session.BannerUserSession
 import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 
 class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
@@ -28,15 +31,18 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
     public static final String DATA_ORIGIN = "Banners"
     public static final Date CURRENT_DATE = new Date()
 
-    protected void setUp() {
+    @Before
+    public void setUp() {
         formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
         super.setUp()
     }
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         super.tearDown()
     }
 
+    @Test
     void testCreateBannerUserSession() {
         def bannerUserSession = newBannerUserSession()
         save bannerUserSession
@@ -57,6 +63,7 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
 
     }
 
+    @Test
     void testCreateBannerUserSessionWithInvalidToken() {
         def bannerUserSession = newBannerUserSessionWithInvalidToken()
 

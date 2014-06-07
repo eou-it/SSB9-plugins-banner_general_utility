@@ -6,8 +6,10 @@ package net.hedtech.banner.general.utility
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.session.BannerUserSession
-
+import org.junit.After
+import org.junit.Before
 import org.junit.Ignore
+import org.junit.Test
 
 class BannerUserSessionServiceIntegrationTests extends BaseIntegrationTestCase {
 
@@ -16,15 +18,18 @@ class BannerUserSessionServiceIntegrationTests extends BaseIntegrationTestCase {
     public static final String SEAMLESS_TOKEN_1 = "98329832032njdskdslk21389320"
     public static final String SEAMLESS_TOKEN_2 = "98329832hdskds89923k21389321"
 
-    protected void setUp() {
+    @Before
+    public void setUp() {
 		formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
 		super.setUp()
 	}
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         super.tearDown()
     }
 
+    @Test
     void testStringDataSave () {
         bannerUserSessionService.publish (
                 SEAMLESS_TOKEN_1,
