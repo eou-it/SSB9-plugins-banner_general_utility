@@ -5,17 +5,21 @@ package net.hedtech.banner.menu
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import groovy.sql.Sql
+import org.junit.Before
+import org.junit.Test
 
 class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def menuService
 
-    protected void setUp() {
+    @Before
+    public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         dataSetup()
     }
 
+    @Test
     void testBannerMenu() {
         def map
         map = menuService.bannerMenu()
@@ -29,18 +33,21 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
         assert mnu.pageName == "basicCourseInformation"
     }
 
+    @Test
     void testPersonalMenu() {
         String mnu = menuService.personalMenu()
         assertNotNull mnu
 
     }
 
+    @Test
     void testGotoMenu() {
         String mnu = menuService.gotoMenu('SCA')
         assertNotNull mnu
 
     }
 
+    @Test
     void testGetFormName() {
         def pageName
         pageName = menuService.getFormName("basicCourseInformation")
@@ -48,6 +55,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
         assert pageName == "SCACRSE"
     }
 
+    @Test
     void testBannerCombinedMenu() {
         def map
         map = menuService.bannerCombinedMenu()
@@ -61,12 +69,14 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
         assert mnu.page == "SCACRSE"
     }
 
+    @Test
     void testPersonalCombinedMenu() {
         String mnu = menuService.personalCombinedMenu()
         assertNotNull mnu
 
     }
 
+    @Test
     void testGotoCombinedMenu() {
         String mnu = menuService.gotoCombinedMenu('SCA')
         assertNotNull mnu

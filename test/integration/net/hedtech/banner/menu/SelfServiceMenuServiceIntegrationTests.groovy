@@ -10,7 +10,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def selfServiceMenuService
 
-    protected void setUp() {
+    @Before public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         dataSetup()

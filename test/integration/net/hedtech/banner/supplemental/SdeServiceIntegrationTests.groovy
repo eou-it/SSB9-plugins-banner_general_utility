@@ -8,27 +8,34 @@ import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.test.ZipTest
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+
 /**
  * Integration tests of the supplemental data service.
  */
 class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     def supplementalDataService        // injected by Spring
 
-    protected void setUp() {
+    @Before
+    public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         updateGorsdamTableValidation()
     }
 
 
-    protected void tearDown() {
+    @After
+    public void tearDown() {
         super.tearDown()
     }
 
     /**
      * Tests when the block is SDE enabled
      * */
-    void testIsSde() {
+    @Test
+     void testIsSde() {
         def isSde = supplementalDataService.hasSde("zipTestBlock")
         assertTrue isSde
 
@@ -45,6 +52,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * Tests PL/SQL component integration.
      * */
+
+    @Test
     void testSdeLoad() {
 
         def tableName = 'GTVZIPC'
@@ -77,6 +86,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * Tests if there is any SDE data for the model
      * */
+
+    @Test
     void testSdeData() {
 
         def modelWithSdeData = ZipTest.findByCodeAndCity("00001", "newcity")
@@ -89,6 +100,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * Tests loading the entity with SDE defined. (SDE data is not empty).
      * */
+
+    @Test
     void testLoadNotEmptySdeData() {
 
         def model = ZipTest.findByCodeAndCity("00001", "newcity")
@@ -156,6 +169,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * Tests loading the entity with SDE defined. (no SDE data)
      * */
+
+    @Test
     void testLoadEmptySdeData() {
 
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(ZipTest.findByCodeAndCity("02186", "Milton"))
@@ -170,6 +185,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
      * 1. SDE data already exists
      * 2. Update SDE data for all attributes
      * */
+
+    @Test
     void testSaveNotEmptySdeData() {
 
         def model = ZipTest.findByCodeAndCity("00001", "newcity")
@@ -196,6 +213,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
      * 1. SDE data already exists
      * 2. Remove SDE data from the attribute
      * */
+    @Test
     void testSaveDeleteNotEmptySdeData() {
         def model = ZipTest.findByCodeAndCity("00001", "newcity")
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
@@ -217,6 +235,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
      * 1. SDE data already exists
      * 2. Remove SDE data from the attribute
      */
+    @Test
     void testSaveDeleteNotEmptySdeDataInTheMiddle() {
 
         def model = ZipTest.findByCodeAndCity("00001", "newcity")
@@ -242,6 +261,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
      * 1. No SDE data
      * 2. Add SDE data to these attributes
      * */
+    @Test
     void testLoadAndCreateEmptySdeData() {
 
 
@@ -272,6 +292,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
      * 1. No SDE data
      * 2. Add SDE data to these attributes with wrong Number format
      * */
+    @Test
     void testNumericValidationSdeData() {
 
 
@@ -304,6 +325,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
      * 1. No SDE data
      * 2. Add SDE data to these attributes with wrong Date format
      * */
+    @Test
     void testDateValidationSdeData() {
 
         def zip = new ZipTest(code: "BB", city: "BB")
@@ -335,6 +357,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * Tests User Defined SDE Attributes.
      * */
+    @Test
     void testLoadUseDefinedSdeData() {
 
         def model = ZipTest.findByCodeAndCity("00001", "newcity")
@@ -377,6 +400,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * Tests SQL Based SDE attributes.
      * */
+    @Test
     void testLoadSQLBasedAttributeSdeData() {
 
         def model = ZipTest.findByCodeAndCity("00001", "newcity")
@@ -410,6 +434,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * Tests Validation.
      * */
+    @Test
     void testValidationSDE() {
         def model = ZipTest.findByCodeAndCity("00001", "newcity")
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
@@ -434,6 +459,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * Tests Validation LOV.
      * */
+    @Test
     void testValidationLov() {
 
         updateGorsdamTableLov()
@@ -461,6 +487,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * Tests Mapped Domain for LOV.
      * */
+    @Test
     void testFindMappedDomain() {
         def mappedDomain = supplementalDataService.getMappedDomain("GTVZIPC")
 

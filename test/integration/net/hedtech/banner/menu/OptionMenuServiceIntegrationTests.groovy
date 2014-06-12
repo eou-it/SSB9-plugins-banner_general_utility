@@ -10,7 +10,7 @@ class OptionMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def optionMenuService
 
-    protected void setUp() {
+    @Before public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         dataSetup()
