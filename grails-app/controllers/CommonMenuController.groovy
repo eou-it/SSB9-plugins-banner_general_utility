@@ -1,10 +1,11 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 import grails.converters.JSON
 import net.hedtech.banner.menu.Menu
 import net.hedtech.banner.utility.GeneralMenu
+import net.hedtech.banner.security.XssSanitizer
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -44,23 +45,24 @@ class CommonMenuController {
         String caption
         Map subMenu
         Map finalMenu
+        String callback = XssSanitizer.sanitize(params.callback)
 
         if (request.parameterMap["menu"])
-            mnuName = request.parameterMap["menu"][0]
+            mnuName = XssSanitizer.sanitize(request.parameterMap["menu"][0])
 
         if(request.parameterMap["type"])
-            mnuType = request.parameterMap["type"][0]
+            mnuType = XssSanitizer.sanitize(request.parameterMap["type"][0])
 
         if(request.parameterMap["caption"])
-            caption = request.parameterMap["caption"][0]
+            caption = XssSanitizer.sanitize(request.parameterMap["caption"][0])
 
 
         subMenu = getSubMenuData(mnuName, mnuType, caption)
         //finalMenu = [ data: subMenu ]
 
         // Support JSON-P callback
-        if( params.callback ) {
-            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
+        if( callback ) {
+            render text: "$callback && $callback(${subMenu as JSON});", contentType: "text/javascript"
         } else {
             render subMenu as JSON
         }
@@ -156,9 +158,10 @@ class CommonMenuController {
         List adminList
         List finalList = []
         String searchVal
+        String callback = XssSanitizer.sanitize(params.callback)
 
         if(request.parameterMap["q"])
-            searchVal = request.parameterMap["q"][0]
+            searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
         if(searchVal){
             adminList = getAdminMenuSearchResults(searchVal)
             finalList.addAll(adminList)
@@ -166,8 +169,8 @@ class CommonMenuController {
         subMenu = [ name:"root", caption:"root", items: finalList ]
         //finalMenu = [ data: subMenu ]
         // Support JSON-P callback
-        if( params.callback ) {
-            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
+        if( callback ) {
+            render text: "${callback} && ${callback}(${subMenu as JSON});", contentType: "text/javascript"
         } else {
             render subMenu as JSON
         }
