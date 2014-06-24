@@ -26,12 +26,13 @@ class AboutService {
 
         loadResourcePropertiesFile();
 
-        about['api'] = getMessage("about.banner.title")
+        about['api.title'] = getMessage("about.banner.title")
         about[getMessage("about.banner.tab.general")] = getAppInfo()
 
         about[getMessage("about.banner.plugins")] = getPluginsInfo("(banner|i18nCore|sgheZkCore).*")
         about[getMessage("about.banner.other.plugins")] = getPluginsInfo("(?!(banner|i18nCore|sgheZkCore).*).*")
         about[getMessage("about.banner.copyright")] = getCopyright()
+        about['api.close'] = getMessage("about.banner.close")
         return about
     }
 
