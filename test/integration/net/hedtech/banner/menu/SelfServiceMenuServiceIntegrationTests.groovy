@@ -5,17 +5,21 @@ package net.hedtech.banner.menu
 
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.junit.Before
+import org.junit.Test
 
 class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def selfServiceMenuService
 
-    @Before public void setUp() {
+    @Before
+    public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         dataSetup()
     }
 
+    @Test
     void testSelfServiceBannerMenuPidm() {
         def map
         def pidm
@@ -27,11 +31,14 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         assert map.size() > 0
     }
 
+    @Test
     void testSelfServiceBannerMenu() {
         def map
         map = selfServiceMenuService.processMenu (null,null,null)
         assert map.size() > 0
     }
+
+    @Test
     void testSelfServiceCombinedMenuMenu() {
         def map
         map = selfServiceMenuService.combinedMenu(null,null,null)

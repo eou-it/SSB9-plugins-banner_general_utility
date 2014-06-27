@@ -5,17 +5,21 @@ package net.hedtech.banner.menu
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import groovy.sql.Sql
+import org.junit.Before
+import org.junit.Test
 
 class OptionMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def optionMenuService
 
-    @Before public void setUp() {
+    @Before
+    public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         dataSetup()
     }
 
+    @Test
     void testOptionMenuForPage() {
         def list
         list = optionMenuService.optionMenuForPage("basicCourseInformation")
@@ -39,6 +43,7 @@ class OptionMenuServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
+    @Test
     void testOptionMenuForBlock() {
         def list
         list = optionMenuService.optionMenuForBlock("basicCourseInformation", "zipBlock")
