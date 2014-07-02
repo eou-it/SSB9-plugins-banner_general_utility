@@ -71,7 +71,7 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
             bannerUserSession.save(failOnError: true, flush: true )
         }
     }
-
+    @Test
     void testCreateBannerUserSessionWithDateData() {
         def bannerUserSession = newBannerUserSessionWithDateData()
         save bannerUserSession
@@ -92,7 +92,7 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull bannerUserSession.lastModifiedBy
 
     }
-
+    @Test
     void testUpdateBannerUserSession() {
         def bannerUserSession = newBannerUserSession()
         save bannerUserSession
@@ -121,7 +121,7 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 1L, bannerUserSession?.version
         assertEquals COURSE_DETAIL_INFORMATION, bannerUserSession.info
     }
-
+    @Test
     void testOptimisticLock() {
         def bannerUserSession = newBannerUserSession()
         save bannerUserSession
@@ -141,7 +141,7 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
             bannerUserSession.save( flush: true )
         }
     }
-
+    @Test
     void testDeleteBannerUserSession() {
         def bannerUserSession = newBannerUserSession()
         save bannerUserSession
@@ -150,12 +150,12 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
         bannerUserSession.delete()
         assertNull BannerUserSession.get( id )
     }
-
+    @Test
     void testValidation() {
         def bannerUserSession = newBannerUserSession()
         assertTrue "BannerUserSession could not be validated as expected due to ${bannerUserSession.errors}", bannerUserSession.validate()
     }
-
+    @Test
     void testNullValidationFailure() {
         def bannerUserSession = new BannerUserSession()
         assertNoErrorsFor bannerUserSession,
