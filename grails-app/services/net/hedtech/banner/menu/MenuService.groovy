@@ -74,7 +74,6 @@ class MenuService {
             dataMap.add(mnu)
         }
         );
-        sql.connection.close()
         RequestContextHolder.currentRequestAttributes().request.session.setAttribute("personalMenuList", dataMap)
         return dataMap
     }
@@ -153,7 +152,6 @@ class MenuService {
             }
         });
         log.debug("ProcessMenu executed")
-        sql.connection.close()
         RequestContextHolder.currentRequestAttributes().request.session.setAttribute("menuList", dataMap)
         dataMap
     }
@@ -172,7 +170,8 @@ class MenuService {
                 isMnuPref = true
         }
         catch (Exception e) {
-            //If pidm is not defined
+            log.error("ERROR: Could not get menu preferences. $e")
+            throw e
         }
         return isMnuPref
     }
@@ -209,7 +208,6 @@ class MenuService {
 
         }
         log.debug("GotoMenu executed")
-        sql.connection.close()
         return dataMap
     }
 
@@ -248,7 +246,6 @@ class MenuService {
             dataMap.add( mnu )
         }
         log.debug( "GotoMenu executed" )
-        sql.connection.close()
         return dataMap
     }
     /**
@@ -303,7 +300,6 @@ class MenuService {
             }
         });
         log.debug("ProcessMenu executed" )
-        sql.connection.close()
         return dataMap
     }
 
@@ -368,7 +364,6 @@ class MenuService {
         });
 
         log.debug("Personal Menu executed" )
-        sql.connection.close()
         return dataMap
     }
     /**
@@ -426,7 +421,8 @@ class MenuService {
             if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).releaseCb == 'Y')
                 isReleasePref = true
         }catch (Exception e) {
-            // ignore
+            log.error("ERROR: Could not get release preferences. $e")
+            throw e
         }
         return isReleasePref
     }
@@ -437,7 +433,8 @@ class MenuService {
             if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).dbaseInstitutionCb == 'Y')
                 isDBInstancePref = true
         }catch (Exception e) {
-            // ignore
+            log.error("ERROR: Could not get db instance preferences. $e")
+            throw e
         }
         return isDBInstancePref
     }
@@ -448,7 +445,8 @@ class MenuService {
             if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameCb == 'Y')
                 formNamePref = true
         }catch (Exception e) {
-            // ignore
+            log.error("ERROR: Could not get form name preferences. $e")
+            throw e
         }
         return formNamePref
     }
