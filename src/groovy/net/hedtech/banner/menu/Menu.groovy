@@ -29,5 +29,6 @@ public class Menu implements Serializable {
     def pageCaption
     def module
     def captionProperty
+    String platCode
 }
 

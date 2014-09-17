@@ -69,6 +69,7 @@ class MenuService {
             mnu.type = it.gutpmnu_value.split("\\|")[0]
             mnu.module = it.gubmodu_name
             mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+            mnu.platCode = it.gubmodu_plat_code
             mnu.seq = it.gutpmnu_seq_no
             mnu.parent = setParent(mnu.level, dataMap)
             mnu.captionProperty = mnuPrf
@@ -147,6 +148,7 @@ class MenuService {
                 mnu.parent = it.gutmenu_prior_obj
                 mnu.module = it.gubmodu_name
                 mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+                mnu.platCode = it.gubmodu_plat_code
                 mnu.seq = it.gutmenu_seq_no
                 mnu.captionProperty = mnuPrf
                 dataMap.add(mnu)
@@ -193,11 +195,12 @@ class MenuService {
         sql.execute( "Begin gukmenu.p_bld_prod_menu('"+param+"'); End;" )
 
         def searchValWild = "%" + searchVal + "%"
-        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url,gubobjs_ui_version,gutmenu_objt_code  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)", [searchValWild, searchValWild, searchValWild]) {
+        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url,gubobjs_ui_version,gutmenu_objt_code,gubmodu_plat_code,gubmodu_code  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)", [searchValWild, searchValWild, searchValWild]) {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.pageName = it.gubpage_name
             mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+            mnu.platCode = it.gubmodu_plat_code
             mnu.captionProperty = mnuPrf
             if (it.gutmenu_desc != null) {
                 mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
@@ -226,7 +229,7 @@ class MenuService {
         log.debug( sql.useConnection.toString() )
         sql.execute( "Begin gukmenu.p_bld_prod_menu('MAG'); End;" )
         def searchValWild = "%" +searchVal +"%"
-        sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?) order by gutmenu_objt_code, gutmenu_value",[searchValWild,searchValWild,searchValWild] ) {
+        sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_name, gubmodu_url,gubmodu_code,gubmodu_plat_code  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?) order by gutmenu_objt_code, gutmenu_value",[searchValWild,searchValWild,searchValWild] ) {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.name = it.gutmenu_value
@@ -243,6 +246,7 @@ class MenuService {
             mnu.type = it.gutmenu_objt_code
             mnu.parent = it.gutmenu_prior_obj
             mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+            mnu.platCode = it.gubmodu_plat_code
             mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
             dataMap.add( mnu )
         }
@@ -296,6 +300,7 @@ class MenuService {
                 mnu.parent = it.gutmenu_prior_obj
                 mnu.code = it.gubmodu_code
                 mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+                mnu.platCode = it.gubmodu_plat_code
                 mnu.seq = it.gutmenu_seq_no
                 mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
                 dataMap.add(mnu)
@@ -358,6 +363,7 @@ class MenuService {
             mnu.type = it.gubobjs_objt_code
             mnu.parent = setParent(mnu.level, dataMap)
             mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+            mnu.platCode = it.gubmodu_plat_code
             mnu.module = it.gubmodu_name
             mnu.seq = it.gutpmnu_seq_no
             mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"

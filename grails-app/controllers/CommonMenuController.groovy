@@ -24,6 +24,8 @@ class CommonMenuController {
     static final String BANNER_TITLE = "Banner"
     static final String MENU_TYPE_BANNER = "Banner"
     static final String MENU_TYPE_PERSONAL = "Personal"
+    static final String BANNER_HS_PARENT = "bannerHS"
+    static final String ZK_PLATFORM_CODE = "ADMZK"
 //    static final String MENU_TYPE_SELF_SERVICE = "SelfService"
     static final String MY_BANNER_TITLE = "My Banner"
     static final String SSB_BANNER_TITLE = "Banner Self-Service"
@@ -448,7 +450,12 @@ class CommonMenuController {
                 if (a.uiVersion =="banner8admin")
                     finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
                 else
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&global_variables={{params}}&GeneralMenu=true",type: "PAGE",menu:a.menu)
+                    if(a.platCode == ZK_PLATFORM_CODE) {
+                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&global_variables={{params}}&GeneralMenu=true",type: "PAGE",menu:a.menu)
+                    } else {
+                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"&launch_form="+a.page+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu)
+                    }
+
             }
         }
         return finalList
