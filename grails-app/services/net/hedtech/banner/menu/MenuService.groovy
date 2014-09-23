@@ -68,7 +68,7 @@ class MenuService {
             mnu.level = it.gutpmnu_level
             mnu.type = it.gutpmnu_value.split("\\|")[0]
             mnu.module = it.gubmodu_name
-            mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+            mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
             mnu.platCode = it.gubmodu_plat_code
             mnu.seq = it.gutpmnu_seq_no
             mnu.parent = setParent(mnu.level, dataMap)
@@ -147,7 +147,7 @@ class MenuService {
                 mnu.type = it.gutmenu_objt_code
                 mnu.parent = it.gutmenu_prior_obj
                 mnu.module = it.gubmodu_name
-                mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+                mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
                 mnu.platCode = it.gubmodu_plat_code
                 mnu.seq = it.gutmenu_seq_no
                 mnu.captionProperty = mnuPrf
@@ -199,7 +199,7 @@ class MenuService {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.pageName = it.gubpage_name
-            mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+            mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
             mnu.platCode = it.gubmodu_plat_code
             mnu.captionProperty = mnuPrf
             if (it.gutmenu_desc != null) {
@@ -245,7 +245,7 @@ class MenuService {
             mnu.seq = it.gutmenu_seq_no
             mnu.type = it.gutmenu_objt_code
             mnu.parent = it.gutmenu_prior_obj
-            mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+            mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
             mnu.platCode = it.gubmodu_plat_code
             mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
             dataMap.add( mnu )
@@ -299,7 +299,7 @@ class MenuService {
                 mnu.type = it.gutmenu_objt_code
                 mnu.parent = it.gutmenu_prior_obj
                 mnu.code = it.gubmodu_code
-                mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+                mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
                 mnu.platCode = it.gubmodu_plat_code
                 mnu.seq = it.gutmenu_seq_no
                 mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
@@ -362,7 +362,7 @@ class MenuService {
             mnu.level = it.gutpmnu_level
             mnu.type = it.gubobjs_objt_code
             mnu.parent = setParent(mnu.level, dataMap)
-            mnu.url = getMenuUrl(it.gubmodu_code) ?: it.gubmodu_url
+            mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
             mnu.platCode = it.gubmodu_plat_code
             mnu.module = it.gubmodu_name
             mnu.seq = it.gutpmnu_seq_no
@@ -469,12 +469,10 @@ class MenuService {
         return param
     }
 
-    public String getMenuUrl(String code){
+    private String getModuleUrlFromConfig(String moduleCode){
         String url
-        if (grailsApplication.config.module.deployments && grailsApplication.config.module.deployments instanceof Map){
-            grailsApplication.config.module.deployments.each{
-                if (it.key == code) url = it.value
-            }
+        if (moduleCode && grailsApplication.config?.module?.deployments){
+            url = grailsApplication.config.module.deployments[moduleCode]
         }
         return url
     }
