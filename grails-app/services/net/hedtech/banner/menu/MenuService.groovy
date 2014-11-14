@@ -423,6 +423,20 @@ class MenuService {
         return institutionDBInstanceName
     }
 
+    /**
+     * This  returns platform code for the given page name
+     * @param pageName
+     * @return Platform Code
+     */
+    public String getPlatCodeForPage(String pageName) {
+        String platCode = ""
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.eachRow("select * from gubpage, gubmodu where gubpage_gubmodu_code = gubmodu_code and gubpage_name = ?", [pageName]) {
+            platCode = it.gubmodu_plat_code
+        }
+        return platCode
+    }
+
     def getReleasePref() {
         boolean isReleasePref = false
         try {
