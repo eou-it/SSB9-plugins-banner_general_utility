@@ -38,7 +38,9 @@ class CommonMenuController {
 
 
     def data = {
-        if(request.parameterMap["q"]){
+        if (params.refresh == 'Y'){
+           keepAlive()
+        } else if(request.parameterMap["q"]){
             search()
         } else {
             list()
@@ -462,6 +464,16 @@ class CommonMenuController {
             }
         }
         return finalList
+    }
+
+    private def keepAlive(){
+        String callback = XssSanitizer.sanitize(params.callback)
+
+        if( callback ) {
+            render text: "$callback && $callback({'result':'I am Alive'});", contentType: "text/javascript"
+        } else {
+            render "I am Alive"
+        }
     }
 
 }
