@@ -223,7 +223,14 @@ class MenuService {
         log.debug("Goto Menu started")
         sql = new Sql( sessionFactory.getCurrentSession().connection() )
         log.debug( sql.useConnection.toString() )
-        sql.execute( "Begin gukmenu.p_bld_prod_menu('MAG'); End;" )
+
+        // this query determines if the data is in the temporary table for the database session
+        def row = sql.firstRow('select 1 from gutmenu')
+        //if the data is not found then load it again by running the menu package
+        if (row == null) {
+            sql.execute("Begin gukmenu.p_bld_prod_menu('MAG'); End;")
+        }
+
         def searchValWild = "%" +searchVal +"%"
         sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?) order by gutmenu_objt_code, gutmenu_value",[searchValWild,searchValWild,searchValWild] ) {
             def mnu = new Menu()
