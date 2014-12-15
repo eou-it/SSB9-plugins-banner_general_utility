@@ -13,7 +13,6 @@ package net.hedtech.banner.menu
  */
 public class Menu implements Serializable {
     int seq
-    String code
     def menu
     def page
     def name
@@ -29,6 +28,5 @@ public class Menu implements Serializable {
     def pageCaption
     def module
     def captionProperty
-    String platCode
 }
 
