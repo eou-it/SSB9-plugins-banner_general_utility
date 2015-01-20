@@ -29,6 +29,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
         assertNotNull mnu
         assertNotNull mnu.caption
+        assertNotNull mnu.platCode
         assert mnu.formName == "SCACRSE"
         assert mnu.pageName == "basicCourseInformation"
     }
@@ -42,9 +43,16 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testGotoMenu() {
-        String mnu = menuService.gotoMenu('SCA')
-        assertNotNull mnu
+        ArrayList map = menuService.gotoMenu('SCA')
+        assertNotNull map
 
+        def mnu = map.find {it -> it.formName == "SCACRSE"}
+
+        assertNotNull mnu
+        assertNotNull mnu.caption
+        assertNotNull mnu.platCode
+        assert mnu.formName == "SCACRSE"
+        assert mnu.pageName == "basicCourseInformation"
     }
 
     @Test
@@ -65,6 +73,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
         assertNotNull mnu
         assertNotNull mnu.caption
+        assertNotNull mnu.platCode
         assert mnu.name == "SCACRSE"
         assert mnu.page == "SCACRSE"
     }
@@ -78,9 +87,15 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testGotoCombinedMenu() {
-        String mnu = menuService.gotoCombinedMenu('SCA')
-        assertNotNull mnu
+        ArrayList map = menuService.gotoCombinedMenu('SCA')
+        assertNotNull map
 
+        def mnu = map.find {it -> it.formName == "SCACRSE"}
+
+        assertNotNull mnu
+        assertNotNull mnu.caption
+        assertNotNull mnu.platCode
+        assert mnu.formName == "SCACRSE"
     }
 
     private def dataSetup() {
