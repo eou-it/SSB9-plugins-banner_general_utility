@@ -458,6 +458,7 @@ class CommonMenuController {
                     if(a.platCode == ZK_PLATFORM_CODE) {
                         finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&global_variables={{params}}&GeneralMenu=true",type: "PAGE",menu:a.menu)
                     } else {
+                        // form=GUAINIT&launch_form --> INB mappings
                         finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu)
                     }
 
