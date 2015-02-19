@@ -236,13 +236,13 @@ class MenuService {
         }
 
         def searchValWild = "%" +searchVal +"%"
-        sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_name, gubmodu_url,gubmodu_code,gubmodu_plat_code  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?) order by gutmenu_objt_code, gutmenu_value",[searchValWild,searchValWild,searchValWild] ) {
+        sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_code, gubpage_name, gubmodu_url,gubmodu_code,gubmodu_plat_code  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?) order by gutmenu_objt_code, gutmenu_value",[searchValWild,searchValWild,searchValWild] ) {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.name = it.gutmenu_value
             mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? it.gutmenu_value : it.gubpage_name
             //mnu.page = it.gubpage_name
-            mnu.menu = getFormName(it.gubpage_name)
+            mnu.menu = it.gubpage_code
             if (it.gutmenu_desc != null)  {
                 mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
                 if (mnuPrf)
@@ -296,7 +296,7 @@ class MenuService {
                 mnu.name = it.gutmenu_value
                 mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? it.gutmenu_value : it.gubpage_name
                 //mnu.page = it.gubpage_name
-                mnu.menu = getFormName(it.gubpage_name)
+                mnu.menu = it.gubpage_code
                 if (it.gutmenu_desc != null)  {
                     mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
                     if (mnuPrf)
@@ -359,7 +359,7 @@ class MenuService {
             mnu.name = page
             mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? page : it.gubpage_name
             //mnu.page = it.gubpage_name
-            mnu.menu = getFormName(it.gubpage_name)
+            mnu.menu = it.gubpage_code
             if (it.gutpmnu_label != null)
                 mnu.caption = it.gutpmnu_label.replaceAll(/\&/, "&amp;")
 
