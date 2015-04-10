@@ -35,7 +35,7 @@ class CommonSelfServiceMenuController {
 
     def data = {
         if(request.parameterMap["q"]){
-            search()
+            searchSSB()
         } else {
             list()
         }
@@ -190,4 +190,33 @@ class CommonSelfServiceMenuController {
         return finalList
     }
 
+    def searchSSB = {
+        Map subMenu
+        Map finalMenu
+        List adminList
+        List finalList = []
+        String searchVal
+
+        if(request.parameterMap["q"])
+            searchVal = request.parameterMap["q"][0]
+        if(searchVal){
+            def user = SecurityContextHolder?.context?.authentication?.principal
+            adminList = getSSBMenuSearchResults(searchVal, pidm)
+            finalList.addAll(adminList)
+        }
+        subMenu = [ name:"root", caption:"root", items: finalList ]
+        if( params.callback ) {
+            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
+        } else {
+            render subMenu as JSON
+        }
+    }
+
+    private def getSSBMenuSearchResults(searchVal, pidm){
+
+        List list = selfServiceMenuService.SearchMenuSSB(searchVal, pidm)
+        list = removeDuplicateEntries(list)
+        list.each {it -> it.menu = getParent(getMenu(),it,SSB_BANNER_TITLE)}
+        return composeMenuStructure(list, MENU_TYPE_SS)
+    }
 }

@@ -50,4 +50,17 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     }
 
+    @Test
+    void testSelfServiceSearchMenu() {
+        def list
+        def pidm
+        def sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.eachRow("select spriden_pidm from spriden where spriden_id = 'HOSS001' spriden_change_ind is not null") {
+            pidm = it.spriden_pidm
+        }
+
+        list = selfServiceMenuService.searchMenuSSB('Banner XE Registration',pidm)
+        assert list.size() > 0
+    }
+
 }

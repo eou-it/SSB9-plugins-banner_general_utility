@@ -249,4 +249,72 @@ class SelfServiceMenuService {
 
     }
 
+    def SearchMenuSSB(def searchVal, def pidm) {
+
+        def searchValWild = "\'%" +searchVal +"%\'"
+        def dataMap = []
+        def firstMenu = "Banner Self-Service";
+        Sql sql
+        log.trace("search Combined Menu started for value: " + searchValWild)
+        sql = new Sql(sessionFactory.getCurrentSession().connection())
+        log.trace("SQL Connection:" + sql.useConnection.toString())
+
+        def govroleCriteria
+        def govroles = []
+        def sqlQuery;
+        if (pidm) {
+            sql.eachRow("select govrole_student_ind, govrole_alumni_ind, govrole_employee_ind, govrole_faculty_ind, govrole_finance_ind ,govrole_friend_ind ,govrole_finaid_ind, govrole_bsac_ind from govrole where govrole_pidm = ? ", [pidm]) {
+                if (it.govrole_student_ind == "Y" )  govroles.add ("STUDENT")
+                if (it.govrole_faculty_ind == "Y" )  govroles.add ("FACULTY")
+                if (it.govrole_employee_ind == "Y" )  govroles.add ("EMPLOYEE")
+                if (it.govrole_alumni_ind == "Y" )  govroles.add ("ALUMNI")
+                if (it.govrole_finance_ind == "Y" )  govroles.add ("FINANCE")
+                if (it.govrole_finaid_ind == "Y" )  govroles.add ("FINAID")
+                if (it.govrole_friend_ind == "Y" )  govroles.add ("FRIEND")
+            }
+            if (govroles.size() > 0) {
+
+                govroles.each {
+                    if (it == govroles.first())
+                        govroleCriteria = "('" + it.value +"'"
+                    else
+                        govroleCriteria= govroleCriteria + " ,'" + it.value +"'"
+                }
+                govroleCriteria= govroleCriteria + ")"
+            }
+        }
+
+        String pidmCondition = "twgrrole_pidm is NULL"
+        if(pidm) {
+            pidmCondition = "twgrrole_pidm = " + pidm
+        }
+
+        if (govroles.size() > 0)
+            sqlQuery = "select TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED,TWGRMENU_DB_LINK_IND,TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME,TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND from twgrmenu a where twgrmenu_enabled = 'Y' and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where twgrrole_pidm = ? and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole where govrole_pidm = ? and twgrwmrl_role in ('FACULTY','EMPLOYEE' ,'ALUMNI' ,'FINANCE','STUDENT'))) and twgrmenu_url in ('http://m038214.sct.com:8080/BannerEventManagementSS/ssb/events', 'http://m038214.ellucian.com:8080/StudentRegistrationSsb/ssb/registration', 'http://m040145.ellucian.com:8089/StudentSSB/ssb/studentProfile')"
+
+        def randomSequence = RandomUtils.nextInt(1000);
+
+        sql.eachRow(sqlQuery) {
+
+            def mnu = new SelfServiceMenu()
+            mnu.page = it.twgrmenu_submenu_ind == "Y" ? null : it.twgrmenu_url
+            mnu.name = it.twgrmenu_url
+            mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
+            mnu.caption = it.twgrmenu_url_text
+            mnu.menu = firstMenu
+            mnu.url = ConfigurationHolder?.config?.banner8?.SS?.url + it.twgrmenu_url
+            mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
+            mnu.parent =it.twgrmenu_url
+            mnu.uiVersion =it.twgrmenu_db_link_ind == "Y" ? "banner8ss" : "banner9ss"
+
+            dataMap.add(mnu)
+
+        };
+
+        log.trace("ProcessMenu executed for search criteria e:" + searchVal)
+        sql.connection.close()
+        return dataMap
+
+    }
+
 }
