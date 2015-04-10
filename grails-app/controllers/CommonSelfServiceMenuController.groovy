@@ -201,7 +201,7 @@ class CommonSelfServiceMenuController {
             searchVal = request.parameterMap["q"][0]
         if(searchVal){
             def user = SecurityContextHolder?.context?.authentication?.principal
-            adminList = getSSBMenuSearchResults(searchVal, pidm)
+            adminList = getSSBMenuSearchResults(searchVal, user.pidm)
             finalList.addAll(adminList)
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]

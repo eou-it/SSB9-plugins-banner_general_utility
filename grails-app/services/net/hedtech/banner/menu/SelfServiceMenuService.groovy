@@ -284,13 +284,8 @@ class SelfServiceMenuService {
             }
         }
 
-        String pidmCondition = "twgrrole_pidm is NULL"
-        if(pidm) {
-            pidmCondition = "twgrrole_pidm = " + pidm
-        }
-
         if (govroles.size() > 0)
-            sqlQuery = "select TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED,TWGRMENU_DB_LINK_IND,TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME,TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND from twgrmenu a where twgrmenu_enabled = 'Y' and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where twgrrole_pidm = ? and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole where govrole_pidm = ? and twgrwmrl_role in ('FACULTY','EMPLOYEE' ,'ALUMNI' ,'FINANCE','STUDENT'))) and twgrmenu_url in ('http://m038214.sct.com:8080/BannerEventManagementSS/ssb/events', 'http://m038214.ellucian.com:8080/StudentRegistrationSsb/ssb/registration', 'http://m040145.ellucian.com:8089/StudentSSB/ssb/studentProfile')"
+            sqlQuery = "select TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED,TWGRMENU_DB_LINK_IND,TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME,TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND from twgrmenu a where twgrmenu_enabled = 'Y' and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where twgrrole_pidm = "+pidm+" and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole where govrole_pidm = "+pidm+" and twgrwmrl_role in ('FACULTY','EMPLOYEE' ,'ALUMNI' ,'FINANCE','STUDENT'))) and twgrmenu_url in ('http://m038214.sct.com:8080/BannerEventManagementSS/ssb/events', 'http://m038214.ellucian.com:8080/StudentRegistrationSsb/ssb/registration', 'http://m040145.ellucian.com:8089/StudentSSB/ssb/studentProfile')"
 
         def randomSequence = RandomUtils.nextInt(1000);
 
@@ -298,11 +293,11 @@ class SelfServiceMenuService {
 
             def mnu = new SelfServiceMenu()
             mnu.page = it.twgrmenu_submenu_ind == "Y" ? null : it.twgrmenu_url
-            mnu.name = it.twgrmenu_url
+            mnu.name = it.twgrmenu_url_text
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.caption = it.twgrmenu_url_text
             mnu.menu = firstMenu
-            mnu.url = ConfigurationHolder?.config?.banner8?.SS?.url + it.twgrmenu_url
+            mnu.url = it.twgrmenu_db_link_ind == "Y" ? ConfigurationHolder?.config?.banner8?.SS?.url + it.twgrmenu_url : it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.parent =it.twgrmenu_url
             mnu.uiVersion =it.twgrmenu_db_link_ind == "Y" ? "banner8ss" : "banner9ss"
@@ -311,7 +306,7 @@ class SelfServiceMenuService {
 
         };
 
-        log.trace("ProcessMenu executed for search criteria e:" + searchVal)
+        log.trace("SearchMenuSSB executed for search criteria e:" + searchVal)
         sql.connection.close()
         return dataMap
 
