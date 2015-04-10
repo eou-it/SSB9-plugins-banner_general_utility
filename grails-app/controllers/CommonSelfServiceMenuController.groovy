@@ -201,7 +201,7 @@ class CommonSelfServiceMenuController {
             searchVal = request.parameterMap["q"][0]
         if(searchVal){
             def user = SecurityContextHolder?.context?.authentication?.principal
-            adminList = getSSBMenuSearchResults(searchVal, user.pidm)
+            adminList = selfServiceMenuService.SearchMenuSSB(searchVal, user.pidm)
             finalList.addAll(adminList)
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]
@@ -212,11 +212,4 @@ class CommonSelfServiceMenuController {
         }
     }
 
-    private def getSSBMenuSearchResults(searchVal, pidm){
-
-        List list = selfServiceMenuService.SearchMenuSSB(searchVal, pidm)
-        list = removeDuplicateEntries(list)
-        list.each {it -> it.menu = getParent(getMenu(),it,SSB_BANNER_TITLE)}
-        return composeMenuStructure(list, MENU_TYPE_SS)
-    }
 }
