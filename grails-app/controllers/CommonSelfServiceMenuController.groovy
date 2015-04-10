@@ -35,7 +35,7 @@ class CommonSelfServiceMenuController {
 
     def data = {
         if(request.parameterMap["q"]){
-            search()
+            searchSSB()
         } else {
             list()
         }
