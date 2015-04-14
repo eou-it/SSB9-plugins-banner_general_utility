@@ -2,10 +2,9 @@
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
+
 import grails.converters.JSON
-import net.hedtech.banner.menu.Menu
 import net.hedtech.banner.security.BannerUser
-import net.hedtech.banner.utility.GeneralMenu
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -35,7 +34,7 @@ class CommonSelfServiceMenuController {
 
     def data = {
         if(request.parameterMap["q"]){
-            searchSSB()
+            searchAppConcept()
         } else {
             list()
         }
@@ -58,7 +57,9 @@ class CommonSelfServiceMenuController {
             caption = request.parameterMap["caption"][0]
 
 
-        subMenu = getSubMenuData(mnuName, mnuType, caption)
+        //subMenu = getSubMenuData(mnuName, mnuType, caption)
+
+        subMenu = getSubMenuData(Main_Menu, mnuType, caption)
 
 
         if( params.callback ) {
@@ -77,7 +78,7 @@ class CommonSelfServiceMenuController {
         if (mnuName){
             List mnuList
             def user = SecurityContextHolder?.context?.authentication?.principal
-            mnuList = selfServiceMenuService.bannerMenu(mnuName,null,user.pidm)
+            mnuList = selfServiceMenuService.bannerMenuAppConcept(mnuName,null,user.pidm)
             ssbList =  composeMenuStructure(mnuList, SSB_BANNER_TITLE)
             subMenu = [name:mnuName,caption:caption,items: ssbList, _links:getLinks(mnuName)]
         } else {
@@ -143,7 +144,7 @@ class CommonSelfServiceMenuController {
             searchVal = request.parameterMap["q"][0]
         if(searchVal){
             def user = SecurityContextHolder?.context?.authentication?.principal
-            adminList = selfServiceMenuService.SearchMenu(searchVal,user.pidm)
+            adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm)
             finalList.addAll(adminList)
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]
@@ -153,6 +154,33 @@ class CommonSelfServiceMenuController {
             render subMenu as JSON
         }
     }
+
+
+    def searchAppConcept = {
+
+        Map subMenu
+        Map finalMenu
+        List adminList
+        List finalList = []
+        String searchVal
+
+        if(request.parameterMap["q"])
+            searchVal = request.parameterMap["q"][0]
+        if(searchVal){
+            def user = SecurityContextHolder?.context?.authentication?.principal
+            adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm)
+            finalList.addAll(adminList)
+        }
+
+        subMenu = [ name:"root", caption:"root", items: composeMenuStructure(finalList, SSB_BANNER_TITLE) ]
+
+        if( params.callback ) {
+            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
+        } else {
+            render subMenu as JSON
+        }
+    }
+
 
     private def getServerURL() {
         boolean includePort = true
@@ -184,32 +212,10 @@ class CommonSelfServiceMenuController {
                 finalList.add(name:tempName,page:tempPageName,caption:a.caption,parent:tempParentName,url: getServerURL() +"/commonSelfServiceMenu?type="+type+"&menu="+tempFormName+"&caption="+a.caption,type: "MENU",menu:tempPageName)
 
             if (a.type == "FORM" ){
-                    finalList.add(name:tempName,page:tempParentName,caption:a.caption,parent:tempParentName,url: a.url,type: "PAGE",menu:tempFormName)
+                    finalList.add(name:tempName,page:tempName,caption:a.caption,parent:tempName,url: a.url,type: "SS-APP",menu:tempFormName)
             }
         }
         return finalList
-    }
-
-    def searchSSB = {
-        Map subMenu
-        Map finalMenu
-        List adminList
-        List finalList = []
-        String searchVal
-
-        if(request.parameterMap["q"])
-            searchVal = request.parameterMap["q"][0]
-        if(searchVal){
-            def user = SecurityContextHolder?.context?.authentication?.principal
-            adminList = selfServiceMenuService.SearchMenuSSB(searchVal, user.pidm)
-            finalList.addAll(adminList)
-        }
-        subMenu = [ name:"root", caption:"root", items: finalList ]
-        if( params.callback ) {
-            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
-        } else {
-            render subMenu as JSON
-        }
     }
 
 }

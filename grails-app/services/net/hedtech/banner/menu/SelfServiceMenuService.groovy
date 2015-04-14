@@ -15,6 +15,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 class SelfServiceMenuService {
     static transactional = true
     def sessionFactory
+    def configurationService
     private final log = Logger.getLogger(getClass())
 
     /**
@@ -26,6 +27,92 @@ class SelfServiceMenuService {
 
         processMenu(menuName, menuTrail, facultyPidm)
     }
+
+    def bannerMenuAppConcept(def menuName, def menuTrail, def facultyPidm) {
+
+        processMenuAppConcept(menuName, menuTrail, facultyPidm)
+    }
+
+
+    private def processMenuAppConcept(def menuName, def menuTrail, def pidm) {
+
+        def dataMap = []
+        def firstMenu = "Banner";
+
+        Sql sql
+        log.trace("Process Menu started for nenu:" + menuName)
+        sql = new Sql(sessionFactory.getCurrentSession().connection())
+        log.trace("SQL Connection:" + sql.useConnection.toString())
+
+        menuName = menuName ?: "bmenu.P_MainMnu"
+        def govroleCriteria
+        def govroles = []
+        def sqlQuery;
+        String pidmCondition = "twgrrole_pidm is NULL"
+        if (pidm) {
+            pidmCondition = "twgrrole_pidm = " + pidm
+            sql.eachRow("select govrole_student_ind, govrole_alumni_ind, govrole_employee_ind, govrole_faculty_ind, govrole_finance_ind ,govrole_friend_ind ,govrole_finaid_ind, govrole_bsac_ind from govrole where govrole_pidm = ? ", [pidm]) {
+                if (it.govrole_student_ind == "Y" )  govroles.add ("STUDENT")
+                if (it.govrole_faculty_ind == "Y" )  govroles.add ("FACULTY")
+                if (it.govrole_employee_ind == "Y" )  govroles.add ("EMPLOYEE")
+                if (it.govrole_alumni_ind == "Y" )  govroles.add ("ALUMNI")
+                if (it.govrole_finance_ind == "Y" )  govroles.add ("FINANCE")
+                if (it.govrole_finaid_ind == "Y" )  govroles.add ("FINAID")
+                if (it.govrole_friend_ind == "Y" )  govroles.add ("FRIEND")
+            }
+            if (govroles.size() > 0) {
+
+                govroles.each {
+                    if (it == govroles.first())
+                        govroleCriteria = "('" + it.value +"'"
+                    else
+                        govroleCriteria= govroleCriteria + " ,'" + it.value +"'"
+                }
+                govroleCriteria= govroleCriteria + ")"
+            }
+        }
+
+        sqlQuery = "select DISTINCT TWGRMENU_NAME,TWGRMENU_URL_TEXT,TWGRMENU_URL," +
+                "TWGRMENU_URL_DESC," +
+                "TWGRMENU_URL_IMAGE from twgrmenu a " +
+                " where  twgrmenu_enabled = 'Y'" +
+                " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
+                " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
+                " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
+                " where govrole_pidm = " + pidm +
+                " and  twgrwmrl_role in " +  govroleCriteria + "))" +
+                " and twgrmenu_url in ('" + configurationService.configuration?.selfServiceApps.join( "','" ) + "')"
+
+
+
+        def randomSequence = RandomUtils.nextInt(1000);
+
+        sql.eachRow(sqlQuery) {
+
+            def mnu = new SelfServiceMenu()
+            mnu.formName = it.twgrmenu_url
+            mnu.pageName = it.twgrmenu_url
+            mnu.name = it.twgrmenu_url_text
+            mnu.caption = toggleSeparator(it.twgrmenu_url_text)
+            mnu.pageCaption = mnu.caption
+            mnu.type = 'FORM'
+            mnu.menu = menuTrail ? menuTrail : firstMenu
+            mnu.parent = it.twgrmenu_name
+            mnu.url = it.twgrmenu_url
+            mnu.captionProperty = false
+
+
+            dataMap.add(mnu)
+
+        };
+
+
+        log.trace("ProcessMenu executed for Menu name:" + menuName)
+        return dataMap
+
+    }
+
+
 
     /**
      * This is returns map of all personal items based on user access
@@ -222,7 +309,7 @@ class SelfServiceMenuService {
 
         if (govroles.size() > 0)
             sqlQuery =  " select  TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL	,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED, TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND " +
-                    " from twgrmenu   where  (twgrmenu_name like  "+searchValWild+ " OR twgrmenu_url_text like "+searchValWild+ " OR twgrmenu_url_desc like "+searchValWild+")  and  twgrmenu_enabled = 'Y'  and twgrmenu_submenu_ind = 'N'  ORDER BY twgrmenu_name "
+                    " from twgrmenu   where  (twgrmenu_name like  " + searchValWild+ " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild+")  and  twgrmenu_enabled = 'Y'  and twgrmenu_submenu_ind = 'N'  ORDER BY twgrmenu_name "
 
         def randomSequence = RandomUtils.nextInt(1000);
 
@@ -249,7 +336,7 @@ class SelfServiceMenuService {
 
     }
 
-    def SearchMenuSSB(def searchVal, def pidm) {
+    def searchMenuAppConcept(def searchVal, def pidm) {
 
         def searchValWild = "\'%" +searchVal +"%\'"
         def dataMap = []
@@ -262,7 +349,9 @@ class SelfServiceMenuService {
         def govroleCriteria
         def govroles = []
         def sqlQuery;
+        String pidmCondition = "twgrrole_pidm is NULL"
         if (pidm) {
+            pidmCondition = "twgrrole_pidm = " + pidm
             sql.eachRow("select govrole_student_ind, govrole_alumni_ind, govrole_employee_ind, govrole_faculty_ind, govrole_finance_ind ,govrole_friend_ind ,govrole_finaid_ind, govrole_bsac_ind from govrole where govrole_pidm = ? ", [pidm]) {
                 if (it.govrole_student_ind == "Y" )  govroles.add ("STUDENT")
                 if (it.govrole_faculty_ind == "Y" )  govroles.add ("FACULTY")
@@ -284,29 +373,43 @@ class SelfServiceMenuService {
             }
         }
 
+
         if (govroles.size() > 0)
-            sqlQuery = "select TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED,TWGRMENU_DB_LINK_IND,TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME,TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND from twgrmenu a where twgrmenu_enabled = 'Y' and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where twgrrole_pidm = "+pidm+" and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole where govrole_pidm = "+pidm+" and twgrwmrl_role in ('FACULTY','EMPLOYEE' ,'ALUMNI' ,'FINANCE','STUDENT'))) and twgrmenu_url in ('http://m038214.sct.com:8080/BannerEventManagementSS/ssb/events', 'http://m038214.ellucian.com:8080/StudentRegistrationSsb/ssb/registration', 'http://m040145.ellucian.com:8089/StudentSSB/ssb/studentProfile')"
+
+        sqlQuery = "select DISTINCT TWGRMENU_NAME,TWGRMENU_URL_TEXT,TWGRMENU_URL," +
+                "TWGRMENU_URL_DESC," +
+                "TWGRMENU_URL_IMAGE from twgrmenu a " +
+                " where  twgrmenu_enabled = 'Y'" +
+                " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
+                " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
+                " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
+                " where govrole_pidm = " + pidm +
+                " and  twgrwmrl_role in " +  govroleCriteria + "))" +
+                " and twgrmenu_url in ('" + configurationService.configuration?.selfServiceApps.join( "','" ) + "')" +
+                " and  (twgrmenu_name like  " + searchValWild+ " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild + " OR UPPER(twgrmenu_url) like " + searchValWild.toUpperCase() + ")"
 
         def randomSequence = RandomUtils.nextInt(1000);
 
         sql.eachRow(sqlQuery) {
 
             def mnu = new SelfServiceMenu()
-            mnu.page = it.twgrmenu_submenu_ind == "Y" ? null : it.twgrmenu_url
-            mnu.name = it.twgrmenu_url_text
-            mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
-            mnu.caption = it.twgrmenu_url_text
+            mnu.formName = it.twgrmenu_url
+            mnu.pageName = it.twgrmenu_url
+            mnu.name = it.twgrmenu_url_text.toUpperCase()
+            mnu.caption = toggleSeparator(it.twgrmenu_url_text)
+            mnu.pageCaption = mnu.caption
+            mnu.type = 'FORM'
             mnu.menu = firstMenu
-            mnu.url = it.twgrmenu_db_link_ind == "Y" ? ConfigurationHolder?.config?.banner8?.SS?.url + it.twgrmenu_url : it.twgrmenu_url
-            mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
-            mnu.parent =it.twgrmenu_url
-            mnu.uiVersion =it.twgrmenu_db_link_ind == "Y" ? "banner8ss" : "banner9ss"
+            mnu.parent = it.twgrmenu_name
+            mnu.url = it.twgrmenu_url
+            mnu.captionProperty = false
+
 
             dataMap.add(mnu)
 
         };
 
-        log.trace("SearchMenuSSB executed for search criteria e:" + searchVal)
+        log.trace("ProcessMenu executed for search criteria e:" + searchVal)
         sql.connection.close()
         return dataMap
 
