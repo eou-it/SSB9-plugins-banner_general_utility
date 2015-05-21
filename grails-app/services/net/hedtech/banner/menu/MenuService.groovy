@@ -15,6 +15,7 @@ class MenuService {
     def menuAndToolbarPreferenceService
     def sessionFactory
     def grailsApplication
+    def workflowMenuService
     private final log = Logger.getLogger(getClass())
 
     /**
@@ -234,6 +235,19 @@ class MenuService {
         if (row == null) {
             sql.execute("Begin gukmenu.p_bld_prod_menu('MAG'); End;")
         }
+
+        //WF
+        if (searchVal.equals("WORKFLOW") ) {
+
+            def session = RequestContextHolder?.currentRequestAttributes()?.getSession()
+
+            if (session["clientID"]) {
+                def clientId = session["clientID"]
+                session["clientID"] = null
+                return workflowMenuService.processWorkflowRequest(clientId)
+            }
+        }
+        //END WF
 
         def searchValWild = "%" +searchVal +"%"
         sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_code, gubpage_name, gubmodu_url,gubmodu_code,gubmodu_plat_code  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?) order by gutmenu_objt_code, gutmenu_value",[searchValWild,searchValWild,searchValWild] ) {
