@@ -176,6 +176,11 @@ class CommonMenuController {
         if(searchVal){
             adminList = getAdminMenuSearchResults(searchVal)
             finalList.addAll(adminList)
+
+            //it only applies after workflow task
+            if (searchVal.equals("WORKFLOW")) {
+                clearWorkflowArguments()
+            }
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]
         //finalMenu = [ data: subMenu ]
@@ -460,7 +465,6 @@ class CommonMenuController {
                     } else {
                         if  (session["wf_args"]){ //Only first time invoked
                             def s = a.url +"?wf_args=" + session["wf_args"]
-                             session["wf_args"] = null //Clean it after the first call
                             finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: s,type: "PAGE",menu:a.menu)
                         }else{
                             finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu)
@@ -479,6 +483,10 @@ class CommonMenuController {
         } else {
             render "I am Alive"
         }
+    }
+
+    private def clearWorkflowArguments(){
+        if (session["wf_args"]) session["wf_args"] = null
     }
 
 }

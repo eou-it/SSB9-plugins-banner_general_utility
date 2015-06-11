@@ -26,36 +26,47 @@ class WorkflowMenuService {
                 """,[formName])
 
         //select only one row
-        sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_name, gubmodu_url, gubmodu_plat_code  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  gutmenu_value = ? and rownum = 1 order by gutmenu_objt_code, gutmenu_value",[formName] ) {
+        sql.call("{call gb_common.p_set_context( ?, ?, ?, ?)}", ['GUKMENU', 'OBJ_SECURITY', 'OFF', 'N'])
+
+        sql.eachRow("""select gubobjs_name, gubobjs_ui_version
+                       gubpage_name,
+                       gubmodu_url, gubmodu_plat_code
+                       from gubmodu, gubpage,gubobjs
+                       where gubobjs_name  = gubpage_code (+)
+                       AND  gubpage_gubmodu_code  = gubmodu_code (+)
+                       and gubobjs_name = ? and rownum = 1""", [formName]) {
+
             def mnu = new Menu()
             if (row?.gubmodu_url) {
-                mnu.formName = it.gutmenu_value
-            }else{
+                mnu.formName = it.gubobjs_name
+            } else {
                 mnu.formName = 'GUAINIT'
             }
-            //mnu.formName = it.gutmenu_value
-            mnu.name = it.gutmenu_value
+            mnu.formName = it.gubobjs_name
+            mnu.name = it.gubobjs_name
             if (row?.gubmodu_url) {
-                mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? it.gutmenu_value : it.gubpage_name
-            }else{
+                mnu.page = it.gubobjs_name
+            } else {
                 mnu.page = 'GUAINIT'
             }
-            mnu.menu = null
-            mnu.level = it.gutmenu_level
-            mnu.seq = it.gutmenu_seq_no
-            mnu.type = it.gutmenu_objt_code
-            mnu.parent = it.gutmenu_prior_obj
-            mnu.url = row?.gubmodu_url?row?.gubmodu_url:it.gubmodu_url
+
+            mnu.type = 'FORM'
+
+            mnu.url = row?.gubmodu_url ? row?.gubmodu_url : it.gubmodu_url
             if (row?.gubmodu_url) {
                 mnu.uiVersion = "bannerXEadmin"
-            }else {
+            } else {
                 mnu.uiVersion = "banner8admin"
             }
             mnu.platCode = it.gubmodu_plat_code
 
-            dataMap.add( mnu )
+            dataMap.add(mnu)
+
         }
+
         log.debug( "Workflow Load executed" )
+
+        sql.call("{call gb_common.p_set_context( ?, ?, ?, ?)}", ['GUKMENU', 'OBJ_SECURITY', 'ON', 'N'])
 
         return dataMap
     }
