@@ -449,7 +449,7 @@ class CommonMenuController {
         List finalList = []
         list.each {a ->
             if (a.type == "MENU")
-                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+type+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
+                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+type+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
 
             if (a.type == "FORM" ){
                 if (a.uiVersion =="banner8admin")
