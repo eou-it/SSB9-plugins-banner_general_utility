@@ -259,6 +259,7 @@ class MenuService {
             mnu.menu = it.gubpage_code
             if (it.gutmenu_desc != null)  {
                 mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+                mnu.pageCaption = mnu.caption
                 if (mnuPrf)
                     mnu.caption = mnu.caption + " (" + mnu.name + ")"
             }
@@ -269,6 +270,8 @@ class MenuService {
             mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
             mnu.platCode = it.gubmodu_plat_code
             mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
+            mnu.captionProperty = mnuPrf
+
             dataMap.add( mnu )
         }
         log.debug( "GotoMenu executed" )
@@ -313,6 +316,7 @@ class MenuService {
                 mnu.menu = it.gubpage_code
                 if (it.gutmenu_desc != null)  {
                     mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+                    mnu.pageCaption = mnu.caption
                     if (mnuPrf)
                         mnu.caption = mnu.caption + " (" + mnu.name + ")"
                 }
@@ -324,6 +328,7 @@ class MenuService {
                 mnu.platCode = it.gubmodu_plat_code
                 mnu.seq = it.gutmenu_seq_no
                 mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
+                mnu.captionProperty = mnuPrf
                 dataMap.add(mnu)
             }
         });
@@ -374,9 +379,10 @@ class MenuService {
             mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? page : it.gubpage_name
             //mnu.page = it.gubpage_name
             mnu.menu = it.gubpage_code
-            if (it.gutpmnu_label != null)
+            if (it.gutpmnu_label != null) {
                 mnu.caption = it.gutpmnu_label.replaceAll(/\&/, "&amp;")
-
+                mnu.pageCaption = mnu.caption
+            }
             if (mnuPrf)
                 mnu.caption = mnu.caption + " (" + mnu.name + ")"
 
@@ -388,6 +394,7 @@ class MenuService {
             mnu.module = it.gubmodu_name
             mnu.seq = it.gutpmnu_seq_no
             mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
+            mnu.captionProperty = mnuPrf
             dataMap.add(mnu)
             //}
         });
