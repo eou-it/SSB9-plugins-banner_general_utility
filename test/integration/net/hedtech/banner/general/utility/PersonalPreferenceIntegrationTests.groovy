@@ -5,12 +5,8 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  
 package net.hedtech.banner.general.utility
 
-import net.hedtech.banner.testing.BaseIntegrationTestCase 
-import net.hedtech.banner.general.utility.PersonalPreference
-
-import grails.test.GrailsUnitTestCase
-import groovy.sql.Sql 
-import org.hibernate.annotations.OptimisticLock
+import net.hedtech.banner.testing.BaseIntegrationTestCase
+import groovy.sql.Sql
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

@@ -7,8 +7,6 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.springframework.security.core.context.SecurityContextHolder
-
 
 class MenuAndToolbarPreferenceServiceIntegrationTests extends BaseIntegrationTestCase {
 
