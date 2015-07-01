@@ -401,6 +401,7 @@ class SupplementalDataService {
         }
     }
 
+    // TODO As it is a valid pattern to have manyToOne mapping of Domain class and the table, tit is appropriate to return the list of Domain classes instead of the first match.
 
     public String getMappedDomain(String tableName) {
 
