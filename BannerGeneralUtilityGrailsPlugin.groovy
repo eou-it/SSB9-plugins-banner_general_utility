@@ -1,5 +1,5 @@
 class BannerGeneralUtilityGrailsPlugin {
-    String version = "2.5.1"
+    String version = "2.10.4"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2.1 > *"
