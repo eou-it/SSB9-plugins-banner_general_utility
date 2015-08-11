@@ -1,5 +1,6 @@
 package net.hedtech.banner.supplemental
 
+import grails.util.Holders
 import groovy.sql.Sql
 
 import org.apache.log4j.Logger
@@ -8,7 +9,6 @@ import java.text.SimpleDateFormat
 import java.text.ParseException
 import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import net.hedtech.banner.supplemental.SupplementalPropertyDiscriminatorContent
@@ -41,7 +41,7 @@ class SupplementalDataService {
         if (id == null || id.indexOf("Block") < 0)
             return false
 
-        ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+        ApplicationContext ctx = (ApplicationContext) Holders.getGrailsApplication().getMainContext()
         grailsApplication = (GrailsApplication) ctx.getBean("grailsApplication")
 
         def domainClass = grailsApplication.getArtefactByLogicalPropertyName("Domain", id.substring(0, id.indexOf("Block")))
@@ -325,7 +325,7 @@ class SupplementalDataService {
              */
             if (lovValidation == 'LOV_VALIDATION') {
                 log.debug("Querying for $lovForm for Table Metadata")
-                Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+                Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
                 String query = "select * from " + lovTable
                 sql.query(query) { rs ->
                     def meta = rs.metaData
@@ -444,7 +444,7 @@ class SupplementalDataService {
             }
 
             staticLogger.debug("Querying on SDE Lookup Table started")
-            Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+            Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
 
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
@@ -479,7 +479,7 @@ class SupplementalDataService {
             }
 
             staticLogger.debug("Querying on SDE Lookup Table started")
-            Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+            Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
 
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
@@ -523,7 +523,7 @@ class SupplementalDataService {
             }
 
             staticLogger.debug("Querying on SDE Lookup Table started")
-            Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+            Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
 
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
@@ -557,7 +557,7 @@ class SupplementalDataService {
     def getDomainPropertyNames (Class domainClass, tableColumnNames) {
         def columnMappings = [:]
 
-        def metadata = ApplicationHolder.getApplication().getMainContext().sessionFactory.getClassMetadata(domainClass)
+        def metadata = Holders.getGrailsApplication().getMainContext().sessionFactory.getClassMetadata(domainClass)
         metadata.getPropertyNames().eachWithIndex { propertyName, i ->
             try {
                 columnMappings[propertyName] = metadata.getPropertyColumnNames(i)[0]

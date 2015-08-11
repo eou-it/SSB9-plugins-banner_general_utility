@@ -2,8 +2,11 @@ grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 
-grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
+//grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
 grails.plugin.location.'banner-core'="../banner_core.git"
+
+grails.project.dependency.resolver = "maven"
+
 grails.project.dependency.resolution = {
 
     inherits( "global" ) {
