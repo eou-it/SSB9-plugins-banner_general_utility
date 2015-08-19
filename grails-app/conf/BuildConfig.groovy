@@ -3,7 +3,6 @@ grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 
 grails.plugin.location.'banner-core'="../banner_core.git"
-grails.plugin.location.'grails-constraints' = "plugins/grails_constraints.git"
 
 grails.project.dependency.resolver = "maven"
 
