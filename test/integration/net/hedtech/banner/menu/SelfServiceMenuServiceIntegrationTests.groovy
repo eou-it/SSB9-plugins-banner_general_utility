@@ -6,6 +6,7 @@ package net.hedtech.banner.menu
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 
 class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
@@ -38,7 +39,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         assert map.size() > 0
     }
 
-    @Test
+    @Ignore /* Adding Ignore as the method combinedMenu does not exist in selfServiceMenuService*/
     void testSelfServiceCombinedMenuMenu() {
         def map
         map = selfServiceMenuService.combinedMenu(null,null,null)
@@ -50,7 +51,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     }
 
-    @Test
+    @Ignore       /* Adding Ignore as the method searchMenuSSB does not exist in selfServiceMenuService*/
     void testSelfServiceSearchMenu() {
         def list
         def pidm

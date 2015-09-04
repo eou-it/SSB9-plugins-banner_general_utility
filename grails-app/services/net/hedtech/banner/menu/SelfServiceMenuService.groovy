@@ -16,7 +16,7 @@ class SelfServiceMenuService {
     static transactional = true
     def sessionFactory
     def configurationService
-    private final log = Logger.getLogger(getClass())
+    private static final Logger log = Logger.getLogger(getClass())
 
     /**
      * This is returns map of all menu items based on user access
