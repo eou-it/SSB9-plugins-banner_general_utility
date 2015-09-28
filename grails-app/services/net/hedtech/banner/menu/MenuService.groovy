@@ -15,6 +15,7 @@ class MenuService {
     def menuAndToolbarPreferenceService
     def sessionFactory
     def grailsApplication
+    def workflowMenuService
     private final log = Logger.getLogger(getClass())
 
     /**
@@ -235,6 +236,19 @@ class MenuService {
             sql.execute("Begin gukmenu.p_bld_prod_menu('MAG'); End;")
         }
 
+        //WF
+        if (searchVal.equals("WORKFLOW") ) {
+
+            def session = RequestContextHolder?.currentRequestAttributes()?.getSession()
+
+            if (session["clientID"]) {
+                def clientId = session["clientID"]
+                session["clientID"] = null
+                return workflowMenuService.processWorkflowRequest(clientId)
+            }
+        }
+        //END WF
+
         def searchValWild = "%" +searchVal +"%"
         sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_code, gubpage_name, gubmodu_url,gubmodu_code,gubmodu_plat_code  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?) order by gutmenu_objt_code, gutmenu_value",[searchValWild,searchValWild,searchValWild] ) {
             def mnu = new Menu()
@@ -245,6 +259,7 @@ class MenuService {
             mnu.menu = it.gubpage_code
             if (it.gutmenu_desc != null)  {
                 mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+                mnu.pageCaption = mnu.caption
                 if (mnuPrf)
                     mnu.caption = mnu.caption + " (" + mnu.name + ")"
             }
@@ -255,6 +270,8 @@ class MenuService {
             mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
             mnu.platCode = it.gubmodu_plat_code
             mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
+            mnu.captionProperty = mnuPrf
+
             dataMap.add( mnu )
         }
         log.debug( "GotoMenu executed" )
@@ -299,6 +316,7 @@ class MenuService {
                 mnu.menu = it.gubpage_code
                 if (it.gutmenu_desc != null)  {
                     mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+                    mnu.pageCaption = mnu.caption
                     if (mnuPrf)
                         mnu.caption = mnu.caption + " (" + mnu.name + ")"
                 }
@@ -310,6 +328,7 @@ class MenuService {
                 mnu.platCode = it.gubmodu_plat_code
                 mnu.seq = it.gutmenu_seq_no
                 mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
+                mnu.captionProperty = mnuPrf
                 dataMap.add(mnu)
             }
         });
@@ -360,9 +379,10 @@ class MenuService {
             mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? page : it.gubpage_name
             //mnu.page = it.gubpage_name
             mnu.menu = it.gubpage_code
-            if (it.gutpmnu_label != null)
+            if (it.gutpmnu_label != null) {
                 mnu.caption = it.gutpmnu_label.replaceAll(/\&/, "&amp;")
-
+                mnu.pageCaption = mnu.caption
+            }
             if (mnuPrf)
                 mnu.caption = mnu.caption + " (" + mnu.name + ")"
 
@@ -374,6 +394,7 @@ class MenuService {
             mnu.module = it.gubmodu_name
             mnu.seq = it.gutpmnu_seq_no
             mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
+            mnu.captionProperty = mnuPrf
             dataMap.add(mnu)
             //}
         });
