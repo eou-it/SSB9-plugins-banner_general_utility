@@ -230,7 +230,7 @@ class MenuService {
         sql.eachRow("SELECT DISTINCT GUBOBJS_NAME, GUBOBJS_DESC, GURCALL_FORM FROM GUBOBJS, GURCALL WHERE (UPPER(GUBOBJS_NAME) LIKE ? OR UPPER(GUBOBJS_DESC) LIKE ?) AND GURCALL_CALL_CODE = GUBOBJS_NAME AND GUBOBJS_OBJT_CODE = 'QUICKFLOW' and gurcall_seqno = 1", [searchValWild, searchValWild])  {
             def mnu = new Menu()
             mnu.name = it.gubobjs_name
-            mnu.page = it.gubobjs_name
+            mnu.page = "GUAQFLW"
             mnu.menu = "QUICKFLOW"
             if (it.gubobjs_desc != null)  {
                 mnu.caption = it.gubobjs_desc.replaceAll(/\&/, "&amp;")
