@@ -26,6 +26,7 @@ class CommonMenuController {
     static final String MENU_TYPE_BANNER = "Banner"
     static final String MENU_TYPE_PERSONAL = "Personal"
     static final String BANNER_HS_PARENT = "bannerHS"
+    static final String BANNER_INB_PARENT = "banner8admin"
     static final String ZK_PLATFORM_CODE = "ADMZK"
 //    static final String MENU_TYPE_SELF_SERVICE = "SelfService"
     static final String MY_BANNER_TITLE = "My Banner"
@@ -167,6 +168,7 @@ class CommonMenuController {
         Map subMenu
         Map finalMenu
         List adminList
+        List quickFlowList
         List finalList = []
         String searchVal
         String callback = XssSanitizer.sanitize(params.callback)
@@ -176,7 +178,8 @@ class CommonMenuController {
         if(searchVal){
             adminList = getAdminMenuSearchResults(searchVal)
             finalList.addAll(adminList)
-
+            quickFlowList = getQuickFlowSearchResults(searchVal)
+            finalList.addAll(quickFlowList)
             //it only applies after workflow task
             if (searchVal.equals("WORKFLOW")) {
                 clearWorkflowArguments()
@@ -399,6 +402,14 @@ class CommonMenuController {
     }
 
 
+    private def getQuickFlowSearchResults(searchVal){
+
+        List list = menuService.quickFlowMenu(searchVal)
+        list = removeDuplicateEntries(list)
+        list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
+        return composeMenuStructure(list, MENU_TYPE_BANNER)
+    }
+
     private def getAdminMenuSearchResults(searchVal){
 
         List list = menuService.gotoCombinedMenu(searchVal)
@@ -470,6 +481,14 @@ class CommonMenuController {
                             finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                         }
                     }
+            }
+
+            if(a.type == 'QUICKFLOW') {
+                if (a.parent =="banner8admin")    {
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_INB_PARENT,url: getBannerInbUrl() + "?otherParams=launch_form=GUAQFLW+ban_args=callcode::"+a.name+"::{{params}}+ban_mode=xe",type: "QUICKFLOW",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                } else {
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form=GUAQFLW&ban_args=callcode::"+a.name+"::{{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                }
             }
         }
         return finalList

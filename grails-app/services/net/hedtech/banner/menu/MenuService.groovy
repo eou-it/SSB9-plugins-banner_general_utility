@@ -216,6 +216,51 @@ class MenuService {
         return dataMap
     }
 
+    def quickFlowMenu( String searchVal) {
+        searchVal = searchVal.toUpperCase()
+        def dataMap = []
+        log.debug("QuickFlow menu search started")
+
+        def mnuPrf = getMnuPref()
+        def searchValWild = "%" +searchVal +"%"
+
+        Sql sql = new Sql( sessionFactory.getCurrentSession().connection() )
+        log.debug( sql.useConnection.toString() )
+
+        sql.eachRow("SELECT DISTINCT GUBOBJS_NAME, GUBOBJS_DESC, GURCALL_FORM FROM GUBOBJS, GURCALL WHERE (UPPER(GUBOBJS_NAME) LIKE ? OR UPPER(GUBOBJS_DESC) LIKE ?) AND GURCALL_CALL_CODE = GUBOBJS_NAME AND GUBOBJS_OBJT_CODE = 'QUICKFLOW' and gurcall_seqno = 1", [searchValWild, searchValWild])  {
+            def mnu = new Menu()
+            mnu.name = it.gubobjs_name
+            mnu.page = it.gubobjs_name
+            mnu.menu = "QUICKFLOW"
+            if (it.gubobjs_desc != null)  {
+                mnu.caption = it.gubobjs_desc.replaceAll(/\&/, "&amp;")
+                mnu.pageCaption = mnu.caption
+            }
+            mnu.type = "QUICKFLOW"
+            def uiVersion = getUiVersionForForm(it.gurcall_form)
+            mnu.parent = ((uiVersion == "B") || (it.uiVersion == "A")) ? "banner8admin" : "bannerHS"    // usually "banner8admin" or "bannerHS" to represent the Iframe in which it needs to be opened
+            mnu.uiVersion = ((uiVersion == "B") || (it.uiVersion == "A")) ? "banner8admin" : "bannerHS"
+            mnu.captionProperty = mnuPrf
+
+            dataMap.add( mnu )
+        }
+
+        log.debug( "QuickFlow menu search executed" )
+        return dataMap
+    }
+
+    String getUiVersionForForm(String page) {
+        Sql sql = new Sql( sessionFactory.getCurrentSession().connection() )
+        log.debug( sql.useConnection.toString() )
+
+        String uiVersion
+
+        sql.eachRow("select gubobjs_ui_version from gubobjs where gubobjs_name = ?", [page]) {
+            uiVersion =  it.gubobjs_ui_version
+        }
+
+        return uiVersion
+    }
     /**
      * This returns map of all menu item for searching in goto
      * @return Map of menu objects that a user has access
