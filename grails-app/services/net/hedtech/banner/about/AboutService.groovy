@@ -27,6 +27,9 @@ class AboutService {
         loadResourcePropertiesFile();
 
         about['api.title'] = getMessage("about.banner.title")
+
+        about[getMessage("about.banner.application.name")] = formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
+        about[getMessage("about.banner.application.version")] = resourceProperties.getProperty("application.version")
         about[getMessage("about.banner.tab.general")] = getAppInfo()
 
         about[getMessage("about.banner.plugins")] = getPluginsInfo("(banner|i18nCore|sgheZkCore).*")
@@ -81,8 +84,6 @@ class AboutService {
     private Map getAppInfo() {
         def appInfo = [:]
         if (resourceProperties) {
-            appInfo[getMessage("about.banner.application.name")] = formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
-            appInfo[getMessage("about.banner.application.version")] = resourceProperties.getProperty("application.version")
             appInfo[getMessage("about.banner.application.build.number")] = resourceProperties.getProperty("application.build.number")
             appInfo[getMessage("about.banner.application.build.time")] = resourceProperties.getProperty("application.build.time");
             //def appName = grailsApplication.metadata['app.name']
@@ -131,7 +132,11 @@ class AboutService {
     }
 
     private String formatCamelCaseToEnglish(value) {
-        value.replaceAll(/(\B[A-Z])/, ' $1').replaceAll("banner", "Banner")
+        if(value) {
+            value.replaceAll(/(\B[A-Z])/, ' $1').replaceAll("banner", "Banner")
+        } else{
+            value
+        }
     }
 
     private String getMessage(String key) {
