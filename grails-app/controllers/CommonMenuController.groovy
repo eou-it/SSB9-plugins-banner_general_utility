@@ -15,6 +15,7 @@ class CommonMenuController {
     def selfServiceMenuService
     def personalPreferenceService
     def grailsApplication
+    def jobsMenuService
 
     private final log = Logger.getLogger(getClass())
 
@@ -27,6 +28,10 @@ class CommonMenuController {
     static final String MENU_TYPE_PERSONAL = "Personal"
     static final String BANNER_HS_PARENT = "bannerHS"
     static final String ZK_PLATFORM_CODE = "ADMZK"
+    static final String MENU_TYPE = "MENU"
+    static final String FORM_TYPE = "FORM"
+    static final String JOB_TYPE = "JOBS"
+    static final String QUICKFLOW_TYPE = "QUICKFLOW"
 //    static final String MENU_TYPE_SELF_SERVICE = "SelfService"
     static final String MY_BANNER_TITLE = "My Banner"
     static final String SSB_BANNER_TITLE = "Banner Self-Service"
@@ -451,6 +456,8 @@ class CommonMenuController {
     }
 
     private def composeMenuStructure(list, type){
+        def javaFormsURL = jobsMenuService.getPlatCodeJavaFormsUrl()
+
         List finalList = []
         list.each {a ->
             if (a.type == "MENU")
@@ -470,6 +477,18 @@ class CommonMenuController {
                             finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                         }
                     }
+            }else if(a.type == JOB_TYPE){
+                if (!javaFormsURL) {
+                    finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                } else{
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: javaFormsURL +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                }
+            } else if(a.type == QUICKFLOW_TYPE){
+                if (!javaFormsURL) {  //TO DO get the QF url, it uses now GJAPCTL setting+
+                    finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                } else{
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: javaFormsURL +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                }
             }
         }
         return finalList
