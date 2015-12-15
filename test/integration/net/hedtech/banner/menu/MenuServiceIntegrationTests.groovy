@@ -13,6 +13,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def menuService
     def gubmoduIntegrationValue = 'N'
+    def grailsApplication
 
     @Before
     public void setUp() {
@@ -105,6 +106,20 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull mnu.platCode
         assert mnu.formName == "SCACRSE"
     }
+
+    @Test
+    void testSearchExcludeObjects() {
+        grailsApplication.config?.excludeObjectsFromSearch = [
+                "GUAGMNU",'GUAINIT','FOQMENU','SOQMENU','TOQMENU','AOQMEMU','GOQMENU','ROQMENU','NOQMENU','POQMENU','GUQSETI'
+        ]
+
+        ArrayList map = menuService.gotoCombinedMenu('GUAINIT')
+        assertNull map[0]
+
+        map = menuService.gotoCombinedMenu('GTVZIPC')
+        assertNotNull map[0]
+    }
+
 
     private def dataSetup() {
         def sql = new Sql(sessionFactory.getCurrentSession().connection())

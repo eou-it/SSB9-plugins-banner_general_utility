@@ -252,7 +252,7 @@ class MenuService {
 
         def searchValWild = "%" +searchVal +"%"
         //exclusion list from the search
-        def excludeList = configurationService.configuration?.excludeObjectsFromSearch? configurationService.configuration?.excludeObjectsFromSearch?.join( "','" ): "NOT_FOUND"
+        def excludeList = grailsApplication.config?.excludeObjectsFromSearch? grailsApplication.config?.excludeObjectsFromSearch?.join( "','" ): "NOT_FOUND"
 
         sql.eachRow("""
                        select * from (
