@@ -109,7 +109,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testSearchExcludeObjects() {
-        grailsApplication.config?.excludeObjectsFromSearch = [
+        grailsApplication.config?.seamless?.excludeObjectsFromSearch = [
                 "GUAGMNU",'GUAINIT','FOQMENU','SOQMENU','TOQMENU','AOQMEMU','GOQMENU','ROQMENU','NOQMENU','POQMENU','GUQSETI'
         ]
 

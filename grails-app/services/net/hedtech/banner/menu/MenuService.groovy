@@ -3,6 +3,7 @@
  ****************************************************************************** */
 package net.hedtech.banner.menu
 
+import grails.util.Holders
 import net.hedtech.banner.utility.GeneralMenu
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
@@ -252,7 +253,7 @@ class MenuService {
 
         def searchValWild = "%" +searchVal +"%"
         //exclusion list from the search
-        def excludeList = grailsApplication.config?.excludeObjectsFromSearch? grailsApplication.config?.excludeObjectsFromSearch?.join( "','" ): "NOT_FOUND"
+        def excludeList = grailsApplication.config?.seamless?.excludeObjectsFromSearch? grailsApplication.config?.seamless?.excludeObjectsFromSearch?.join( "','" ): "NOT_FOUND"
 
         sql.eachRow("""
                        select * from (
