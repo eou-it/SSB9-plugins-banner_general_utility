@@ -216,7 +216,44 @@ class MenuService {
         return dataMap
     }
 
-    def quickFlowMenu( String searchVal) {
+    def quickflowMenu() {
+        def dataMap = []
+        def mnuPrf = getMnuPref()
+        Sql sql
+        log.debug("Process Quickflow Menu started")
+        sql = new Sql(sessionFactory.getCurrentSession().connection())
+        log.debug(sql.useConnection.toString())
+        // this query determines if the data is in the temporary table for the database session
+        def row = sql.firstRow('select 1 from gutmenu')
+        //if the data is not found then load it again by running the menu package
+        if (row == null) {
+            sql.execute("Begin gukmenu.p_bld_prod_menu('MAG'); End;")
+        }
+        sql.eachRow("select * from GUTMENU, GUBOBJS WHERE GUBOBJS_OBJT_CODE = 'QUICKFLOW' " +
+                " and gubobjs_name = GUTMENU_VALUE " +
+                " order by gutmenu_seq_no", {
+            def mnu = new Menu()
+                mnu.name = it.gutmenu_value
+                mnu.page = it.gutmenu_value
+                if (it.gutmenu_desc != null)  {
+                    mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+                    mnu.pageCaption = mnu.caption
+                    if (mnuPrf)
+                        mnu.caption = mnu.caption + " (" + mnu.name + ")"
+                }
+                mnu.level = it.gutmenu_level
+                mnu.type = it.gutmenu_objt_code
+                mnu.parent = it.gutmenu_prior_obj
+                mnu.seq = it.gutmenu_seq_no
+                mnu.captionProperty = mnuPrf
+                dataMap.add(mnu)
+        });
+        log.debug("Process Quickflow Menu executed" )
+        return dataMap
+    }
+
+
+    def quickFlowSearch( String searchVal) {
         searchVal = searchVal.toUpperCase()
         def dataMap = []
         log.debug("QuickFlow menu search started")
@@ -230,16 +267,16 @@ class MenuService {
         sql.eachRow("SELECT DISTINCT GUBOBJS_NAME, GUBOBJS_DESC, GURCALL_FORM FROM GUBOBJS, GURCALL WHERE (UPPER(GUBOBJS_NAME) LIKE ? OR UPPER(GUBOBJS_DESC) LIKE ?) AND GURCALL_CALL_CODE = GUBOBJS_NAME AND GUBOBJS_OBJT_CODE = 'QUICKFLOW' and gurcall_seqno = 1", [searchValWild, searchValWild])  {
             def mnu = new Menu()
             mnu.name = it.gubobjs_name
-            mnu.page = "GUAQFLW"
+            mnu.page = it.gubobjs_name
             mnu.menu = "QUICKFLOW"
             if (it.gubobjs_desc != null)  {
                 mnu.caption = it.gubobjs_desc.replaceAll(/\&/, "&amp;")
                 mnu.pageCaption = mnu.caption
             }
             mnu.type = "QUICKFLOW"
+
             def uiVersion = getUiVersionForForm(it.gurcall_form)
-            mnu.parent = ((uiVersion == "B") || (it.uiVersion == "A")) ? "banner8admin" : "bannerHS"    // usually "banner8admin" or "bannerHS" to represent the Iframe in which it needs to be opened
-            mnu.uiVersion = ((uiVersion == "B") || (it.uiVersion == "A")) ? "banner8admin" : "bannerHS"
+            mnu.uiVersion = ((uiVersion == "B") || (uiVersion == "A")) ? "banner8admin" : "bannerHS"
             mnu.captionProperty = mnuPrf
 
             dataMap.add( mnu )
