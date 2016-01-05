@@ -15,6 +15,7 @@ class CommonMenuController {
     def selfServiceMenuService
     def personalPreferenceService
     def grailsApplication
+    def quickFlowMenuService
 
     private final log = Logger.getLogger(getClass())
 
@@ -175,6 +176,7 @@ class CommonMenuController {
 
         if(request.parameterMap["q"])
             searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
+        //TODO: If we add the behaviour for only quickflow serach if just need to check the parameter value and based on that call the correct method.
         if(searchVal){
             adminList = getAdminMenuSearchResults(searchVal)
             finalList.addAll(adminList)
@@ -213,7 +215,7 @@ class CommonMenuController {
         log.debug("Menu Controller getmenu")
         if (session[COMBINED_MENU_LIST] == null) {
             list = menuService.bannerCombinedMenu()
-            list.addAll(menuService.quickflowMenu())
+            list.addAll(quickFlowMenuService.quickflowMenu())
             session[COMBINED_MENU_LIST] = list
         }
         else {
@@ -406,7 +408,7 @@ class CommonMenuController {
 
     private def getQuickFlowSearchResults(searchVal){
 
-        List list = menuService.quickFlowSearch(searchVal)
+        List list = quickFlowMenuService.quickFlowSearch(searchVal)
         list = removeDuplicateEntries(list)
         list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
         return composeMenuStructure(list, MENU_TYPE_BANNER)
