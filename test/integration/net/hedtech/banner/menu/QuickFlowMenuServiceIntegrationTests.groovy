@@ -20,9 +20,16 @@ class QuickFlowMenuServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    void testQuickFlowSearch() {
+    void testQuickFlowSearchWithInbForm() {
         def map
         map = quickFlowMenuService.quickFlowSearch ('CAT')
+        assert map?.size() > 0
+    }
+
+    @Test
+    void testQuickFlowSearchWithHsForm() {
+        def map
+        map = quickFlowMenuService.quickFlowSearch ('CATR')
         assert map?.size() > 0
     }
 
@@ -30,6 +37,13 @@ class QuickFlowMenuServiceIntegrationTests extends BaseIntegrationTestCase {
     void testQuickflowMenu() {
         def map
         map = quickFlowMenuService.quickflowMenu ()
+        assert map.size() > 0
+    }
+
+    @Test
+    void testQuickflowPersonalMenu() {
+        def map
+        map = quickFlowMenuService.quickflowPersonalMenu()
         assert map.size() > 0
     }
 

@@ -359,6 +359,7 @@ class CommonMenuController {
         String personalMenuList = pidm ? PERSONAL_COMBINED_MENU_LIST + pidm : PERSONAL_COMBINED_MENU_LIST
         if (session[personalMenuList] == null) {
             list = menuService.personalCombinedMenu()
+            list.addAll(quickFlowMenuService.quickflowPersonalMenu())
             session[personalMenuList] = list
         }
         else {
