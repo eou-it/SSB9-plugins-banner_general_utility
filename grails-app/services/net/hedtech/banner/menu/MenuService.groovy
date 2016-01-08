@@ -250,26 +250,48 @@ class MenuService {
         //END WF
 
         def searchValWild = "%" +searchVal +"%"
-        sql.eachRow("select distinct gutmenu_value,gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,gutmenu_objt_code,gutmenu_desc,gubpage_code, gubpage_name, gubmodu_url,gubmodu_code,gubmodu_plat_code  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?) AND gutmenu_objt_code IN ('FORM', 'MENU', 'JOBS') order by gutmenu_objt_code, gutmenu_value",[searchValWild,searchValWild,searchValWild] ) {
+        //exclusion list from the search
+        def excludeList = grailsApplication.config?.seamless?.excludeObjectsFromSearch? grailsApplication.config?.seamless?.excludeObjectsFromSearch?.join( "','" ): "NOT_FOUND"
+
+        sql.eachRow("""
+                       select * from (
+                       select distinct DECODE(gutmenu_value,gutmenu_value,a.gubobjs_name) value,
+                       gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,DECODE(gutmenu_objt_code,gutmenu_objt_code,a.gubobjs_objt_code) objt_code,
+                       DECODE(gutmenu_desc,gutmenu_desc,a.gubobjs_desc) description,
+                       gubpage_code, gubpage_name, gubmodu_url,gubmodu_code,gubmodu_plat_code
+                       from gutmenu,gubmodu, gubpage,gubobjs a
+                       where gutmenu_value  = gubpage_code (+)
+                       AND  a.gubobjs_name = gutmenu_value(+)
+                       and gubpage_gubmodu_code  = gubmodu_code(+)
+                       )
+                       WHERE  (upper(value) like ?
+                       OR upper(description) like ? OR upper(gubpage_name) like ?)
+                       AND (( objt_code = 'MENU' AND GUTMENU_LEVEL is not null) OR objt_code IN ('FORM','QUICKFLOW','JOBS'))
+                       AND (upper(value)) NOT IN ('""" + excludeList + "')" +
+                " order by objt_code, value"
+                ,[searchValWild,searchValWild,searchValWild] ) {
+
             def mnu = new Menu()
-            mnu.formName = it.gutmenu_value
-            mnu.name = it.gutmenu_value
-            mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? it.gutmenu_value : it.gubpage_name
+            mnu.formName = it.value
+            mnu.name = it.value
+            mnu.page = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? it.value : it.gubpage_name
             //mnu.page = it.gubpage_name
             mnu.menu = it.gubpage_code
-            if (it.gutmenu_desc != null)  {
-                mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+            if (it.description != null)  {
+                mnu.caption = it.description.replaceAll(/\&/, "&amp;")
                 mnu.pageCaption = mnu.caption
                 if (mnuPrf)
                     mnu.caption = mnu.caption + " (" + mnu.name + ")"
             }
             mnu.level = it.gutmenu_level
-            mnu.seq = it.gutmenu_seq_no
-            mnu.type = it.gutmenu_objt_code
+            mnu.seq = it.gutmenu_seq_no ?: 0
+            mnu.type = it.objt_code
             mnu.parent = it.gutmenu_prior_obj
-            mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
+            if(mnu.type != 'QUICKFLOW') {
+                mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
+                mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
+            }
             mnu.platCode = it.gubmodu_plat_code
-            mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
             mnu.captionProperty = mnuPrf
 
             dataMap.add( mnu )

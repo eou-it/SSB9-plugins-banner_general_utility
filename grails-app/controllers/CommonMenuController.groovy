@@ -167,7 +167,6 @@ class CommonMenuController {
     def search = {
 
         Map subMenu
-        Map finalMenu
         List adminList
         List quickFlowList
         List finalList = []
@@ -176,20 +175,24 @@ class CommonMenuController {
 
         if(request.parameterMap["q"])
             searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
-        //TODO: If we add the behaviour for only quickflow serach if just need to check the parameter value and based on that call the correct method.
-        if(searchVal){
-            adminList = getAdminMenuSearchResults(searchVal)
-            finalList.addAll(adminList)
-            quickFlowList = getQuickFlowSearchResults(searchVal)
+
+        if(searchVal && searchVal.length() < 3) {
+            quickFlowList = quickFlowMenuService.quickFlowLessThan3CharSearch(searchVal)
             finalList.addAll(quickFlowList)
             finalList = removeDuplicateEntries(finalList)
-            //it only applies after workflow task
-            if (searchVal.equals("WORKFLOW")) {
-                clearWorkflowArguments()
+        } else {
+            if(searchVal){
+                adminList = getAdminMenuSearchResults(searchVal)
+                finalList.addAll(adminList)
+                finalList = removeDuplicateEntries(finalList)
+                //it only applies after workflow task
+                if (searchVal.equals("WORKFLOW")) {
+                    clearWorkflowArguments()
+                }
             }
         }
+
         subMenu = [ name:"root", caption:"root", items: finalList ]
-        //finalMenu = [ data: subMenu ]
         // Support JSON-P callback
         if( callback ) {
             render text: "${callback} && ${callback}(${subMenu as JSON});", contentType: "text/javascript"
@@ -215,7 +218,6 @@ class CommonMenuController {
         log.debug("Menu Controller getmenu")
         if (session[COMBINED_MENU_LIST] == null) {
             list = menuService.bannerCombinedMenu()
-            list.addAll(quickFlowMenuService.quickflowMenu())
             session[COMBINED_MENU_LIST] = list
         }
         else {
@@ -406,15 +408,6 @@ class CommonMenuController {
         return composeMenuStructure(list, MENU_TYPE_PERSONAL)
     }
 
-
-    private def getQuickFlowSearchResults(searchVal){
-
-        List list = quickFlowMenuService.quickFlowSearch(searchVal)
-        list = removeDuplicateEntries(list)
-        list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
-        return composeMenuStructure(list, MENU_TYPE_BANNER)
-    }
-
     private def getAdminMenuSearchResults(searchVal){
 
         List list = menuService.gotoCombinedMenu(searchVal)
@@ -489,10 +482,11 @@ class CommonMenuController {
             }
 
             if(a.type == 'QUICKFLOW') {
-                if (a.uiVersion =="banner8admin")    {
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_INB_PARENT,url: getBannerInbUrl() + "?otherParams=launch_form="+ a.page +"+ban_args={{params}}+ban_mode=xe",type: "QUICKFLOW",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                def hsUrl = quickFlowMenuService.getGubmoduUrlForHsTypeFromQuickFlowCode(a.name)
+                if(hsUrl) {
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: hsUrl +"?form="+ a.name +"&ban_args={{params}}&ban_mode=xe",type: "QUICKFLOW",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                 } else {
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+ a.name +"&ban_args={{params}}&ban_mode=xe",type: "QUICKFLOW",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_INB_PARENT,url: getBannerInbUrl() + "?otherParams=launch_form="+ a.page +"+ban_args={{params}}+ban_mode=xe",type: "QUICKFLOW",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                 }
             }
         }
