@@ -289,9 +289,11 @@ class MenuService {
             mnu.seq = it.gutmenu_seq_no ?: 0
             mnu.type = it.objt_code
             mnu.parent = it.gutmenu_prior_obj
-            mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
+            if(mnu.type != 'QUICKFLOW') {
+                mnu.url = getModuleUrlFromConfig(it.gubmodu_code) ?: it.gubmodu_url
+                mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
+            }
             mnu.platCode = it.gubmodu_plat_code
-            mnu.uiVersion = ((it.gubobjs_ui_version == "B") || (it.gubobjs_ui_version == "A")) ? "banner8admin" : "bannerXEadmin"
             mnu.captionProperty = mnuPrf
 
             dataMap.add( mnu )

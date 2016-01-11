@@ -16,6 +16,7 @@ class CommonMenuController {
     def personalPreferenceService
     def grailsApplication
     def jobsMenuService
+    def quickFlowMenuService
 
     private final log = Logger.getLogger(getClass())
 
@@ -27,6 +28,7 @@ class CommonMenuController {
     static final String MENU_TYPE_BANNER = "Banner"
     static final String MENU_TYPE_PERSONAL = "Personal"
     static final String BANNER_HS_PARENT = "bannerHS"
+    static final String BANNER_INB_PARENT = "banner8admin"
     static final String ZK_PLATFORM_CODE = "ADMZK"
     static final String MENU_TYPE = "MENU"
     static final String FORM_TYPE = "FORM"
@@ -170,25 +172,30 @@ class CommonMenuController {
     def search = {
 
         Map subMenu
-        Map finalMenu
         List adminList
+        List quickFlowList
         List finalList = []
         String searchVal
         String callback = XssSanitizer.sanitize(params.callback)
 
         if(request.parameterMap["q"])
             searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
-        if(searchVal){
-            adminList = getAdminMenuSearchResults(searchVal)
-            finalList.addAll(adminList)
 
-            //it only applies after workflow task
-            if (searchVal.equals("WORKFLOW")) {
-                clearWorkflowArguments()
+        if(searchVal && searchVal.length() < 3) {
+            quickFlowList = getQuickflowLessThanThreeCharSearchResults(searchVal)
+            finalList.addAll(quickFlowList)
+        } else {
+            if(searchVal){
+                adminList = getAdminMenuSearchResults(searchVal)
+                finalList.addAll(adminList)
+                //it only applies after workflow task
+                if (searchVal.equals("WORKFLOW")) {
+                    clearWorkflowArguments()
+                }
             }
         }
+
         subMenu = [ name:"root", caption:"root", items: finalList ]
-        //finalMenu = [ data: subMenu ]
         // Support JSON-P callback
         if( callback ) {
             render text: "${callback} && ${callback}(${subMenu as JSON});", contentType: "text/javascript"
@@ -357,6 +364,7 @@ class CommonMenuController {
         String personalMenuList = pidm ? PERSONAL_COMBINED_MENU_LIST + pidm : PERSONAL_COMBINED_MENU_LIST
         if (session[personalMenuList] == null) {
             list = menuService.personalCombinedMenu()
+            list.addAll(quickFlowMenuService.quickflowPersonalMenu())
             session[personalMenuList] = list
         }
         else {
@@ -401,6 +409,14 @@ class CommonMenuController {
         }
         list.each {it -> it.menu = getParent(getPersonalMenu(),it,MY_BANNER_TITLE)}
         return composeMenuStructure(list, MENU_TYPE_PERSONAL)
+    }
+
+    private def getQuickflowLessThanThreeCharSearchResults(searchVal){
+
+        List list = quickFlowMenuService.quickFlowLessThan3CharSearch(searchVal)
+        list = removeDuplicateEntries(list)
+        list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
+        return composeMenuStructure(list, MENU_TYPE_BANNER)
     }
 
 
@@ -483,11 +499,12 @@ class CommonMenuController {
                 } else{
                     finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: javaFormsURL +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                 }
-            } else if(a.type == QUICKFLOW_TYPE){
-                if (!javaFormsURL) {  //TO DO get the QF url, it uses now GJAPCTL setting+
-                    finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
-                } else{
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: javaFormsURL +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+            } else if(a.type == QUICKFLOW_TYPE) {
+                def hsUrl = quickFlowMenuService.getGubmoduUrlForHsTypeFromQuickFlowCode(a.name)
+                if(hsUrl) {
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: hsUrl +"?form="+ a.name +"&ban_args={{params}}&ban_mode=xe",type: "QUICKFLOW",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                } else {
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_INB_PARENT,url: getBannerInbUrl() + "?otherParams=launch_form="+ a.page +"+ban_args={{params}}+ban_mode=xe",type: "QUICKFLOW",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                 }
             }
         }
