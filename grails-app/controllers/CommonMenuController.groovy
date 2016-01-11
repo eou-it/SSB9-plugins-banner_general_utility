@@ -177,14 +177,12 @@ class CommonMenuController {
             searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
 
         if(searchVal && searchVal.length() < 3) {
-            quickFlowList = quickFlowMenuService.quickFlowLessThan3CharSearch(searchVal)
+            quickFlowList = getQuickflowLessThanThreeCharSearchResults(searchVal)
             finalList.addAll(quickFlowList)
-            finalList = removeDuplicateEntries(finalList)
         } else {
             if(searchVal){
                 adminList = getAdminMenuSearchResults(searchVal)
                 finalList.addAll(adminList)
-                finalList = removeDuplicateEntries(finalList)
                 //it only applies after workflow task
                 if (searchVal.equals("WORKFLOW")) {
                     clearWorkflowArguments()
@@ -407,6 +405,15 @@ class CommonMenuController {
         list.each {it -> it.menu = getParent(getPersonalMenu(),it,MY_BANNER_TITLE)}
         return composeMenuStructure(list, MENU_TYPE_PERSONAL)
     }
+
+    private def getQuickflowLessThanThreeCharSearchResults(searchVal){
+
+        List list = quickFlowMenuService.quickFlowLessThan3CharSearch(searchVal)
+        list = removeDuplicateEntries(list)
+        list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
+        return composeMenuStructure(list, MENU_TYPE_BANNER)
+    }
+
 
     private def getAdminMenuSearchResults(searchVal){
 
