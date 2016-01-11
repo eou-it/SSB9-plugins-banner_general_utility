@@ -502,9 +502,9 @@ class CommonMenuController {
             } else if(a.type == QUICKFLOW_TYPE) {
                 def hsUrl = quickFlowMenuService.getGubmoduUrlForHsTypeFromQuickFlowCode(a.name)
                 if(hsUrl) {
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: hsUrl +"?form="+ a.name +"&ban_args={{params}}&ban_mode=xe",type: "QUICKFLOW",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: hsUrl +"?form="+ a.name +"&ban_args={{params}}&ban_mode=xe",type: QUICKFLOW_TYPE,menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                 } else {
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_INB_PARENT,url: getBannerInbUrl() + "?otherParams=launch_form="+ a.page +"+ban_args={{params}}+ban_mode=xe",type: "QUICKFLOW",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_INB_PARENT,url: getBannerInbUrl() + "?otherParams=launch_form="+ a.page +"+ban_args={{params}}+ban_mode=xe",type: QUICKFLOW_TYPE,menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                 }
             }
         }
