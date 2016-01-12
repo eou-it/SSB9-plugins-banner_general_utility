@@ -46,6 +46,8 @@ class QuickFlowMenuService {
             if (it.description != null)  {
                 mnu.caption = it.description.replaceAll(/\&/, "&amp;")
                 mnu.pageCaption = mnu.caption
+                if (mnuPrf)
+                    mnu.caption = mnu.caption + " (" + mnu.name + ")"
             }
             mnu.type = "QUICKFLOW"
             mnu.captionProperty = mnuPrf
