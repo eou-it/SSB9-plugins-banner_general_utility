@@ -365,6 +365,12 @@ class CommonMenuController {
         if (session[personalMenuList] == null) {
             list = menuService.personalCombinedMenu()
             list.addAll(quickFlowMenuService.quickflowPersonalMenu())
+            Collections.sort(list, new Comparator<Menu>() {
+                @Override
+                public int compare(final Menu object1, final Menu object2) {
+                    return object1.getSeq().compareTo(object2.getSeq());
+                }
+            } );
             session[personalMenuList] = list
         }
         else {
