@@ -2,21 +2,18 @@ grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 
-grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
 grails.plugin.location.'banner-core'="../banner_core.git"
+
+grails.project.dependency.resolver = "maven"
+
 grails.project.dependency.resolution = {
 
     inherits( "global" ) {
     }
 
-    log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
+    log "error" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
 
     plugins {
-        runtime  ":hibernate:3.6.10.10"
-        compile ":spring-security-core:1.2.7.3"
-        compile ":functional-test:2.0.0"
-        compile ':resources:1.2.7'
-        compile ':markdown:1.0.0.RC1'
 		runtime ":webxml:1.4.1"
     }
 
@@ -26,14 +23,6 @@ grails.project.dependency.resolution = {
     repositories {
         if (System.properties['PROXY_SERVER_NAME']) {
             mavenRepo "${System.properties['PROXY_SERVER_NAME']}"
-        } else
-        {
-            grailsPlugins()
-            grailsHome()
-            grailsCentral()
-            mavenCentral()
-            mavenRepo "http://repository.jboss.org/maven2/"
-            mavenRepo "http://repository.codehaus.org"
         }
     }
 

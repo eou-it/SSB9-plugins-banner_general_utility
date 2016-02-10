@@ -3,10 +3,10 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.menu
 
+import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.commons.lang.math.RandomUtils
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 /**
  * Service for retrieving Banner menu item for Classic SSB.
@@ -16,7 +16,7 @@ class SelfServiceMenuService {
     static transactional = true
     def sessionFactory
     def configurationService
-    private final log = Logger.getLogger(getClass())
+    private static final Logger log = Logger.getLogger(getClass())
 
     /**
      * This is returns map of all menu items based on user access
@@ -187,7 +187,7 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
-            mnu.url = it.twgrmenu_db_link_ind == "Y" ? ConfigurationHolder?.config?.banner8?.SS?.url + it.twgrmenu_url : it.twgrmenu_url
+            mnu.url = it.twgrmenu_db_link_ind == "Y" ? Holders?.config?.banner8?.SS?.url + it.twgrmenu_url : it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
 
@@ -321,7 +321,7 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.caption = it.twgrmenu_url_text
             mnu.menu = firstMenu
-            mnu.url = ConfigurationHolder?.config?.banner8?.SS?.url + it.twgrmenu_url
+            mnu.url = Holders?.config?.banner8?.SS?.url + it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.parent =it.twgrmenu_url
             mnu.uiVersion =it.twgrmenu_db_link_ind == "Y" ? "banner8ss" : "banner9ss"

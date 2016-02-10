@@ -1,11 +1,11 @@
 class BannerGeneralUtilityGrailsPlugin {
-    String version = "2.10.4"
+    String version = "9.14"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2.1 > *"
 
     // the other plugins this plugin depends on
-    def dependsOn = [ 'springSecurityCore': '1.2.7.3',
+    def dependsOn = [ 'springSecurityCore': '1.2.7.3 => *',
     ]
 
     // resources that are excluded from plugin packaging

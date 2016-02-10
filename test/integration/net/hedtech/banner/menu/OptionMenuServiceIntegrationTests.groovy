@@ -33,7 +33,7 @@ class OptionMenuServiceIntegrationTests extends BaseIntegrationTestCase {
             }
         }
 
-        assertEquals 8, mnu.seq
+        assertEquals 8, mnu.seq, 1e-6
         assertEquals "Reg. Restrictions[SCARRES]", mnu.menuDesc
         assertEquals "SCACRSE", mnu.formName
         assertEquals "SCARRES", mnu.calledFormName
@@ -52,7 +52,7 @@ class OptionMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
         def mnu = list.get(0)
 
-        assertEquals 8, mnu.seq
+        assertEquals 8, mnu.seq, 1e-6
         assertEquals "Reg. Restrictions[SCARRES]", mnu.menuDesc
         assertEquals "SCACRSE", mnu.formName
         assertEquals "SCARRES", mnu.calledFormName

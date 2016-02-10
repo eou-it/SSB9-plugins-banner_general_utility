@@ -1,7 +1,7 @@
 /*******************************************************************************
  Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
-package net.hedtech.banner.supplemental
+package net.hedtech.banner.testing
 
 import groovy.sql.Sql
 
@@ -9,6 +9,7 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.test.ZipTest
 import org.junit.After
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -122,7 +123,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "VARCHAR2", sdeModel.COMMENTS."1".dataType
         assertEquals "M", sdeModel.COMMENTS."1".discType
         assertEquals 3, sdeModel.COMMENTS."1".validation
-        assertEquals 1, sdeModel.COMMENTS."1".attrOrder
+        assertEquals 1, sdeModel.COMMENTS."1".attrOrder,0
 
         assertEquals "comment 1", sdeModel.TEST."1".value
         assertEquals "comment 2", sdeModel.TEST."2".value
@@ -136,7 +137,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "M", sdeModel.TEST."1".discType
         assertEquals 6, sdeModel.TEST."1".validation
         assertNull sdeModel.TEST."1".attrInfo
-        assertEquals 2, sdeModel.TEST."1".attrOrder
+        assertEquals 2, sdeModel.TEST."1".attrOrder,0
 
 
         assertNull sdeModel.NUMBER."1".value
@@ -145,13 +146,13 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "NUMBER", sdeModel.NUMBER."1".dataType
         assertEquals "S", sdeModel.NUMBER."1".discType
         assertEquals 1, sdeModel.NUMBER."1".validation
-        assertEquals 6, sdeModel.NUMBER."1".dataLength
-        assertEquals 2, sdeModel.NUMBER."1".dataScale
+        assertEquals 6, sdeModel.NUMBER."1".dataLength,0
+        assertEquals 2, sdeModel.NUMBER."1".dataScale,0
         assertEquals "with 2 decimal points", sdeModel.NUMBER."1".attrInfo
-        assertEquals 3, sdeModel.NUMBER."1".attrOrder
+        assertEquals 3, sdeModel.NUMBER."1".attrOrder,0
 
 
-        assertEquals 5, sdeModel.size()
+        Assert.assertEquals 5, sdeModel.size()
         assertTrue 'TEST' in sdeModel
         assertTrue 'NUMBER' in sdeModel
         assertTrue 'COMMENTS' in sdeModel
@@ -489,9 +490,9 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
      * */
     @Test
     void testFindMappedDomain() {
-        def mappedDomain = supplementalDataService.getMappedDomain("GTVZIPC")
+        def mappedDomain = supplementalDataService.getMappedDomain("GURSESS")
 
-        assertEquals "net.hedtech.banner.test.ZipTest", mappedDomain
+        assertEquals "net.hedtech.banner.session.BannerUserSession", mappedDomain
 
     }
 

@@ -3,9 +3,9 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.menu
 
+import grails.util.Holders
 import groovy.sql.Sql
 import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 
 class OptionMenuService {
@@ -62,7 +62,7 @@ class OptionMenuService {
      */
     def optionMenuForBlock(pageId, blockId) {
 
-        ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+        ApplicationContext ctx = (ApplicationContext) Holders.getGrailsApplication().getMainContext()
         grailsApplication = (GrailsApplication) ctx.getBean("grailsApplication")
 
         def domainClass = grailsApplication.getArtefactByLogicalPropertyName("Domain", blockId.substring(0, blockId.indexOf("Block")))

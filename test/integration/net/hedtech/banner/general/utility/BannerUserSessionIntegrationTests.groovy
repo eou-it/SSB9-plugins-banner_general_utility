@@ -19,7 +19,7 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
     public static final String GLOBAL_START_DATE = "global.start.date"
 
     public static final String SEAMLESS_TOKEN_1 = "98329832032njdskdslk21389320"
-    public static final String WRONG_SEAMLESS_TOKEN = "1".padLeft(151)
+    public static final String WRONG_SEAMLESS_TOKEN = "1".padLeft(151,"1")
 
     public static final Integer SESSION_TOKEN_LENGTH = 150
 
