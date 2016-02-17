@@ -430,7 +430,6 @@ class CommonMenuController {
 
         List list = menuService.gotoCombinedMenu(searchVal)
         list = removeDuplicateEntries(list)
-        list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
         return composeMenuStructure(list, MENU_TYPE_BANNER)
     }
 
