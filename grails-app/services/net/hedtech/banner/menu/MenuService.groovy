@@ -262,9 +262,12 @@ class MenuService {
                        DECODE(gutmenu_desc,gutmenu_desc,a.gubobjs_desc) description,
                        gubpage_code, gubpage_name, gubmodu_url,gubmodu_code,gubmodu_plat_code
                        from gutmenu,gubmodu, gubpage,gubobjs a
-                       where gutmenu_value  = gubpage_code (+)
-                       AND  a.gubobjs_name = gutmenu_value(+)
+                       where a.gubobjs_name  = gubpage_code (+)
+                       and  a.gubobjs_name = gutmenu_value(+)
                        and gubpage_gubmodu_code  = gubmodu_code(+)
+                           AND (a.GUBOBJS_UI_VERSION IN ('A','B','D','E') OR
+                                a.GUBOBJS_OBJT_CODE = 'MENU'
+                                )
                        )
                        WHERE  (upper(value) like ?
                        OR upper(description) like ? OR upper(gubpage_name) like ?)
