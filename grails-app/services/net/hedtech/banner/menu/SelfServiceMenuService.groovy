@@ -98,9 +98,13 @@ class SelfServiceMenuService {
             mnu.type = 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
-            mnu.url = it.twgrmenu_url
+            if( it.twgrmenu_url.indexOf("?")>-1)
+            {
+                mnu.url = it.twgrmenu_url+"&ssbApps="+configurationService.configuration?.ssbApps;
+            }else{
+                mnu.url = it.twgrmenu_url+"?ssbApps="+configurationService.configuration?.ssbApps;
+            }
             mnu.captionProperty = false
-
 
             dataMap.add(mnu)
 
@@ -401,7 +405,12 @@ class SelfServiceMenuService {
             mnu.type = 'FORM'
             mnu.menu = firstMenu
             mnu.parent = it.twgrmenu_name
-            mnu.url = it.twgrmenu_url
+            if( it.twgrmenu_url.indexOf("?")>-1)
+            {
+                mnu.url = it.twgrmenu_url+"&ssbApps="+configurationService.configuration?.ssbApps;
+            }else{
+                mnu.url = it.twgrmenu_url+"?ssbApps="+configurationService.configuration?.ssbApps;
+            }
             mnu.captionProperty = false
 
 
