@@ -100,9 +100,9 @@ class SelfServiceMenuService {
             mnu.parent = it.twgrmenu_name
             if( it.twgrmenu_url.indexOf("?")>-1)
             {
-                mnu.url = it.twgrmenu_url+"&ssbApps="+configurationService.configuration?.ssbApps;
+                mnu.url = it.twgrmenu_url+"&hideSSBHeaderComps=true";
             }else{
-                mnu.url = it.twgrmenu_url+"?ssbApps="+configurationService.configuration?.ssbApps;
+                mnu.url = it.twgrmenu_url+"?hideSSBHeaderComps=true";
             }
             mnu.captionProperty = false
 
@@ -407,9 +407,9 @@ class SelfServiceMenuService {
             mnu.parent = it.twgrmenu_name
             if( it.twgrmenu_url.indexOf("?")>-1)
             {
-                mnu.url = it.twgrmenu_url+"&ssbApps="+configurationService.configuration?.ssbApps;
+                mnu.url = it.twgrmenu_url+"&hideSSBHeaderComps=true";
             }else{
-                mnu.url = it.twgrmenu_url+"?ssbApps="+configurationService.configuration?.ssbApps;
+                mnu.url = it.twgrmenu_url+"?hideSSBHeaderComps=true";
             }
             mnu.captionProperty = false
 
