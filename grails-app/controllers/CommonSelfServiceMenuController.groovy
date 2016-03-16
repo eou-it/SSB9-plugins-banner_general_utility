@@ -212,7 +212,7 @@ class CommonSelfServiceMenuController {
                 finalList.add(name:tempName,page:tempPageName,caption:a.caption,parent:tempParentName,url: getServerURL() +"/commonSelfServiceMenu?type="+type+"&menu="+tempFormName+"&caption="+a.caption,type: "MENU",menu:tempPageName)
 
             if (a.type == "FORM" ){
-                    finalList.add(name:tempName,page:tempName,caption:a.caption,parent:tempName,url: a.url,type: "SS-APP",menu:tempFormName)
+                    finalList.add(name:tempName,page:tempName,caption:a.caption,parent:tempName,url: a.url,type: "SS-APP",menu:tempFormName, pageCaption:a.caption)
             }
         }
         return finalList

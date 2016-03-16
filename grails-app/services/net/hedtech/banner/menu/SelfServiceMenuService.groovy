@@ -7,6 +7,7 @@ import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.commons.lang.math.RandomUtils
 import org.apache.log4j.Logger
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Service for retrieving Banner menu item for Classic SSB.
@@ -15,8 +16,9 @@ import org.apache.log4j.Logger
 class SelfServiceMenuService {
     static transactional = true
     def sessionFactory
-    def configurationService
+    def grailsApplication
     private static final Logger log = Logger.getLogger(getClass())
+    static final String SS_APPS = "SS_APPS"
 
     /**
      * This is returns map of all menu items based on user access
@@ -72,16 +74,16 @@ class SelfServiceMenuService {
             }
         }
 
-        sqlQuery = "select DISTINCT TWGRMENU_NAME,TWGRMENU_URL_TEXT,TWGRMENU_URL," +
-                "TWGRMENU_URL_DESC," +
-                "TWGRMENU_URL_IMAGE from twgrmenu a " +
+        sqlQuery = "select DISTINCT TWGRMENU_URL_TEXT,TWGRMENU_URL," +
+                "TWGRMENU_URL_DESC" +
+                " from twgrmenu a " +
                 " where  twgrmenu_enabled = 'Y'" +
                 " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
                 " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
                 " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
                 " where govrole_pidm = " + pidm +
                 " and  twgrwmrl_role in " +  govroleCriteria + "))" +
-                " and twgrmenu_url in ('" + configurationService.configuration?.selfServiceApps.join( "','" ) + "')"
+                " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join( "','" ) + "')"
 
 
 
@@ -92,12 +94,13 @@ class SelfServiceMenuService {
             def mnu = new SelfServiceMenu()
             mnu.formName = it.twgrmenu_url
             mnu.pageName = it.twgrmenu_url
-            mnu.name = it.twgrmenu_url_text
+            mnu.name = it.twgrmenu_url_text.toUpperCase()
             mnu.caption = toggleSeparator(it.twgrmenu_url_text)
             mnu.pageCaption = mnu.caption
             mnu.type = 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
-            mnu.parent = it.twgrmenu_name
+            //mnu.parent = it.twgrmenu_name
+            mnu.parent = 'ss'
             mnu.url = it.twgrmenu_url
             mnu.captionProperty = false
 
@@ -376,16 +379,16 @@ class SelfServiceMenuService {
 
         if (govroles.size() > 0)
 
-        sqlQuery = "select DISTINCT TWGRMENU_NAME,TWGRMENU_URL_TEXT,TWGRMENU_URL," +
-                "TWGRMENU_URL_DESC," +
-                "TWGRMENU_URL_IMAGE from twgrmenu a " +
+        sqlQuery = "select DISTINCT TWGRMENU_URL_TEXT,TWGRMENU_URL," +
+                "TWGRMENU_URL_DESC" +
+                " from twgrmenu a " +
                 " where  twgrmenu_enabled = 'Y'" +
                 " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
                 " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
                 " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
                 " where govrole_pidm = " + pidm +
                 " and  twgrwmrl_role in " +  govroleCriteria + "))" +
-                " and twgrmenu_url in ('" + configurationService.configuration?.selfServiceApps.join( "','" ) + "')" +
+                " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join( "','" ) + "')" +
                 " and  (twgrmenu_name like  " + searchValWild+ " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild + " OR UPPER(twgrmenu_url) like " + searchValWild.toUpperCase() + ")"
 
         def randomSequence = RandomUtils.nextInt(1000);
@@ -400,7 +403,8 @@ class SelfServiceMenuService {
             mnu.pageCaption = mnu.caption
             mnu.type = 'FORM'
             mnu.menu = firstMenu
-            mnu.parent = it.twgrmenu_name
+            //mnu.parent = it.twgrmenu_name
+            mnu.parent = 'ss'
             mnu.url = it.twgrmenu_url
             mnu.captionProperty = false
 
@@ -413,6 +417,20 @@ class SelfServiceMenuService {
         sql.connection.close()
         return dataMap
 
+    }
+
+    public def getSSLinks(){
+        def ssbApps = []
+
+
+        def session = RequestContextHolder.currentRequestAttributes().getSession()
+
+        if(!session.getAttribute(SS_APPS)){
+            grailsApplication.config?.seamless.selfServiceApps.each {ssbApps << (it.toUpperCase())}
+            session.setAttribute(SS_APPS, ssbApps)
+        }
+
+        return session.getAttribute(SS_APPS)
     }
 
 }

@@ -11,6 +11,7 @@ import org.junit.Test
 class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def selfServiceMenuService
+    def grailsApplication
 
     @Before
     public void setUp() {
@@ -35,6 +36,16 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         def map
         map = selfServiceMenuService.bannerMenu (null,null,null)
         assert map.size() > 0
+    }
+
+    @Test
+    void testSSLinks() {
+
+        def ss = ["a","B"]
+        grailsApplication.config.seamless.selfServiceApps = ss
+
+        assertEquals "A", selfServiceMenuService.getSSLinks()[0]
+
     }
 
 }
