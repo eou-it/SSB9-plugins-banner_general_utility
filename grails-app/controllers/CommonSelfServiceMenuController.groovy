@@ -79,14 +79,7 @@ class CommonSelfServiceMenuController {
             List mnuList
             def user = SecurityContextHolder?.context?.authentication?.principal
             mnuList = selfServiceMenuService.bannerMenuAppConcept(mnuName,null,user.pidm)
-            mnuList.eachWithIndex{ SelfServiceMenu,  i ->
-                if( SelfServiceMenu.url.indexOf("?")>-1){
-                    SelfServiceMenu.url=SelfServiceMenu.url+"&hideSSBHeaderComps=true";
-                }else{
-                    SelfServiceMenu.url=SelfServiceMenu.url+"?hideSSBHeaderComps=true";
-                }
-            }
-
+            mnuList=setHideSSBHeaderCompsParam(mnuList)
             ssbList =  composeMenuStructure(mnuList, SSB_BANNER_TITLE)
             subMenu = [name:mnuName,caption:caption,items: ssbList, _links:getLinks(mnuName)]
         } else {
@@ -94,6 +87,17 @@ class CommonSelfServiceMenuController {
             subMenu = [ name:"root", caption:"root", items: ssbList , _links:getLinks(mnuName)]
         }
         return subMenu
+    }
+
+    private def setHideSSBHeaderCompsParam(List mnuList){
+        mnuList.eachWithIndex{ SelfServiceMenu,  i ->
+            if( SelfServiceMenu.url.indexOf("?")>-1){
+                SelfServiceMenu.url=SelfServiceMenu.url+"&hideSSBHeaderComps=true";
+            }else{
+                SelfServiceMenu.url=SelfServiceMenu.url+"?hideSSBHeaderComps=true";
+            }
+        }
+        return mnuList
     }
 
     private def getLinks(String mnuName) {
@@ -153,15 +157,7 @@ class CommonSelfServiceMenuController {
         if(searchVal){
             def user = SecurityContextHolder?.context?.authentication?.principal
             adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm)
-            adminList.eachWithIndex{ SelfServiceMenu,  i ->
-                if( SelfServiceMenu.url.indexOf("?")>-1){
-                    SelfServiceMenu.url=SelfServiceMenu.url+"&hideSSBHeaderComps=true";
-                }else{
-                    SelfServiceMenu.url=SelfServiceMenu.url+"?hideSSBHeaderComps=true";
-                }
-            }
-
-
+            adminList=setHideSSBHeaderCompsParam(adminList)
             finalList.addAll(adminList)
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]
