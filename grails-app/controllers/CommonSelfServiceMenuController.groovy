@@ -89,7 +89,7 @@ class CommonSelfServiceMenuController {
         return subMenu
     }
 
-    private def setHideSSBHeaderCompsParam(List mnuList){
+    private List setHideSSBHeaderCompsParam(List mnuList){
         mnuList.eachWithIndex{ SelfServiceMenu,  i ->
             if( SelfServiceMenu.url.indexOf("?")>-1){
                 SelfServiceMenu.url=SelfServiceMenu.url+"&hideSSBHeaderComps=true";
