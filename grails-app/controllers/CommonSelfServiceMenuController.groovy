@@ -79,6 +79,14 @@ class CommonSelfServiceMenuController {
             List mnuList
             def user = SecurityContextHolder?.context?.authentication?.principal
             mnuList = selfServiceMenuService.bannerMenuAppConcept(mnuName,null,user.pidm)
+            mnuList.eachWithIndex{ SelfServiceMenu,  i ->
+                if( SelfServiceMenu.url.indexOf("?")>-1){
+                    SelfServiceMenu.url=SelfServiceMenu.url+"&hideSSBHeaderComps=true";
+                }else{
+                    SelfServiceMenu.url=SelfServiceMenu.url+"?hideSSBHeaderComps=true";
+                }
+            }
+
             ssbList =  composeMenuStructure(mnuList, SSB_BANNER_TITLE)
             subMenu = [name:mnuName,caption:caption,items: ssbList, _links:getLinks(mnuName)]
         } else {
@@ -145,6 +153,15 @@ class CommonSelfServiceMenuController {
         if(searchVal){
             def user = SecurityContextHolder?.context?.authentication?.principal
             adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm)
+            adminList.eachWithIndex{ SelfServiceMenu,  i ->
+                if( SelfServiceMenu.url.indexOf("?")>-1){
+                    SelfServiceMenu.url=SelfServiceMenu.url+"&hideSSBHeaderComps=true";
+                }else{
+                    SelfServiceMenu.url=SelfServiceMenu.url+"?hideSSBHeaderComps=true";
+                }
+            }
+
+
             finalList.addAll(adminList)
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]

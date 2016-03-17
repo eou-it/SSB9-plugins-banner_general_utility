@@ -98,12 +98,7 @@ class SelfServiceMenuService {
             mnu.type = 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
-            if( it.twgrmenu_url.indexOf("?")>-1)
-            {
-                mnu.url = it.twgrmenu_url+"&hideSSBHeaderComps=true";
-            }else{
-                mnu.url = it.twgrmenu_url+"?hideSSBHeaderComps=true";
-            }
+            mnu.url = it.twgrmenu_url
             mnu.captionProperty = false
 
             dataMap.add(mnu)
@@ -405,12 +400,7 @@ class SelfServiceMenuService {
             mnu.type = 'FORM'
             mnu.menu = firstMenu
             mnu.parent = it.twgrmenu_name
-            if( it.twgrmenu_url.indexOf("?")>-1)
-            {
-                mnu.url = it.twgrmenu_url+"&hideSSBHeaderComps=true";
-            }else{
-                mnu.url = it.twgrmenu_url+"?hideSSBHeaderComps=true";
-            }
+            mnu.url = it.twgrmenu_url
             mnu.captionProperty = false
 
 
