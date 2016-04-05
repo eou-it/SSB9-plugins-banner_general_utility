@@ -168,7 +168,7 @@ class CommonSelfServiceMenuController {
             searchVal = request.parameterMap["q"][0]
         if(searchVal && searchVal.length() >= 3){
             def user = SecurityContextHolder?.context?.authentication?.principal
-            adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm)
+            adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm, request.parameterMap["ui"])
             finalList.addAll(adminList)
         }
 
