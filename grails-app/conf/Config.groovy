@@ -1,7 +1,7 @@
 import net.hedtech.banner.configuration.ApplicationConfigurationUtils
 
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 
@@ -35,7 +35,7 @@ grails.config.locations = [] // leave this initialized to an empty list, and add
 
 def locationAdder = ApplicationConfigurationUtils.&addLocation.curry(grails.config.locations)
 
-[bannerGrailsAppConfig: "${userHome}/.grails/banner_configuration.groovy",
+[BANNER_APP_CONFIG:        "banner_configuration.groovy",
 ].each { envName, defaultFileName -> locationAdder(envName, defaultFileName) }
 
 
