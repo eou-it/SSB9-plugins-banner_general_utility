@@ -26,6 +26,8 @@ class CommonSelfServiceMenuController {
     static final String SSB_BANNER_TITLE = "Banner Self-Service"
     static final String MENU_TYPE_SSB = "SSB"
     static final String Main_Menu = "bmenu.P_MainMnu"
+    static final String AMPERSAND="&";
+    static final String QUESTION_MARK="?";
 
 //    static final String BANNER_SELF_SERVICE_TITLE = "Banner Self-Service"
     static final String PERSONAL_COMBINED_MENU_LIST = "personalCombinedMenuList"
@@ -91,11 +93,8 @@ class CommonSelfServiceMenuController {
 
     private List setHideSSBHeaderCompsParam(List mnuList){
         mnuList.eachWithIndex{ SelfServiceMenu,  i ->
-            if( SelfServiceMenu.url.indexOf("?")>-1){
-                SelfServiceMenu.url=SelfServiceMenu.url+"&hideSSBHeaderComps=true";
-            }else{
-                SelfServiceMenu.url=SelfServiceMenu.url+"?hideSSBHeaderComps=true";
-            }
+            String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
+            SelfServiceMenu.url=SelfServiceMenu.url+symbol+"hideSSBHeaderComps=true"
         }
         return mnuList
     }
