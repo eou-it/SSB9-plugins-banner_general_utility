@@ -1,3 +1,4 @@
+package net.hedtech.banner.menu
 /*******************************************************************************
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
@@ -178,9 +179,9 @@ class CommonSelfServiceMenuController {
 
         if(request.parameterMap["q"])
             searchVal = request.parameterMap["q"][0]
-        if(searchVal){
+        if(searchVal && searchVal.length() >= 3){
             def user = SecurityContextHolder?.context?.authentication?.principal
-            adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm)
+            adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm, request.parameterMap["ui"])
             finalList.addAll(adminList)
         }
 
@@ -224,7 +225,7 @@ class CommonSelfServiceMenuController {
                 finalList.add(name:tempName,page:tempPageName,caption:a.caption,parent:tempParentName,url: getServerURL() +"/commonSelfServiceMenu?type="+type+"&menu="+tempFormName+"&caption="+a.caption,type: "MENU",menu:tempPageName)
 
             if (a.type == "FORM" ){
-                    finalList.add(name:tempName,page:tempName,caption:a.caption,parent:tempName,url: a.url,type: "SS-APP",menu:tempFormName, pageCaption:a.caption)
+                    finalList.add(name:tempName,page:tempName,caption:a.caption,parent:a.url,url: a.url,type: "SS-APP",menu:tempFormName, pageCaption:a.caption)
             }
         }
         return finalList

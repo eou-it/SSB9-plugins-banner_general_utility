@@ -334,9 +334,9 @@ class SelfServiceMenuService {
 
     }
 
-    def searchMenuAppConcept(def searchVal, def pidm) {
+    def searchMenuAppConcept(def searchVal, def pidm, def ui) {
 
-        def searchValWild = "\'%" +searchVal +"%\'"
+        def searchValWild = "\'%" + searchVal + "%\'"
         def dataMap = []
         def firstMenu = "Banner Self-Service";
         Sql sql
@@ -351,23 +351,23 @@ class SelfServiceMenuService {
         if (pidm) {
             pidmCondition = "twgrrole_pidm = " + pidm
             sql.eachRow("select govrole_student_ind, govrole_alumni_ind, govrole_employee_ind, govrole_faculty_ind, govrole_finance_ind ,govrole_friend_ind ,govrole_finaid_ind, govrole_bsac_ind from govrole where govrole_pidm = ? ", [pidm]) {
-                if (it.govrole_student_ind == "Y" )  govroles.add ("STUDENT")
-                if (it.govrole_faculty_ind == "Y" )  govroles.add ("FACULTY")
-                if (it.govrole_employee_ind == "Y" )  govroles.add ("EMPLOYEE")
-                if (it.govrole_alumni_ind == "Y" )  govroles.add ("ALUMNI")
-                if (it.govrole_finance_ind == "Y" )  govroles.add ("FINANCE")
-                if (it.govrole_finaid_ind == "Y" )  govroles.add ("FINAID")
-                if (it.govrole_friend_ind == "Y" )  govroles.add ("FRIEND")
+                if (it.govrole_student_ind == "Y") govroles.add("STUDENT")
+                if (it.govrole_faculty_ind == "Y") govroles.add("FACULTY")
+                if (it.govrole_employee_ind == "Y") govroles.add("EMPLOYEE")
+                if (it.govrole_alumni_ind == "Y") govroles.add("ALUMNI")
+                if (it.govrole_finance_ind == "Y") govroles.add("FINANCE")
+                if (it.govrole_finaid_ind == "Y") govroles.add("FINAID")
+                if (it.govrole_friend_ind == "Y") govroles.add("FRIEND")
             }
             if (govroles.size() > 0) {
 
                 govroles.each {
                     if (it == govroles.first())
-                        govroleCriteria = "('" + it.value +"'"
+                        govroleCriteria = "('" + it.value + "'"
                     else
-                        govroleCriteria= govroleCriteria + " ,'" + it.value +"'"
+                        govroleCriteria = govroleCriteria + " ,'" + it.value + "'"
                 }
-                govroleCriteria= govroleCriteria + ")"
+                govroleCriteria = govroleCriteria + ")"
             }
         }
 
@@ -386,8 +386,35 @@ class SelfServiceMenuService {
                     " and  (twgrmenu_name like  " + searchValWild + " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild + " OR UPPER(twgrmenu_url) like " + searchValWild.toUpperCase() + ")"
 
 
-            sql.eachRow(sqlQuery) {
+            if (ui) {
+                sqlQuery = "select DISTINCT TWGRMENU_URL_TEXT,TWGRMENU_URL," +
+                        "TWGRMENU_URL_DESC" +
+                        " from twgrmenu a " +
+                        " where  twgrmenu_enabled = 'Y'" +
+                        " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
+                        " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
+                        " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
+                        " where govrole_pidm = " + pidm +
+                        " and  twgrwmrl_role in " + govroleCriteria + "))" +
+                        " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join("','") + "')" +
+                        " and  (twgrmenu_name like  " + searchValWild + " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild + ")"
+            } else{
 
+                sqlQuery = "select DISTINCT TWGRMENU_URL_TEXT,TWGRMENU_URL," +
+                        "TWGRMENU_URL_DESC" +
+                        " from twgrmenu a " +
+                        " where  twgrmenu_enabled = 'Y'" +
+                        " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
+                        " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
+                        " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
+                        " where govrole_pidm = " + pidm +
+                        " and  twgrwmrl_role in " + govroleCriteria + "))" +
+                        " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join("','") + "')" +
+                        " and  (twgrmenu_name like  " + searchValWild + " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild + " OR UPPER(twgrmenu_url) like " + searchValWild.toUpperCase() + ")"
+            }
+        def randomSequence = RandomUtils.nextInt(1000);
+
+        sql.eachRow(sqlQuery) {
                 def mnu = new SelfServiceMenu()
                 mnu.formName = it.twgrmenu_url
                 mnu.pageName = it.twgrmenu_url
