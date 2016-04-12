@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.menu
 
@@ -86,9 +86,6 @@ class SelfServiceMenuService {
                 " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join( "','" ) + "')"
 
 
-
-        def randomSequence = RandomUtils.nextInt(1000);
-
         sql.eachRow(sqlQuery) {
 
             def mnu = new SelfServiceMenu()
@@ -99,7 +96,6 @@ class SelfServiceMenuService {
             mnu.pageCaption = mnu.caption
             mnu.type = 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
-            //mnu.parent = it.twgrmenu_name
             mnu.parent = 'ss'
             mnu.url = it.twgrmenu_url
             mnu.captionProperty = false
@@ -376,42 +372,39 @@ class SelfServiceMenuService {
         }
 
 
-        if (govroles.size() > 0)
-
-        sqlQuery = "select DISTINCT TWGRMENU_URL_TEXT,TWGRMENU_URL," +
-                "TWGRMENU_URL_DESC" +
-                " from twgrmenu a " +
-                " where  twgrmenu_enabled = 'Y'" +
-                " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
-                " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
-                " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
-                " where govrole_pidm = " + pidm +
-                " and  twgrwmrl_role in " +  govroleCriteria + "))" +
-                " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join( "','" ) + "')" +
-                " and  (twgrmenu_name like  " + searchValWild+ " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild + " OR UPPER(twgrmenu_url) like " + searchValWild.toUpperCase() + ")"
-
-        def randomSequence = RandomUtils.nextInt(1000);
-
-        sql.eachRow(sqlQuery) {
-
-            def mnu = new SelfServiceMenu()
-            mnu.formName = it.twgrmenu_url
-            mnu.pageName = it.twgrmenu_url
-            mnu.name = it.twgrmenu_url_text.toUpperCase()
-            mnu.caption = toggleSeparator(it.twgrmenu_url_text)
-            mnu.pageCaption = mnu.caption
-            mnu.type = 'FORM'
-            mnu.menu = firstMenu
-            //mnu.parent = it.twgrmenu_name
-            mnu.parent = 'ss'
-            mnu.url = it.twgrmenu_url
-            mnu.captionProperty = false
+        if (govroles.size() > 0) {
+            sqlQuery = "select DISTINCT TWGRMENU_URL_TEXT,TWGRMENU_URL," +
+                    "TWGRMENU_URL_DESC" +
+                    " from twgrmenu a " +
+                    " where  twgrmenu_enabled = 'Y'" +
+                    " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
+                    " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
+                    " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
+                    " where govrole_pidm = " + pidm +
+                    " and  twgrwmrl_role in " + govroleCriteria + "))" +
+                    " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join("','") + "')" +
+                    " and  (twgrmenu_name like  " + searchValWild + " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild + " OR UPPER(twgrmenu_url) like " + searchValWild.toUpperCase() + ")"
 
 
-            dataMap.add(mnu)
+            sql.eachRow(sqlQuery) {
 
-        };
+                def mnu = new SelfServiceMenu()
+                mnu.formName = it.twgrmenu_url
+                mnu.pageName = it.twgrmenu_url
+                mnu.name = it.twgrmenu_url_text.toUpperCase()
+                mnu.caption = toggleSeparator(it.twgrmenu_url_text)
+                mnu.pageCaption = mnu.caption
+                mnu.type = 'FORM'
+                mnu.menu = firstMenu
+                mnu.parent = 'ss'
+                mnu.url = it.twgrmenu_url
+                mnu.captionProperty = false
 
+
+                dataMap.add(mnu)
+
+            };
+        }
         log.trace("ProcessMenu executed for search criteria e:" + searchVal)
         sql.connection.close()
         return dataMap
