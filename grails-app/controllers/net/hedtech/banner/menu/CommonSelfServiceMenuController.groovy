@@ -182,6 +182,7 @@ class CommonSelfServiceMenuController {
         if(searchVal && searchVal.length() >= 3){
             def user = SecurityContextHolder?.context?.authentication?.principal
             adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm, request.parameterMap["ui"])
+            adminList=setHideSSBHeaderCompsParam(adminList)
             finalList.addAll(adminList)
         }
 
