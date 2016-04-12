@@ -104,7 +104,6 @@ class SelfServiceMenuService {
             mnu.url = it.twgrmenu_url
             mnu.captionProperty = false
 
-
             dataMap.add(mnu)
 
         };
