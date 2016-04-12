@@ -27,6 +27,8 @@ class CommonSelfServiceMenuController {
     static final String SSB_BANNER_TITLE = "Banner Self-Service"
     static final String MENU_TYPE_SSB = "SSB"
     static final String Main_Menu = "bmenu.P_MainMnu"
+    static final String AMPERSAND="&";
+    static final String QUESTION_MARK="?";
 
 //    static final String BANNER_SELF_SERVICE_TITLE = "Banner Self-Service"
     static final String PERSONAL_COMBINED_MENU_LIST = "personalCombinedMenuList"
@@ -80,6 +82,7 @@ class CommonSelfServiceMenuController {
             List mnuList
             def user = SecurityContextHolder?.context?.authentication?.principal
             mnuList = selfServiceMenuService.bannerMenuAppConcept(mnuName,null,user.pidm)
+            mnuList=setHideSSBHeaderCompsParam(mnuList)
             ssbList =  composeMenuStructure(mnuList, SSB_BANNER_TITLE)
             subMenu = [name:mnuName,caption:caption,items: ssbList, _links:getLinks(mnuName)]
         } else {
@@ -87,6 +90,14 @@ class CommonSelfServiceMenuController {
             subMenu = [ name:"root", caption:"root", items: ssbList , _links:getLinks(mnuName)]
         }
         return subMenu
+    }
+
+    private List setHideSSBHeaderCompsParam(List mnuList){
+        mnuList.eachWithIndex{ SelfServiceMenu,  i ->
+            String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
+            SelfServiceMenu.url=SelfServiceMenu.url+symbol+"hideSSBHeaderComps=true"
+        }
+        return mnuList
     }
 
     private def getLinks(String mnuName) {
@@ -146,6 +157,7 @@ class CommonSelfServiceMenuController {
         if(searchVal){
             def user = SecurityContextHolder?.context?.authentication?.principal
             adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm)
+            adminList=setHideSSBHeaderCompsParam(adminList)
             finalList.addAll(adminList)
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]
