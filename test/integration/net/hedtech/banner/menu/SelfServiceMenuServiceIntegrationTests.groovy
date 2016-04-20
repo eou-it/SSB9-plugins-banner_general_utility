@@ -78,7 +78,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
             pidm = it.spriden_pidm
         }
 
-        map = selfServiceMenuService.searchMenuAppConcept ("",pidm)
+        map = selfServiceMenuService.searchMenuAppConcept ("",pidm,false)
         assert map?.size() > 0
 
         deleteSpriden(bannerPidm)
@@ -99,7 +99,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
             pidm = it.spriden_pidm
         }
 
-        map = selfServiceMenuService.searchMenuAppConcept ("",pidm)
+        map = selfServiceMenuService.searchMenuAppConcept ("",pidm,false)
         assert map?.size() == 0
 
         deleteSpriden(bannerPidm)
