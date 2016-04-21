@@ -25,28 +25,26 @@ class SelfServiceMenuService {
      * @return List representation of menu objects that a user has access
      */
 
-    def bannerMenu(def menuName, def menuTrail, def facultyPidm) {
+    def bannerMenu(def menuName, def menuTrail, def pidm) {
 
-        processMenu(menuName, menuTrail, facultyPidm)
+        processMenu(menuName, menuTrail, pidm)
     }
 
-    def bannerMenuAppConcept(def menuName, def menuTrail, def facultyPidm) {
+    def bannerMenuAppConcept(def menuName, def menuTrail, def pidm) {
 
-        processMenuAppConcept(menuName, menuTrail, facultyPidm)
+        processMenuAppConcept( menuTrail, pidm)
     }
 
 
-    private def processMenuAppConcept(def menuName, def menuTrail, def pidm) {
+    private def processMenuAppConcept( def menuTrail, def pidm) {
 
         def dataMap = []
         def firstMenu = "Banner";
 
         Sql sql
-        log.trace("Process Menu started for nenu:" + menuName)
         sql = new Sql(sessionFactory.getCurrentSession().connection())
         log.trace("SQL Connection:" + sql.useConnection.toString())
 
-        menuName = menuName ?: "bmenu.P_MainMnu"
         def govroleCriteria
         def govroles = []
         def sqlQuery;
@@ -105,7 +103,6 @@ class SelfServiceMenuService {
         };
 
 
-        log.trace("ProcessMenu executed for Menu name:" + menuName)
         return dataMap
 
     }
@@ -119,11 +116,8 @@ class SelfServiceMenuService {
 
     private def processMenu(def menuName, def menuTrail, def pidm) {
 
-        //assert facultyPidm
-
         def dataMap = []
         def firstMenu = "Banner";
-        //menuName = toggleSeparator(menuName);
 
         Sql sql
         log.trace("Process Menu started for nenu:" + menuName)
@@ -412,8 +406,6 @@ class SelfServiceMenuService {
                         " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join("','") + "')" +
                         " and  (twgrmenu_name like  " + searchValWild + " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild + " OR UPPER(twgrmenu_url) like " + searchValWild.toUpperCase() + ")"
             }
-        def randomSequence = RandomUtils.nextInt(1000);
-
         sql.eachRow(sqlQuery) {
                 def mnu = new SelfServiceMenu()
                 mnu.formName = it.twgrmenu_url

@@ -15,25 +15,10 @@ class CommonSelfServiceMenuController {
 
     private final log = Logger.getLogger(getClass())
 
-    static final String BANNER_SSB_URL = "bannerSsbUrl"
-    static final String MAGELLAN = "MAGELLAN"
-    static final String SERVER_DESIGNATION = "SERVER_DESIGNATION"
-    static final String SSB = "SSB"
-    static final String BANNER_TITLE = "Banner"
-    static final String MENU_TYPE_BANNER = "Banner"
-    static final String MENU_TYPE_PERSONAL = "Personal"
-//    static final String MENU_TYPE_SELF_SERVICE = "SelfService"
-    static final String MY_BANNER_TITLE = "My Banner"
     static final String SSB_BANNER_TITLE = "Banner Self-Service"
-    static final String MENU_TYPE_SSB = "SSB"
     static final String Main_Menu = "bmenu.P_MainMnu"
     static final String AMPERSAND="&";
     static final String QUESTION_MARK="?";
-
-//    static final String BANNER_SELF_SERVICE_TITLE = "Banner Self-Service"
-    static final String PERSONAL_COMBINED_MENU_LIST = "personalCombinedMenuList"
-    static final String SSB_MENU_LIST = "ssbMenuList"
-
 
     def data = {
         if(request.parameterMap["q"]){
@@ -44,25 +29,14 @@ class CommonSelfServiceMenuController {
     }
 
     def list = {
-        String mnuName
-        String mnuType
         String caption
         Map subMenu
-        Map finalMenu
-
-        if (request.parameterMap["menu"])
-            mnuName = request.parameterMap["menu"][0]
-
-        if(request.parameterMap["type"])
-            mnuType = request.parameterMap["type"][0]
 
         if(request.parameterMap["caption"])
             caption = request.parameterMap["caption"][0]
 
 
-        //subMenu = getSubMenuData(mnuName, mnuType, caption)
-
-        subMenu = getSubMenuData(Main_Menu, mnuType, caption)
+        subMenu = getSubMenuData(Main_Menu, caption)
 
 
         if( params.callback ) {
@@ -73,7 +47,7 @@ class CommonSelfServiceMenuController {
 
 
     }
-    private def getSubMenuData(String mnuName,String mnuType,String caption ){
+    private def getSubMenuData(String mnuName,String caption ){
 
         Map subMenu
         List ssbList
@@ -147,7 +121,6 @@ class CommonSelfServiceMenuController {
     def search = {
 
         Map subMenu
-        Map finalMenu
         List adminList
         List finalList = []
         String searchVal
@@ -172,7 +145,6 @@ class CommonSelfServiceMenuController {
     def searchAppConcept = {
 
         Map subMenu
-        Map finalMenu
         List adminList
         List finalList = []
         String searchVal
