@@ -19,6 +19,7 @@ class CommonSelfServiceMenuController {
     static final String Main_Menu = "bmenu.P_MainMnu"
     static final String AMPERSAND="&";
     static final String QUESTION_MARK="?";
+    static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
 
     def data = {
         if(request.parameterMap["q"]){
@@ -69,7 +70,7 @@ class CommonSelfServiceMenuController {
     private List setHideSSBHeaderCompsParam(List mnuList){
         mnuList.eachWithIndex{ SelfServiceMenu,  i ->
             String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
-            SelfServiceMenu.url=SelfServiceMenu.url+symbol+"hideSSBHeaderComps=true"
+            SelfServiceMenu.url=SelfServiceMenu.url+symbol+hideSSBHeaderComps;
         }
         return mnuList
     }
@@ -116,31 +117,6 @@ class CommonSelfServiceMenuController {
         }
         return finalList
     }
-
-
-    def search = {
-
-        Map subMenu
-        List adminList
-        List finalList = []
-        String searchVal
-
-        if(request.parameterMap["q"])
-            searchVal = request.parameterMap["q"][0]
-        if(searchVal){
-            def user = SecurityContextHolder?.context?.authentication?.principal
-            adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm)
-            adminList=setHideSSBHeaderCompsParam(adminList)
-            finalList.addAll(adminList)
-        }
-        subMenu = [ name:"root", caption:"root", items: finalList ]
-        if( params.callback ) {
-            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
-        } else {
-            render subMenu as JSON
-        }
-    }
-
 
     def searchAppConcept = {
 
