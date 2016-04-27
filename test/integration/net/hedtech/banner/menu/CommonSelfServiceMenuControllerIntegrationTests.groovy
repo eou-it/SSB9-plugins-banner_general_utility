@@ -66,17 +66,17 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
     void testSearchPromiseFind() {
         dataSetup(false)
 
-        def ss = ["http://localhost:8080/StudentRegistrationSsb/ssb/registration", "http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"]
+        def ss = ["http://testhost:8080/StudentRegistrationSsb/ssb/registration", "http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"]
         grailsApplication.config.seamless.selfServiceApps = ss
 
-        controller.request.parameters = [q: 'http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry']
+        controller.request.parameters = [q: 'http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry']
         controller.searchAppConcept()
 
         assertEquals controller.response.status, 200
         def result = JSON.parse(controller.response.contentAsString)
 
         String url= result.items[0].url;
-        assertThat(url, containsString("http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"));
+        assertThat(url, containsString("http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"));
 
     }
 
@@ -84,7 +84,7 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
     void testSearchFromUI() {
         dataSetup(false)
 
-        def ss = ["http://localhost:8080/StudentRegistrationSsb/ssb/registration", "http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"]
+        def ss = ["http://testhost:8080/StudentRegistrationSsb/ssb/registration", "http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"]
         grailsApplication.config.seamless.selfServiceApps = ss
 
         controller.request.parameters = [q: 'Faculty', ui: 'true']
@@ -97,8 +97,8 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
         String parent=result.items[0].parent;
         String name=result.items[0].name;
 
-        assertThat(url, containsString("http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"));
-        assertThat(parent, containsString("http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"));
+        assertThat(url, containsString("http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"));
+        assertThat(parent, containsString("http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"));
         assertThat(name, containsString("FACULTY"));
 
     }
@@ -108,7 +108,7 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
     void testSetHideSSBHeaderCompsParamWithMepCode() {
         dataSetup(true)
 
-        def ss = [ "http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry?mepCode=Banner"]
+        def ss = [ "http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry?mepCode=Banner"]
         grailsApplication.config.seamless.selfServiceApps = ss
 
         controller.request.parameters = [q: 'Faculty', ui: 'true']
@@ -118,7 +118,7 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
         def result = JSON.parse(controller.response.contentAsString)
 
         String url= result.items[0].url;
-        assertEquals("http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry?mepCode=Banner&hideSSBHeaderComps=true",url );
+        assertEquals("http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry?mepCode=Banner&hideSSBHeaderComps=true",url );
 
     }
 
@@ -126,7 +126,7 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
     void testSetHideSSBHeaderCompsParamWithoutMepCode() {
         dataSetup(false)
 
-        def ss = [ "http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"]
+        def ss = [ "http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry"]
         grailsApplication.config.seamless.selfServiceApps = ss
 
 
@@ -137,7 +137,7 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
         def result = JSON.parse(controller.response.contentAsString)
 
         String url= result.items[0].url;
-        assertEquals("http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry?hideSSBHeaderComps=true",url );
+        assertEquals("http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry?hideSSBHeaderComps=true",url );
 
     }
 
@@ -146,11 +146,11 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
         try {
             if(mepCode){
                 sqlObj.executeInsert("insert into TWGRMENU (TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL,TWGRMENU_DB_LINK_IND,TWGRMENU_SUBMENU_IND,TWGRMENU_ACTIVITY_DATE,TWGRMENU_SOURCE_IND,TWGRMENU_ENABLED)\n" +
-                        "values ('bmenu.P_MainMnu',99,'Faculty','http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry?mepCode=Banner','Y','N',sysdate,'L','Y')")
+                        "values ('bmenu.P_MainMnu',99,'Faculty','http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry?mepCode=Banner','Y','N',sysdate,'L','Y')")
 
             }else{
                 sqlObj.executeInsert("insert into TWGRMENU (TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL,TWGRMENU_DB_LINK_IND,TWGRMENU_SUBMENU_IND,TWGRMENU_ACTIVITY_DATE,TWGRMENU_SOURCE_IND,TWGRMENU_ENABLED)\n" +
-                        "values ('bmenu.P_MainMnu',99,'Faculty','http://localhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry','Y','N',sysdate,'L','Y')")
+                        "values ('bmenu.P_MainMnu',99,'Faculty','http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry','Y','N',sysdate,'L','Y')")
             }
             sqlObj.commit();
         } finally {
