@@ -144,6 +144,10 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
 
     private def dataSetup(boolean mepCode) {
         try {
+            sqlObj.executeInsert("INSERT INTO twgbwmnu (TWGBWMNU_NAME,TWGBWMNU_DESC,TWGBWMNU_PAGE_TITLE,TWGBWMNU_HEADER,TWGBWMNU_BACK_MENU_IND,TWGBWMNU_MODULE,TWGBWMNU_ENABLED_IND," +
+                            "TWGBWMNU_INSECURE_ALLOWED_IND,TWGBWMNU_ACTIVITY_DATE,TWGBWMNU_CACHE_OVERRIDE,TWGBWMNU_SOURCE_IND,TWGBWMNU_ADM_ACCESS_IND) VALUES " +
+                            "('bmenu.P_MainMnu','Faculty','Faculty','Faculty','N','WTL','Y','N'," +
+                            "TO_TIMESTAMP('13-AUG-02','DD-MON-RR HH.MI.SSXFF AM'),'S','L','N')");
             if(mepCode){
                 sqlObj.executeInsert("insert into TWGRMENU (TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL,TWGRMENU_DB_LINK_IND,TWGRMENU_SUBMENU_IND,TWGRMENU_ACTIVITY_DATE,TWGRMENU_SOURCE_IND,TWGRMENU_ENABLED)\n" +
                         "values ('bmenu.P_MainMnu',99,'Faculty','http://testhost:8080/StudentFacultyGradeEntry/ssb/gradeEntry?mepCode=Banner','Y','N',sysdate,'L','Y')")
@@ -161,6 +165,7 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
     private def deletetwgrmenuEntry() {
         try {
             sqlObj.execute("delete from  twgrmenu where TWGRMENU_SEQUENCE=99");
+            sqlObj.execute("delete from twgbwmnu where TWGBWMNU_NAME='bmenu.P_MainMnu' and TWGBWMNU_SOURCE_IND='L'");
             sqlObj.commit();
         } finally {
         }
