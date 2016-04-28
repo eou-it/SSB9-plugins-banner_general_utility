@@ -4,12 +4,15 @@ import grails.converters.JSON
 import grails.spring.BeanBuilder
 import grails.util.Holders
 import groovy.sql.Sql
+import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.commons.dbcp.BasicDataSource
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.context.ApplicationContext
+import org.springframework.security.core.context.SecurityContextHolder
+
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
@@ -17,6 +20,7 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
 
     def renderMap
     def grailsApplication
+    def dataSource
     def conn
     Sql sqlObj
 
@@ -28,9 +32,10 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
         Holders.config.ssbEnabled = true
         Holders.config.banner.sso.authenticationProvider="default";
 
-        ApplicationContext testSpringContext = createUnderlyingSsbDataSourceBean()
-        dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
-
+        if(!dataSource.underlyingSsbDataSource){
+            ApplicationContext testSpringContext = createUnderlyingSsbDataSourceBean()
+            dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
+        }
         conn = dataSource.getSsbConnection()
         sqlObj = new Sql( conn )
 
@@ -45,9 +50,12 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
 
     @After
     public void tearDown() {
+        super.tearDown();
         deletetwgrmenuEntry();
-        dataSource.underlyingSsbDataSource =  null;
-        Holders.config.ssbEnabled = false    }
+        Holders.config.ssbEnabled = false
+        SecurityContextHolder.getContext().setAuthentication( null )
+
+    }
 
     @Test
     void testSearchSingleCharacter() {
@@ -168,6 +176,7 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
             sqlObj.execute("delete from twgbwmnu where TWGBWMNU_NAME='bmenu.P_MainMnu' and TWGBWMNU_SOURCE_IND='L'");
             sqlObj.commit();
         } finally {
+            sqlObj?.close()
         }
 
     }
