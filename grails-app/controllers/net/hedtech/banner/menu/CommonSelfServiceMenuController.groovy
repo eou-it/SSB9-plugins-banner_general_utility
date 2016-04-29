@@ -15,25 +15,11 @@ class CommonSelfServiceMenuController {
 
     private final log = Logger.getLogger(getClass())
 
-    static final String BANNER_SSB_URL = "bannerSsbUrl"
-    static final String MAGELLAN = "MAGELLAN"
-    static final String SERVER_DESIGNATION = "SERVER_DESIGNATION"
-    static final String SSB = "SSB"
-    static final String BANNER_TITLE = "Banner"
-    static final String MENU_TYPE_BANNER = "Banner"
-    static final String MENU_TYPE_PERSONAL = "Personal"
-//    static final String MENU_TYPE_SELF_SERVICE = "SelfService"
-    static final String MY_BANNER_TITLE = "My Banner"
     static final String SSB_BANNER_TITLE = "Banner Self-Service"
-    static final String MENU_TYPE_SSB = "SSB"
     static final String Main_Menu = "bmenu.P_MainMnu"
     static final String AMPERSAND="&";
     static final String QUESTION_MARK="?";
-
-//    static final String BANNER_SELF_SERVICE_TITLE = "Banner Self-Service"
-    static final String PERSONAL_COMBINED_MENU_LIST = "personalCombinedMenuList"
-    static final String SSB_MENU_LIST = "ssbMenuList"
-
+    static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
 
     def data = {
         if(request.parameterMap["q"]){
@@ -44,25 +30,14 @@ class CommonSelfServiceMenuController {
     }
 
     def list = {
-        String mnuName
-        String mnuType
         String caption
         Map subMenu
-        Map finalMenu
-
-        if (request.parameterMap["menu"])
-            mnuName = request.parameterMap["menu"][0]
-
-        if(request.parameterMap["type"])
-            mnuType = request.parameterMap["type"][0]
 
         if(request.parameterMap["caption"])
             caption = request.parameterMap["caption"][0]
 
 
-        //subMenu = getSubMenuData(mnuName, mnuType, caption)
-
-        subMenu = getSubMenuData(Main_Menu, mnuType, caption)
+        subMenu = getSubMenuData(Main_Menu, caption)
 
 
         if( params.callback ) {
@@ -73,7 +48,7 @@ class CommonSelfServiceMenuController {
 
 
     }
-    private def getSubMenuData(String mnuName,String mnuType,String caption ){
+    private def getSubMenuData(String mnuName,String caption ){
 
         Map subMenu
         List ssbList
@@ -81,13 +56,10 @@ class CommonSelfServiceMenuController {
         if (mnuName){
             List mnuList
             def user = SecurityContextHolder?.context?.authentication?.principal
-            mnuList = selfServiceMenuService.bannerMenuAppConcept(mnuName,null,user.pidm)
+            mnuList = selfServiceMenuService.bannerMenuAppConcept(user.pidm)
             mnuList=setHideSSBHeaderCompsParam(mnuList)
             ssbList =  composeMenuStructure(mnuList, SSB_BANNER_TITLE)
-            subMenu = [name:mnuName,caption:caption,items: ssbList, _links:getLinks(mnuName)]
-        } else {
-            ssbList =  rootMenu()
-            subMenu = [ name:"root", caption:"root", items: ssbList , _links:getLinks(mnuName)]
+            subMenu = [name:mnuName,caption:caption,items: ssbList]
         }
         return subMenu
     }
@@ -95,84 +67,14 @@ class CommonSelfServiceMenuController {
     private List setHideSSBHeaderCompsParam(List mnuList){
         mnuList.eachWithIndex{ SelfServiceMenu,  i ->
             String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
-            SelfServiceMenu.url=SelfServiceMenu.url+symbol+"hideSSBHeaderComps=true"
+            SelfServiceMenu.url=SelfServiceMenu.url+symbol+hideSSBHeaderComps;
         }
         return mnuList
     }
 
-    private def getLinks(String mnuName) {
-
-        Map self
-        Map parent
-        String pName
-        String pCaption
-        List parentList
-        log.trace("CommonSelfServiceMenuController.getLinks invoked for $mnuName")
-
-        if(mnuName != null){
-            parentList = selfServiceMenuService.getParent(mnuName)
-            if(parentList )   {
-                pName = parentList[0].name
-                pCaption = parentList[0].caption
-            }
-        }
-        if (mnuName != null)
-            self = [href:getServerURL() +"/commonSelfServiceMenu?menu="+mnuName]
-        else
-            self = [href:getServerURL() +"/commonSelfServiceMenu?"]
-
-        if (mnuName != null && !mnuName?.equalsIgnoreCase(Main_Menu))
-            parent = [name:pName, caption: pCaption, href: getServerURL() +"/commonSelfServiceMenu?menu="+mnuName]
-        else
-            parent = [name:"root", caption: "root", href: getServerURL() +"/commonSelfServiceMenu?"]
-
-        return [self: self, parent:parent]
-    }
-
-
-    private def rootMenu = {
-        Map ssbMenu
-        List finalList = []
-        def user = SecurityContextHolder?.context?.authentication?.principal
-        if (user instanceof BannerUser) {
-            if (user.pidm)  {
-                ssbMenu = [ name:SSB_BANNER_TITLE, caption:SSB_BANNER_TITLE, page:SSB_BANNER_TITLE ,url: getServerURL() +"/commonSelfServiceMenu?menu="+Main_Menu+"&caption="+SSB_BANNER_TITLE+"&type="+SSB_BANNER_TITLE,type: "MENU",items: null,menu:SSB_BANNER_TITLE]
-                finalList.add(ssbMenu)
-            }
-        }
-        return finalList
-    }
-
-
-    def search = {
-
-        Map subMenu
-        Map finalMenu
-        List adminList
-        List finalList = []
-        String searchVal
-
-        if(request.parameterMap["q"])
-            searchVal = request.parameterMap["q"][0]
-        if(searchVal){
-            def user = SecurityContextHolder?.context?.authentication?.principal
-            adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm)
-            adminList=setHideSSBHeaderCompsParam(adminList)
-            finalList.addAll(adminList)
-        }
-        subMenu = [ name:"root", caption:"root", items: finalList ]
-        if( params.callback ) {
-            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
-        } else {
-            render subMenu as JSON
-        }
-    }
-
-
     def searchAppConcept = {
 
         Map subMenu
-        Map finalMenu
         List adminList
         List finalList = []
         String searchVal
