@@ -36,8 +36,6 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
             ApplicationContext testSpringContext = createUnderlyingSsbDataSourceBean()
             dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
         }
-        conn = dataSource.getSsbConnection()
-        sqlObj = new Sql( conn )
 
         controller = new CommonSelfServiceMenuController()
 
@@ -50,10 +48,10 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
 
     @After
     public void tearDown() {
-        super.tearDown();
         deletetwgrmenuEntry();
-        Holders.config.ssbEnabled = false
-        SecurityContextHolder.getContext().setAuthentication( null )
+        Holders.config.ssbEnabled = false;
+        logout();
+        super.tearDown();
 
     }
 
@@ -151,6 +149,8 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
 
 
     private def dataSetup(boolean mepCode) {
+        conn = dataSource.getConnection()
+        sqlObj = new Sql( conn )
         try {
             sqlObj.executeInsert("INSERT INTO twgbwmnu (TWGBWMNU_NAME,TWGBWMNU_DESC,TWGBWMNU_PAGE_TITLE,TWGBWMNU_HEADER,TWGBWMNU_BACK_MENU_IND,TWGBWMNU_MODULE,TWGBWMNU_ENABLED_IND," +
                             "TWGBWMNU_INSECURE_ALLOWED_IND,TWGBWMNU_ACTIVITY_DATE,TWGBWMNU_CACHE_OVERRIDE,TWGBWMNU_SOURCE_IND,TWGBWMNU_ADM_ACCESS_IND) VALUES " +
@@ -166,11 +166,14 @@ class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTes
             }
             sqlObj.commit();
         } finally {
+            sqlObj?.close()
         }
 
     }
 
     private def deletetwgrmenuEntry() {
+        conn = dataSource.getConnection()
+        sqlObj = new Sql( conn )
         try {
             sqlObj.execute("delete from  twgrmenu where TWGRMENU_SEQUENCE=99");
             sqlObj.execute("delete from twgbwmnu where TWGBWMNU_NAME='bmenu.P_MainMnu' and TWGBWMNU_SOURCE_IND='L'");

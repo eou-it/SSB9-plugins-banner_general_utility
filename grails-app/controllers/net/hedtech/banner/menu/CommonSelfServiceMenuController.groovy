@@ -56,13 +56,10 @@ class CommonSelfServiceMenuController {
         if (mnuName){
             List mnuList
             def user = SecurityContextHolder?.context?.authentication?.principal
-            mnuList = selfServiceMenuService.bannerMenuAppConcept(mnuName,null,user.pidm)
+            mnuList = selfServiceMenuService.bannerMenuAppConcept(user.pidm)
             mnuList=setHideSSBHeaderCompsParam(mnuList)
             ssbList =  composeMenuStructure(mnuList, SSB_BANNER_TITLE)
-            subMenu = [name:mnuName,caption:caption,items: ssbList, _links:getLinks(mnuName)]
-        } else {
-            ssbList =  rootMenu()
-            subMenu = [ name:"root", caption:"root", items: ssbList , _links:getLinks(mnuName)]
+            subMenu = [name:mnuName,caption:caption,items: ssbList]
         }
         return subMenu
     }
@@ -73,49 +70,6 @@ class CommonSelfServiceMenuController {
             SelfServiceMenu.url=SelfServiceMenu.url+symbol+hideSSBHeaderComps;
         }
         return mnuList
-    }
-
-    private def getLinks(String mnuName) {
-
-        Map self
-        Map parent
-        String pName
-        String pCaption
-        List parentList
-        log.trace("CommonSelfServiceMenuController.getLinks invoked for $mnuName")
-
-        if(mnuName != null){
-            parentList = selfServiceMenuService.getParent(mnuName)
-            if(parentList )   {
-                pName = parentList[0].name
-                pCaption = parentList[0].caption
-            }
-        }
-        if (mnuName != null)
-            self = [href:getServerURL() +"/commonSelfServiceMenu?menu="+mnuName]
-        else
-            self = [href:getServerURL() +"/commonSelfServiceMenu?"]
-
-        if (mnuName != null && !mnuName?.equalsIgnoreCase(Main_Menu))
-            parent = [name:pName, caption: pCaption, href: getServerURL() +"/commonSelfServiceMenu?menu="+mnuName]
-        else
-            parent = [name:"root", caption: "root", href: getServerURL() +"/commonSelfServiceMenu?"]
-
-        return [self: self, parent:parent]
-    }
-
-
-    private def rootMenu = {
-        Map ssbMenu
-        List finalList = []
-        def user = SecurityContextHolder?.context?.authentication?.principal
-        if (user instanceof BannerUser) {
-            if (user.pidm)  {
-                ssbMenu = [ name:SSB_BANNER_TITLE, caption:SSB_BANNER_TITLE, page:SSB_BANNER_TITLE ,url: getServerURL() +"/commonSelfServiceMenu?menu="+Main_Menu+"&caption="+SSB_BANNER_TITLE+"&type="+SSB_BANNER_TITLE,type: "MENU",items: null,menu:SSB_BANNER_TITLE]
-                finalList.add(ssbMenu)
-            }
-        }
-        return finalList
     }
 
     def searchAppConcept = {

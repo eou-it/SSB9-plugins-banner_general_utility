@@ -41,14 +41,14 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         sql.eachRow ("select spriden_pidm from spriden where spriden_id = 'HOSS001' and spriden_change_ind is not null") {
             pidm = it.spriden_pidm
         }
-        map = selfServiceMenuService.bannerMenu (null,null,pidm)
+        map = selfServiceMenuService.bannerMenu (null,pidm)
         assert map?.size() > 0
     }
 
     @Test
     void testSelfServiceBannerMenu() {
         def map
-        map = selfServiceMenuService.bannerMenu (null,null,null)
+        map = selfServiceMenuService.bannerMenu (null,null)
         assert map.size() > 0
     }
 
@@ -122,7 +122,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
             pidm = it.spriden_pidm
         }
 
-        map = selfServiceMenuService.bannerMenuAppConcept (null, null,pidm)
+        map = selfServiceMenuService.bannerMenuAppConcept (pidm)
         assert map?.size() > 0
 
         deleteSpriden(bannerPidm)
@@ -143,7 +143,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
             pidm = it.spriden_pidm
         }
 
-        map = selfServiceMenuService.bannerMenuAppConcept (null, null ,pidm)
+        map = selfServiceMenuService.bannerMenuAppConcept (pidm)
         assert map?.size() == 0
 
         deleteSpriden(bannerPidm)
