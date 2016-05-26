@@ -72,7 +72,12 @@ class CommonMenuController {
             caption = XssSanitizer.sanitize(request.parameterMap["caption"][0])
 
 
-        subMenu = getSubMenuData(mnuName, mnuType, caption)
+        if (!session."disableAdmin") {
+            subMenu = getSubMenuData(mnuName, mnuType, caption)
+        } else{
+            subMenu = [ name:"root", caption:"root", items: [] ]
+        }
+
         //finalMenu = [ data: subMenu ]
 
         // Support JSON-P callback
@@ -181,16 +186,19 @@ class CommonMenuController {
         if(request.parameterMap["q"])
             searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
 
-        if(searchVal && searchVal.length() < 3) {
-            quickFlowList = getQuickflowLessThanThreeCharSearchResults(searchVal)
-            finalList.addAll(quickFlowList)
-        } else {
-            if(searchVal){
-                adminList = getAdminMenuSearchResults(searchVal)
-                finalList.addAll(adminList)
-                //it only applies after workflow task
-                if (searchVal.equals("WORKFLOW")) {
-                    clearWorkflowArguments()
+        if (!session."disableAdmin") {
+
+            if (searchVal && searchVal.length() < 3) {
+                quickFlowList = getQuickflowLessThanThreeCharSearchResults(searchVal)
+                finalList.addAll(quickFlowList)
+            } else {
+                if (searchVal) {
+                    adminList = getAdminMenuSearchResults(searchVal)
+                    finalList.addAll(adminList)
+                    //it only applies after workflow task
+                    if (searchVal.equals("WORKFLOW")) {
+                        clearWorkflowArguments()
+                    }
                 }
             }
         }
