@@ -190,7 +190,7 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
-            mnu.url = it.twgrmenu_db_link_ind == "Y" ? Holders?.config?.banner8?.SS?.url + it.twgrmenu_url : it.twgrmenu_url
+            mnu.url = it.twgrmenu_db_link_ind == "Y" ? getMepSsb8UrlFromConfig() + it.twgrmenu_url : it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
 
@@ -324,7 +324,7 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.caption = it.twgrmenu_url_text
             mnu.menu = firstMenu
-            mnu.url = Holders?.config?.banner8?.SS?.url + it.twgrmenu_url
+            mnu.url = getMepSsb8UrlFromConfig() + it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.parent =it.twgrmenu_url
             mnu.uiVersion =it.twgrmenu_db_link_ind == "Y" ? "banner8ss" : "banner9ss"
@@ -431,6 +431,18 @@ class SelfServiceMenuService {
         }
 
         return session.getAttribute(SS_APPS)
+    }
+
+    // gets MEP urls for BANNER SS
+    private String getMepSsb8UrlFromConfig() {
+        String url
+        def mep = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+        if (mep && Holders.config?.mep?.banner8?.SS?.url) {
+            url = Holders.config?.mep?.banner8?.SS?.url[mep]
+        }else{
+            url = Holders?.config?.banner8?.SS?.url
+        }
+        return url
     }
 
 }
