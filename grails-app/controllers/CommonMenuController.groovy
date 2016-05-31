@@ -17,6 +17,7 @@ class CommonMenuController {
     def grailsApplication
     def jobsMenuService
     def quickFlowMenuService
+    def multiEntityProcessingService
 
     private final log = Logger.getLogger(getClass())
 
@@ -492,10 +493,14 @@ class CommonMenuController {
             if (a.type == "MENU")
                 finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+type+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
 
-            if (a.type == "FORM" ){
-                if (a.uiVersion =="banner8admin")
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
-                else
+           if (a.type == "FORM" ) {
+             if (a.uiVersion == "banner8admin"){
+                    if (getMultiEntityProcessingService().isMEP()) {
+                        finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe+vpdi_code=" + session["mep"], type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                    } else {
+                        finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                    }
+            }else
                     if(a.platCode == ZK_PLATFORM_CODE) {
                         finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&global_variables={{params}}&GeneralMenu=true",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                     } else {
