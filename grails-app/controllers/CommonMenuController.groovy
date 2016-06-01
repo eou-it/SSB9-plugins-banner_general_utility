@@ -73,7 +73,7 @@ class CommonMenuController {
             caption = XssSanitizer.sanitize(request.parameterMap["caption"][0])
 
 
-        if (!session."disableAdmin") {
+        if (!session."disableAdmin" && SecurityContextHolder?.context?.authentication?.principal?.oracleUserName) {
             subMenu = getSubMenuData(mnuName, mnuType, caption)
         } else{
             subMenu = [ name:"root", caption:"root", items: [] ]
@@ -187,23 +187,25 @@ class CommonMenuController {
         if(request.parameterMap["q"])
             searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
 
-        if (!session."disableAdmin") {
+        if (SecurityContextHolder?.context?.authentication?.principal?.oracleUserName) {
 
-            if (searchVal && searchVal.length() < 3) {
-                quickFlowList = getQuickflowLessThanThreeCharSearchResults(searchVal)
-                finalList.addAll(quickFlowList)
-            } else {
-                if (searchVal) {
-                    adminList = getAdminMenuSearchResults(searchVal)
-                    finalList.addAll(adminList)
-                    //it only applies after workflow task
-                    if (searchVal.equals("WORKFLOW")) {
-                        clearWorkflowArguments()
+            if (!session."disableAdmin") {
+
+                if (searchVal && searchVal.length() < 3) {
+                    quickFlowList = getQuickflowLessThanThreeCharSearchResults(searchVal)
+                    finalList.addAll(quickFlowList)
+                } else {
+                    if (searchVal) {
+                        adminList = getAdminMenuSearchResults(searchVal)
+                        finalList.addAll(adminList)
+                        //it only applies after workflow task
+                        if (searchVal.equals("WORKFLOW")) {
+                            clearWorkflowArguments()
+                        }
                     }
                 }
             }
         }
-
         subMenu = [ name:"root", caption:"root", items: finalList ]
         // Support JSON-P callback
         if( callback ) {
@@ -496,7 +498,7 @@ class CommonMenuController {
            if (a.type == "FORM" ) {
              if (a.uiVersion == "banner8admin"){
                     if (getMultiEntityProcessingService().isMEP()) {
-                        finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe+vpdi_code=" + session["mep"], type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                        finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
                     } else {
                         finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
                     }

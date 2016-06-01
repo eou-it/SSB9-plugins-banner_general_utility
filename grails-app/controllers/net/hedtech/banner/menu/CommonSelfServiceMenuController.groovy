@@ -8,6 +8,7 @@ import grails.converters.JSON
 import net.hedtech.banner.security.BannerUser
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
+import net.hedtech.banner.db.dbutility.DBUtility
 
 class CommonSelfServiceMenuController {
     def selfServiceMenuService
@@ -38,7 +39,13 @@ class CommonSelfServiceMenuController {
             caption = request.parameterMap["caption"][0]
 
 
-        subMenu = getSubMenuData(Main_Menu, caption)
+        //subMenu = getSubMenuData(Main_Menu, caption)
+
+        if (DBUtility.isSSUser()) {
+            subMenu = getSubMenuData(Main_Menu, caption)
+        }else{
+            subMenu = [ name:"root", caption:"root", items: []]
+        }
 
 
         if( params.callback ) {
@@ -80,13 +87,15 @@ class CommonSelfServiceMenuController {
         List finalList = []
         String searchVal
 
-        if(request.parameterMap["q"])
-            searchVal = request.parameterMap["q"][0]
-        if(searchVal && searchVal.length() >= 3){
-            def user = SecurityContextHolder?.context?.authentication?.principal
-            adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm, request.parameterMap["ui"])
-            adminList=setHideSSBHeaderCompsParam(adminList)
-            finalList.addAll(adminList)
+        if (DBUtility.isSSUser()) {
+            if (request.parameterMap["q"])
+                searchVal = request.parameterMap["q"][0]
+            if (searchVal && searchVal.length() >= 3) {
+                def user = SecurityContextHolder?.context?.authentication?.principal
+                adminList = selfServiceMenuService.searchMenuAppConcept(searchVal, user.pidm, request.parameterMap["ui"])
+                adminList = setHideSSBHeaderCompsParam(adminList)
+                finalList.addAll(adminList)
+            }
         }
 
         subMenu = [ name:"root", caption:"root", items: composeMenuStructure(finalList, SSB_BANNER_TITLE) ]
