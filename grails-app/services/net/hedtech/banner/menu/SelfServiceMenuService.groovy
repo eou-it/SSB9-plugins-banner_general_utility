@@ -7,6 +7,7 @@ import groovy.sql.Sql
 import org.apache.commons.lang.math.RandomUtils
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Service for retrieving Banner menu item for Classic SSB.
@@ -100,7 +101,7 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
-            mnu.url = it.twgrmenu_db_link_ind == "Y" ? ConfigurationHolder?.config?.banner8?.SS?.url + it.twgrmenu_url : it.twgrmenu_url
+            mnu.url = it.twgrmenu_db_link_ind == "Y" ? getMepSsb8UrlFromConfig() + it.twgrmenu_url : it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
 
@@ -234,7 +235,7 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.caption = it.twgrmenu_url_text
             mnu.menu = firstMenu
-            mnu.url = ConfigurationHolder?.config?.banner8?.SS?.url + it.twgrmenu_url
+            mnu.url = getMepSsb8UrlFromConfig() + it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.parent =it.twgrmenu_url
             mnu.uiVersion =it.twgrmenu_db_link_ind == "Y" ? "banner8ss" : "banner9ss"
@@ -247,6 +248,17 @@ class SelfServiceMenuService {
         sql.connection.close()
         return dataMap
 
+    }
+    // gets MEP urls for BANNER SS
+    private String getMepSsb8UrlFromConfig() {
+        String url
+        def mep = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+        if (mep && ConfigurationHolder?.config?.mep?.banner8?.SS?.url) {
+            url = ConfigurationHolder?.config?.mep?.banner8?.SS?.url[mep]
+        }else{
+            url = ConfigurationHolder?.config?.banner8?.SS?.url
+        }
+        return url
     }
 
 }
