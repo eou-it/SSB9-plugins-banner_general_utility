@@ -9,6 +9,7 @@ import net.hedtech.banner.utility.GeneralMenu
 import net.hedtech.banner.security.XssSanitizer
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
+import net.hedtech.banner.db.dbutility.DBUtility
 
 class CommonMenuController {
     def menuService
@@ -73,7 +74,7 @@ class CommonMenuController {
             caption = XssSanitizer.sanitize(request.parameterMap["caption"][0])
 
 
-        if (!session."disableAdmin" && SecurityContextHolder?.context?.authentication?.principal?.oracleUserName) {
+        if (!session."disableAdmin" && DBUtility.isOracleUser(SecurityContextHolder?.context?.authentication?.principal)) {
             subMenu = getSubMenuData(mnuName, mnuType, caption)
         } else{
             subMenu = [ name:"root", caption:"root", items: [] ]
@@ -187,7 +188,7 @@ class CommonMenuController {
         if(request.parameterMap["q"])
             searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
 
-        if (SecurityContextHolder?.context?.authentication?.principal?.oracleUserName) {
+        if (DBUtility.isOracleUser(SecurityContextHolder?.context?.authentication?.principal)) {
 
             if (!session."disableAdmin") {
 
