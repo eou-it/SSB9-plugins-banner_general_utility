@@ -498,7 +498,7 @@ class CommonMenuController {
 
            if (a.type == "FORM" ) {
              if (a.uiVersion == "banner8admin"){
-                    if (getMultiEntityProcessingService().isMEP()) {
+                    if (getMultiEntityProcessingService().isMEP()) { //check for MEP for INB Forms
                         finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
                     } else {
                         finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
@@ -511,22 +511,44 @@ class CommonMenuController {
                             def s = a.url +"?wf_args=" + session["wf_args"]
                             finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: s,type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                         }else{
-                            finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                            if (getMultiEntityProcessingService().isMEP()) { //check for MEP for Transformation Pages
+                                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+ "+vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                            }else{
+                                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                            }
                         }
                     }
             }else if(a.type == JOB_TYPE){
-                if (!javaFormsURL) {
-                    finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
-                } else{
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: javaFormsURL +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
-                }
+
+               if (getMultiEntityProcessingService().isMEP()) { //check for MEP for JOBS
+                   if (!javaFormsURL) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: javaFormsURL + "?form=" + a.formName + "+vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }else{
+                   if (!javaFormsURL) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: javaFormsURL + "?form=" + a.formName + "&ban_args={{params}}&ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }
             } else if(a.type == QUICKFLOW_TYPE) {
                 def hsUrl = quickFlowMenuService.getGubmoduUrlForHsTypeFromQuickFlowCode(a.name)
-                if(hsUrl) {
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: hsUrl +"?form="+ a.name +"&ban_args={{params}}&ban_mode=xe",type: QUICKFLOW_TYPE,menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
-                } else {
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_INB_PARENT,url: getBannerInbUrl() + "?otherParams=launch_form="+ a.page +"+ban_args={{params}}+ban_mode=xe",type: QUICKFLOW_TYPE,menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
-                }
+
+               if (getMultiEntityProcessingService().isMEP()) { //check for MEP for QUICKFLOW
+                   if (hsUrl) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: hsUrl + "?form=" + a.name + "+vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_INB_PARENT, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }else{
+                   if (hsUrl) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: hsUrl + "?form=" + a.name + "&ban_args={{params}}&ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_INB_PARENT, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }
             }
         }
         return finalList
