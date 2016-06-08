@@ -69,7 +69,7 @@ class SelfServiceMenuController {
         currentMenu = pidm ? currentMenu + pidm : currentMenu
 
         if (session[currentMenu] == null) {
-            session[currentMenu] = selfServiceMenuService.bannerMenu(menuName, pidm)
+            session[currentMenu] = selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm)
         }
 
         return session[currentMenu]
