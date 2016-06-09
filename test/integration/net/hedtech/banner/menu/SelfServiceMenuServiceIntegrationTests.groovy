@@ -53,6 +53,14 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
+    void testSelfServiceBannerMenuWithMenuTrail() {
+        def map
+        map = selfServiceMenuService.bannerMenu (null,"Banner/Volunteer",null)
+
+        assertEquals "Banner/Volunteer", map.get(0).getMenu() ;
+    }
+
+    @Test
     void testSSLinks() {
 
         def ss = ["a","B"]
