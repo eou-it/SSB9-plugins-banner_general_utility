@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 
 import org.apache.log4j.Logger
@@ -69,7 +69,7 @@ class SelfServiceMenuController {
         currentMenu = pidm ? currentMenu + pidm : currentMenu
 
         if (session[currentMenu] == null) {
-            session[currentMenu] = selfServiceMenuService.bannerMenu(menuName, pidm)
+            session[currentMenu] = selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm)
         }
 
         return session[currentMenu]

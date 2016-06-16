@@ -41,15 +41,23 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         sql.eachRow ("select spriden_pidm from spriden where spriden_id = 'HOSS001' and spriden_change_ind is not null") {
             pidm = it.spriden_pidm
         }
-        map = selfServiceMenuService.bannerMenu (null,pidm)
+        map = selfServiceMenuService.bannerMenu (null,null,pidm)
         assert map?.size() > 0
     }
 
     @Test
     void testSelfServiceBannerMenu() {
         def map
-        map = selfServiceMenuService.bannerMenu (null,null)
+        map = selfServiceMenuService.bannerMenu (null,null,null)
         assert map.size() > 0
+    }
+
+    @Test
+    void testSelfServiceBannerMenuWithMenuTrail() {
+        def map
+        map = selfServiceMenuService.bannerMenu (null,"Banner/Volunteer",null)
+
+        assertEquals "Banner/Volunteer", map.get(0).getMenu() ;
     }
 
     @Test
