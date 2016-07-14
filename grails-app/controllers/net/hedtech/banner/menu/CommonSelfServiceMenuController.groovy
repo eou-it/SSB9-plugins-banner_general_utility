@@ -6,6 +6,7 @@ package net.hedtech.banner.menu
 
 import grails.converters.JSON
 import net.hedtech.banner.security.BannerUser
+import net.hedtech.banner.security.XssSanitizer
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 import net.hedtech.banner.db.dbutility.DBUtility
@@ -24,7 +25,9 @@ class CommonSelfServiceMenuController {
     static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
 
     def data = {
-        if(request.parameterMap["q"]){
+        if (params.refresh == 'Y'){
+            keepAlive()
+        }else if(request.parameterMap["q"]){
             searchAppConcept()
         } else {
             list()
@@ -139,7 +142,7 @@ class CommonSelfServiceMenuController {
 
             if (a.type == "FORM" ){
                 if (getMultiEntityProcessingService().isMEP()){
-                    finalList.add(name: tempName, page: tempName, caption: a.caption, parent: a.url, url: a.url.replace("{mepCode}",session["mep"]), type: "SS-APP", menu: tempFormName, pageCaption: a.caption)
+                    finalList.add(name: tempName, page: tempName, caption: a.caption, parent: a.url.replace("{mepCode}",session["mep"]), url: a.url.replace("{mepCode}",session["mep"]), type: "SS-APP", menu: tempFormName.replace("{mepCode}",session["mep"]), pageCaption: a.caption)
                 } else {
                     finalList.add(name: tempName, page: tempName, caption: a.caption, parent: a.url, url: a.url, type: "SS-APP", menu: tempFormName, pageCaption: a.caption)
                 }
@@ -147,5 +150,16 @@ class CommonSelfServiceMenuController {
         }
         return finalList
     }
+
+    private def keepAlive(){
+        String callback = XssSanitizer.sanitize(params.callback)
+
+        if( callback ) {
+            render text: "$callback && $callback({'result':'I am Alive'});", contentType: "text/javascript"
+        } else {
+            render "I am Alive"
+        }
+    }
+
 
 }
