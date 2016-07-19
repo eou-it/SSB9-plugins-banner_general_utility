@@ -25,8 +25,9 @@ class SelfServiceMenuService {
      * @return List representation of menu objects that a user has access
      */
 
-    def bannerMenu(def menuName, def facultyPidm) {
-        processMenu(menuName, facultyPidm)
+    def bannerMenu(def menuName, def menuTrail, def pidm) {
+
+        processMenu(menuName, menuTrail, pidm)
     }
 
     def bannerMenuAppConcept(def facultyPidm) {
@@ -90,7 +91,7 @@ class SelfServiceMenuService {
      * @return Map of menu objects that a user has access
      */
 
-    private def processMenu(def menuName, def pidm) {
+    private def processMenu(def menuName, def menuTrail, def pidm) {
 
         def dataMap = []
         def firstMenu = "Banner";
@@ -136,7 +137,7 @@ class SelfServiceMenuService {
             mnu.caption = toggleSeparator(it.twgrmenu_url_text)
             mnu.pageCaption = mnu.caption
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
-            mnu.menu = firstMenu
+            mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
             mnu.url = it.twgrmenu_db_link_ind == "Y" ? getMepSsb8UrlFromConfig() + it.twgrmenu_url : it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
