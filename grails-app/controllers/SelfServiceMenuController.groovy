@@ -65,13 +65,27 @@ class SelfServiceMenuController {
     private def getMenu( menuName, menuTrail, pidm ) {
         if (log.isDebugEnabled()) log.debug("Menu Controller getmenu")
 
+        def menulist
         def currentMenu = menuName ? menuName : "Banner"
         currentMenu = pidm ? currentMenu + pidm : currentMenu
 
         if (session[currentMenu] == null) {
-            session[currentMenu] = selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm)
+            menulist = selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm)
+            session[currentMenu] = setHideSSBHeaderCompsParam(menulist)
         }
 
         return session[currentMenu]
     }
+    private def setHideSSBHeaderCompsParam(def mnuList){
+        mnuList.eachWithIndex{ SelfServiceMenu,  i ->
+            String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
+            SelfServiceMenu.url=SelfServiceMenu.url+symbol+hideSSBHeaderComps;
+            SelfServiceMenu.url=SelfServiceMenu.url.replace("{mepCode}",session["mep"])
+        }
+        return mnuList
+    }
+
+    static final String AMPERSAND="&";
+    static final String QUESTION_MARK="?";
+    static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
 }
