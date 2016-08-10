@@ -512,7 +512,7 @@ class CommonMenuController {
                             finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: s,type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                         }else{
                             if (getMultiEntityProcessingService().isMEP()) { //check for MEP for Transformation Pages
-                                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+ "+vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+ "?vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                             }else{
                                 finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                             }
