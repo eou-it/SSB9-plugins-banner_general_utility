@@ -70,8 +70,12 @@ class SelfServiceMenuController {
         currentMenu = pidm ? currentMenu + pidm : currentMenu
 
         if (session[currentMenu] == null) {
-            menulist = selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm)
-            session[currentMenu] = setHideSSBHeaderCompsParam(menulist)
+            if(session['hideSSBHeaderComps']!=null && session['hideSSBHeaderComps']){
+                    menulist = selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm);
+                    session[currentMenu] = setHideSSBHeaderCompsParam(menulist);
+            }else{
+                session[currentMenu]= selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm);
+            }
         }
 
         return session[currentMenu]
@@ -80,7 +84,9 @@ class SelfServiceMenuController {
         mnuList.eachWithIndex{ SelfServiceMenu,  i ->
             String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
             SelfServiceMenu.url=SelfServiceMenu.url+symbol+hideSSBHeaderComps;
-            SelfServiceMenu.url=SelfServiceMenu.url.replace("{mepCode}",session["mep"])
+            if(session["mep"]!=null) {
+                SelfServiceMenu.url = SelfServiceMenu.url.replace("{mepCode}", session["mep"])
+            }
         }
         return mnuList
     }
