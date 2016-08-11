@@ -70,7 +70,7 @@ class SelfServiceMenuController {
         currentMenu = pidm ? currentMenu + pidm : currentMenu
 
         if (session[currentMenu] == null) {
-            if(session['hideSSBHeaderComps']!=null && session['hideSSBHeaderComps']){
+            if(session['hideSSBHeaderComps']!=null && session['hideSSBHeaderComps']=='true'){
                     menulist = selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm);
                     session[currentMenu] = setHideSSBHeaderCompsParam(menulist);
             }else{
