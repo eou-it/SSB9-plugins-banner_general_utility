@@ -78,7 +78,7 @@ class SelfServiceMenuController {
         mnuList.eachWithIndex{ SelfServiceMenu,  i ->
             println(session['mep']);
             if(SelfServiceMenu.url.indexOf(MEPCODE)>-1 && session["mep"]!=null){
-                SelfServiceMenu.url.replace("{mepCode}", session["mep"])
+                SelfServiceMenu.url=SelfServiceMenu.url.replace("{mepCode}", session["mep"])
             }
             if(session['hideSSBHeaderComps']!=null && session['hideSSBHeaderComps'].trim()=='true'){
                 String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
