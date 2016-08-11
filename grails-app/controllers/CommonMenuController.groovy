@@ -524,7 +524,7 @@ class CommonMenuController {
                    if (!javaFormsURL) {
                        finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
                    } else {
-                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: javaFormsURL + "?form=" + a.formName + "+vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: javaFormsURL + "?form=" + a.formName + "&vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
                    }
                }else{
                    if (!javaFormsURL) {
