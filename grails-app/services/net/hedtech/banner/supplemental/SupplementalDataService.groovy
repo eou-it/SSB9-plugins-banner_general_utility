@@ -112,6 +112,86 @@ class SupplementalDataService {
     }
 
 
+    public def getModelExtension(tableName,id) {
+
+        def sdeModel = loadSupplementalDataForTable(tableName,id)
+
+        //SDE Process
+        def attributeName
+        def value
+        def l = []
+
+        sdeModel.each {
+            def z = it.key.toLowerCase()
+            def map = it.value
+            attributeName = it.key
+
+            map.each {
+                def extension = [:]
+                def paramMap = it.value
+                value = paramMap.value
+
+                extension."name" = z
+                extension."prompt" = paramMap.prompt
+
+                if (value && paramMap.dataType.equals('DATE')) {
+                    SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
+                    Date date = formatter.parse(value);
+
+                    SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
+                    String s = formatter1.format(date);
+                    extension."value" = s
+                } else {
+                    extension."value" = value
+                }
+
+                extension."datatype" = paramMap.dataType
+
+                l << extension
+            }
+        }
+
+        return l
+    }
+
+
+    public def loadSupplementalDataForTable(tableName,id) {
+        try {
+            def sql = new Sql(sessionFactory.getCurrentSession().connection())
+
+            def attributeName
+
+            println "Tablename: "  + tableName
+            println "Id: " + id
+
+            sql.call("""
+	  declare
+	      l_pkey 	GORSDAV.GORSDAV_PK_PARENTTAB%TYPE;
+	      l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${tableName},${id});
+	   begin
+	       l_pkey := gp_goksdif.f_get_pk(${tableName},l_rowid);
+	       gp_goksdif.p_set_current_pk(l_pkey);
+	   end;
+           """
+            )
+
+            def resultSetAttributesList = sessionFactory.getCurrentSession().createSQLQuery(
+                    """SELECT DISTINCT govsdav_attr_name as attrName ,  govsdav_attr_order as attrOrder
+	         FROM govsdav WHERE govsdav_table_name= :tableName  ORDER BY 2
+	""").setString("tableName", tableName).list()
+
+            def supplementalProperties = [:]
+            resultSetAttributesList.each() {
+                loadSupplementalProperty(it[0], supplementalProperties, tableName)
+            }
+
+            supplementalProperties
+        } catch (e) {
+            //log.error "Failed to load SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
+            throw e
+        }
+    }
+
     public def loadSupplementalDataForModel(model) {
         log.trace "In load: ${model}"
 
