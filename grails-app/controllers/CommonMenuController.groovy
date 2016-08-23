@@ -9,6 +9,7 @@ import net.hedtech.banner.utility.GeneralMenu
 import net.hedtech.banner.security.XssSanitizer
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
+import net.hedtech.banner.db.dbutility.DBUtility
 
 class CommonMenuController {
     def menuService
@@ -17,6 +18,7 @@ class CommonMenuController {
     def grailsApplication
     def jobsMenuService
     def quickFlowMenuService
+    def multiEntityProcessingService
 
     private final log = Logger.getLogger(getClass())
 
@@ -72,7 +74,12 @@ class CommonMenuController {
             caption = XssSanitizer.sanitize(request.parameterMap["caption"][0])
 
 
-        subMenu = getSubMenuData(mnuName, mnuType, caption)
+        if (!session."disableAdmin" && DBUtility.isOracleUser(SecurityContextHolder?.context?.authentication?.principal)) {
+            subMenu = getSubMenuData(mnuName, mnuType, caption)
+        } else{
+            subMenu = [ name:"root", caption:"root", items: [] ]
+        }
+
         //finalMenu = [ data: subMenu ]
 
         // Support JSON-P callback
@@ -181,20 +188,25 @@ class CommonMenuController {
         if(request.parameterMap["q"])
             searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
 
-        if(searchVal && searchVal.length() < 3) {
-            quickFlowList = getQuickflowLessThanThreeCharSearchResults(searchVal)
-            finalList.addAll(quickFlowList)
-        } else {
-            if(searchVal){
-                adminList = getAdminMenuSearchResults(searchVal)
-                finalList.addAll(adminList)
-                //it only applies after workflow task
-                if (searchVal.equals("WORKFLOW")) {
-                    clearWorkflowArguments()
+        if (DBUtility.isOracleUser(SecurityContextHolder?.context?.authentication?.principal)) {
+
+            if (!session."disableAdmin") {
+
+                if (searchVal && searchVal.length() < 3) {
+                    quickFlowList = getQuickflowLessThanThreeCharSearchResults(searchVal)
+                    finalList.addAll(quickFlowList)
+                } else {
+                    if (searchVal) {
+                        adminList = getAdminMenuSearchResults(searchVal)
+                        finalList.addAll(adminList)
+                        //it only applies after workflow task
+                        if (searchVal.equals("WORKFLOW")) {
+                            clearWorkflowArguments()
+                        }
+                    }
                 }
             }
         }
-
         subMenu = [ name:"root", caption:"root", items: finalList ]
         // Support JSON-P callback
         if( callback ) {
@@ -484,10 +496,14 @@ class CommonMenuController {
             if (a.type == "MENU")
                 finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+type+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
 
-            if (a.type == "FORM" ){
-                if (a.uiVersion =="banner8admin")
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
-                else
+           if (a.type == "FORM" ) {
+             if (a.uiVersion == "banner8admin"){
+                    if (getMultiEntityProcessingService().isMEP()) { //check for MEP for INB Forms
+                        finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                    } else {
+                        finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                    }
+            }else
                     if(a.platCode == ZK_PLATFORM_CODE) {
                         finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&global_variables={{params}}&GeneralMenu=true",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                     } else {
@@ -495,22 +511,44 @@ class CommonMenuController {
                             def s = a.url +"?wf_args=" + session["wf_args"]
                             finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: s,type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                         }else{
-                            finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                            if (getMultiEntityProcessingService().isMEP()) { //check for MEP for Transformation Pages
+                                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+ "+vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                            }else{
+                                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                            }
                         }
                     }
             }else if(a.type == JOB_TYPE){
-                if (!javaFormsURL) {
-                    finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
-                } else{
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: javaFormsURL +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
-                }
+
+               if (getMultiEntityProcessingService().isMEP()) { //check for MEP for JOBS
+                   if (!javaFormsURL) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: javaFormsURL + "?form=" + a.formName + "+vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }else{
+                   if (!javaFormsURL) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: javaFormsURL + "?form=" + a.formName + "&ban_args={{params}}&ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }
             } else if(a.type == QUICKFLOW_TYPE) {
                 def hsUrl = quickFlowMenuService.getGubmoduUrlForHsTypeFromQuickFlowCode(a.name)
-                if(hsUrl) {
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: hsUrl +"?form="+ a.name +"&ban_args={{params}}&ban_mode=xe",type: QUICKFLOW_TYPE,menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
-                } else {
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_INB_PARENT,url: getBannerInbUrl() + "?otherParams=launch_form="+ a.page +"+ban_args={{params}}+ban_mode=xe",type: QUICKFLOW_TYPE,menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
-                }
+
+               if (getMultiEntityProcessingService().isMEP()) { //check for MEP for QUICKFLOW
+                   if (hsUrl) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: hsUrl + "?form=" + a.name + "+vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_INB_PARENT, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }else{
+                   if (hsUrl) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: hsUrl + "?form=" + a.name + "&ban_args={{params}}&ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_INB_PARENT, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }
             }
         }
         return finalList

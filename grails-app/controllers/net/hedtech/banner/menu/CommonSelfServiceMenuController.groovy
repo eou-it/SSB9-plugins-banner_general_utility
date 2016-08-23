@@ -6,12 +6,15 @@ package net.hedtech.banner.menu
 
 import grails.converters.JSON
 import net.hedtech.banner.security.BannerUser
+import net.hedtech.banner.security.XssSanitizer
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
+import net.hedtech.banner.db.dbutility.DBUtility
 
 class CommonSelfServiceMenuController {
     def selfServiceMenuService
     def grailsApplication
+    def multiEntityProcessingService
 
     private final log = Logger.getLogger(getClass())
 
@@ -22,7 +25,9 @@ class CommonSelfServiceMenuController {
     static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
 
     def data = {
-        if(request.parameterMap["q"]){
+        if (params.refresh == 'Y'){
+            keepAlive()
+        }else if(request.parameterMap["q"]){
             searchAppConcept()
         } else {
             list()
@@ -37,7 +42,13 @@ class CommonSelfServiceMenuController {
             caption = request.parameterMap["caption"][0]
 
 
-        subMenu = getSubMenuData(Main_Menu, caption)
+        //subMenu = getSubMenuData(Main_Menu, caption)
+
+        if (DBUtility.isSSUser()) {
+            subMenu = getSubMenuData(Main_Menu, caption)
+        }else{
+            subMenu = [ name:"root", caption:"root", items: []]
+        }
 
 
         if( params.callback ) {
@@ -79,13 +90,15 @@ class CommonSelfServiceMenuController {
         List finalList = []
         String searchVal
 
-        if(request.parameterMap["q"])
-            searchVal = request.parameterMap["q"][0]
-        if(searchVal && searchVal.length() >= 3){
-            def user = SecurityContextHolder?.context?.authentication?.principal
-            adminList = selfServiceMenuService.searchMenuAppConcept(searchVal,user.pidm, request.parameterMap["ui"])
-            adminList=setHideSSBHeaderCompsParam(adminList)
-            finalList.addAll(adminList)
+        if (DBUtility.isSSUser()) {
+            if (request.parameterMap["q"])
+                searchVal = request.parameterMap["q"][0]
+            if (searchVal && searchVal.length() >= 3) {
+                def user = SecurityContextHolder?.context?.authentication?.principal
+                adminList = selfServiceMenuService.searchMenuAppConcept(searchVal, user.pidm, request.parameterMap["ui"])
+                adminList = setHideSSBHeaderCompsParam(adminList)
+                finalList.addAll(adminList)
+            }
         }
 
         subMenu = [ name:"root", caption:"root", items: composeMenuStructure(finalList, SSB_BANNER_TITLE) ]
@@ -128,10 +141,25 @@ class CommonSelfServiceMenuController {
                 finalList.add(name:tempName,page:tempPageName,caption:a.caption,parent:tempParentName,url: getServerURL() +"/commonSelfServiceMenu?type="+type+"&menu="+tempFormName+"&caption="+a.caption,type: "MENU",menu:tempPageName)
 
             if (a.type == "FORM" ){
-                    finalList.add(name:tempName,page:tempName,caption:a.caption,parent:a.url,url: a.url,type: "SS-APP",menu:tempFormName, pageCaption:a.caption)
+                if (getMultiEntityProcessingService().isMEP()){
+                    finalList.add(name: tempName, page: tempName, caption: a.caption, parent: a.url.replace("{mepCode}",session["mep"]), url: a.url.replace("{mepCode}",session["mep"]), type: "SS-APP", menu: tempFormName.replace("{mepCode}",session["mep"]), pageCaption: a.caption)
+                } else {
+                    finalList.add(name: tempName, page: tempName, caption: a.caption, parent: a.url, url: a.url, type: "SS-APP", menu: tempFormName, pageCaption: a.caption)
+                }
             }
         }
         return finalList
     }
+
+    private def keepAlive(){
+        String callback = XssSanitizer.sanitize(params.callback)
+
+        if( callback ) {
+            render text: "$callback && $callback({'result':'I am Alive'});", contentType: "text/javascript"
+        } else {
+            render "I am Alive"
+        }
+    }
+
 
 }
