@@ -36,7 +36,7 @@ class QuickFlowMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         assert map?.size() > 0
         // test the returned URL to be HS
         Menu m = map.get(0)
-        assertNotNull(quickFlowMenuService.getGubmoduUrlForHsTypeFromQuickFlowCode(m.name))
+        assertNull(quickFlowMenuService.getGubmoduUrlForHsTypeFromQuickFlowCode(m.name))
     }
 
     @Test
@@ -66,7 +66,7 @@ class QuickFlowMenuServiceIntegrationTests extends BaseIntegrationTestCase {
             def gubobjVal
             sql.eachRow("select * from GUBOBJS where GUBOBJS_NAME = 'TT'", {gubobjVal = it.GUBOBJS_NAME})
             if(!gubobjVal) {
-                sql.executeInsert("INSERT INTO GUBOBJS values('TT', 'TT description', 'QUICKFLOW', 'G', user, sysdate, 'N', 'N', null, null, null, null, 'B')")
+                sql.executeInsert("INSERT INTO GUBOBJS values('TT', 'TT description', 'QUICKFLOW', 'G', user, sysdate, 'N', 'N', 'B', null, null, null, 'B')")
             }
 
             // set up HS type quickflow
@@ -85,7 +85,7 @@ class QuickFlowMenuServiceIntegrationTests extends BaseIntegrationTestCase {
             def gubobjVal2
             sql.eachRow("select * from GUBOBJS where GUBOBJS_NAME = 'TT2'", {gubobjVal2 = it.GUBOBJS_NAME})
             if(!gubobjVal2) {
-                sql.executeInsert("INSERT INTO GUBOBJS values('TT2', 'TT2 description', 'QUICKFLOW', 'G', user, sysdate, 'N', 'N', null, null, null, null, 'B')")
+                sql.executeInsert("INSERT INTO GUBOBJS values('TT2', 'TT2 description', 'QUICKFLOW', 'G', user, sysdate, 'N', 'N', 'B', null, null, null, 'B')")
             }
 
             // set up personal menu

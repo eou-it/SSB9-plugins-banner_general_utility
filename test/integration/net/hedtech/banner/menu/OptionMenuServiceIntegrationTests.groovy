@@ -48,7 +48,7 @@ class OptionMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         def list
         list = optionMenuService.optionMenuForBlock("basicCourseInformation", "zipBlock")
         assertNotNull list
-        assertEquals 8, list.size()
+        assertEquals 7, list.size()
 
         def mnu = list.get(0)
 
