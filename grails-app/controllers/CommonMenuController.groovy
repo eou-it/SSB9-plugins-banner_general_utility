@@ -9,12 +9,16 @@ import net.hedtech.banner.utility.GeneralMenu
 import net.hedtech.banner.security.XssSanitizer
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
+import net.hedtech.banner.db.dbutility.DBUtility
 
 class CommonMenuController {
     def menuService
     def selfServiceMenuService
     def personalPreferenceService
     def grailsApplication
+    def jobsMenuService
+    def quickFlowMenuService
+    def multiEntityProcessingService
 
     private final log = Logger.getLogger(getClass())
 
@@ -26,7 +30,12 @@ class CommonMenuController {
     static final String MENU_TYPE_BANNER = "Banner"
     static final String MENU_TYPE_PERSONAL = "Personal"
     static final String BANNER_HS_PARENT = "bannerHS"
+    static final String BANNER_INB_PARENT = "banner8admin"
     static final String ZK_PLATFORM_CODE = "ADMZK"
+    static final String MENU_TYPE = "MENU"
+    static final String FORM_TYPE = "FORM"
+    static final String JOB_TYPE = "JOBS"
+    static final String QUICKFLOW_TYPE = "QUICKFLOW"
 //    static final String MENU_TYPE_SELF_SERVICE = "SelfService"
     static final String MY_BANNER_TITLE = "My Banner"
     static final String SSB_BANNER_TITLE = "Banner Self-Service"
@@ -65,7 +74,12 @@ class CommonMenuController {
             caption = XssSanitizer.sanitize(request.parameterMap["caption"][0])
 
 
-        subMenu = getSubMenuData(mnuName, mnuType, caption)
+        if (!session."disableAdmin" && DBUtility.isOracleUser(SecurityContextHolder?.context?.authentication?.principal)) {
+            subMenu = getSubMenuData(mnuName, mnuType, caption)
+        } else{
+            subMenu = [ name:"root", caption:"root", items: [] ]
+        }
+
         //finalMenu = [ data: subMenu ]
 
         // Support JSON-P callback
@@ -165,25 +179,35 @@ class CommonMenuController {
     def search = {
 
         Map subMenu
-        Map finalMenu
         List adminList
+        List quickFlowList
         List finalList = []
         String searchVal
         String callback = XssSanitizer.sanitize(params.callback)
 
         if(request.parameterMap["q"])
             searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
-        if(searchVal){
-            adminList = getAdminMenuSearchResults(searchVal)
-            finalList.addAll(adminList)
 
-            //it only applies after workflow task
-            if (searchVal.equals("WORKFLOW")) {
-                clearWorkflowArguments()
+        if (DBUtility.isOracleUser(SecurityContextHolder?.context?.authentication?.principal)) {
+
+            if (!session."disableAdmin") {
+
+                if (searchVal && searchVal.length() < 3) {
+                    quickFlowList = getQuickflowLessThanThreeCharSearchResults(searchVal)
+                    finalList.addAll(quickFlowList)
+                } else {
+                    if (searchVal) {
+                        adminList = getAdminMenuSearchResults(searchVal)
+                        finalList.addAll(adminList)
+                        //it only applies after workflow task
+                        if (searchVal.equals("WORKFLOW")) {
+                            clearWorkflowArguments()
+                        }
+                    }
+                }
             }
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]
-        //finalMenu = [ data: subMenu ]
         // Support JSON-P callback
         if( callback ) {
             render text: "${callback} && ${callback}(${subMenu as JSON});", contentType: "text/javascript"
@@ -352,6 +376,13 @@ class CommonMenuController {
         String personalMenuList = pidm ? PERSONAL_COMBINED_MENU_LIST + pidm : PERSONAL_COMBINED_MENU_LIST
         if (session[personalMenuList] == null) {
             list = menuService.personalCombinedMenu()
+            list.addAll(quickFlowMenuService.quickflowPersonalMenu())
+            Collections.sort(list, new Comparator<Menu>() {
+                @Override
+                public int compare(final Menu object1, final Menu object2) {
+                    return object1.getSeq().compareTo(object2.getSeq());
+                }
+            } );
             session[personalMenuList] = list
         }
         else {
@@ -398,12 +429,19 @@ class CommonMenuController {
         return composeMenuStructure(list, MENU_TYPE_PERSONAL)
     }
 
+    private def getQuickflowLessThanThreeCharSearchResults(searchVal){
+
+        List list = quickFlowMenuService.quickFlowLessThan3CharSearch(searchVal)
+        list = removeDuplicateEntries(list)
+        list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
+        return composeMenuStructure(list, MENU_TYPE_BANNER)
+    }
+
 
     private def getAdminMenuSearchResults(searchVal){
 
         List list = menuService.gotoCombinedMenu(searchVal)
         list = removeDuplicateEntries(list)
-        list.each {it -> it.menu = getParent(getMenu(),it,BANNER_TITLE)}
         return composeMenuStructure(list, MENU_TYPE_BANNER)
     }
 
@@ -451,15 +489,21 @@ class CommonMenuController {
     }
 
     private def composeMenuStructure(list, type){
+        def javaFormsURL = jobsMenuService.getPlatCodeJavaFormsUrl()
+
         List finalList = []
         list.each {a ->
             if (a.type == "MENU")
                 finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() +"/commonMenu?type="+type+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
 
-            if (a.type == "FORM" ){
-                if (a.uiVersion =="banner8admin")
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
-                else
+           if (a.type == "FORM" ) {
+             if (a.uiVersion == "banner8admin"){
+                    if (getMultiEntityProcessingService().isMEP()) { //check for MEP for INB Forms
+                        finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                    } else {
+                        finalList.add(name: a.name, page: a.page, caption: a.caption, parent: a.uiVersion, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                    }
+            }else
                     if(a.platCode == ZK_PLATFORM_CODE) {
                         finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&global_variables={{params}}&GeneralMenu=true",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                     } else {
@@ -467,9 +511,44 @@ class CommonMenuController {
                             def s = a.url +"?wf_args=" + session["wf_args"]
                             finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: s,type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
                         }else{
-                            finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                            if (getMultiEntityProcessingService().isMEP()) { //check for MEP for Transformation Pages
+                                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+ "&vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                            }else{
+                                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:BANNER_HS_PARENT,url: a.url +"?form="+a.formName+"&ban_args={{params}}&ban_mode=xe",type: "PAGE",menu:a.menu, pageCaption:a.pageCaption, captionProperty: a.captionProperty)
+                            }
                         }
                     }
+            }else if(a.type == JOB_TYPE){
+
+               if (getMultiEntityProcessingService().isMEP()) { //check for MEP for JOBS
+                   if (!javaFormsURL) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: javaFormsURL + "?form=" + a.formName + "&vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }else{
+                   if (!javaFormsURL) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: "banner8admin", url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: javaFormsURL + "?form=" + a.formName + "&ban_args={{params}}&ban_mode=xe", type: "PAGE", menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }
+            } else if(a.type == QUICKFLOW_TYPE) {
+                def hsUrl = quickFlowMenuService.getGubmoduUrlForHsTypeFromQuickFlowCode(a.name)
+
+               if (getMultiEntityProcessingService().isMEP()) { //check for MEP for QUICKFLOW
+                   if (hsUrl) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: hsUrl + "?form=" + a.name + "&vpdi_code=" + session["mep"] + "&ban_args={{params}}&ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_INB_PARENT, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+vpdi_code=" + session["mep"] + "+ban_args={{params}}+ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }else{
+                   if (hsUrl) {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_HS_PARENT, url: hsUrl + "?form=" + a.name + "&ban_args={{params}}&ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   } else {
+                       finalList.add(name: a.name, page: a.page, caption: a.caption, parent: BANNER_INB_PARENT, url: getBannerInbUrl() + "?otherParams=launch_form=" + a.page + "+ban_args={{params}}+ban_mode=xe", type: QUICKFLOW_TYPE, menu: a.menu, pageCaption: a.pageCaption, captionProperty: a.captionProperty)
+                   }
+               }
             }
         }
         return finalList
