@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
@@ -28,13 +28,13 @@ class AboutService {
 
         about['api.title'] = getMessage("about.banner.title")
 
-        about[getMessage("about.banner.application.name")] = formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
-        about[getMessage("about.banner.application.version")] = resourceProperties.getProperty("application.version")
-        about[getMessage("about.banner.tab.general")] = getAppInfo()
+        about['about.banner.application.name'] = formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
+        about['about.banner.application.version'] = resourceProperties.getProperty("application.version")
+        about['about.banner.tab.general'] = getAppInfo()
 
-        about[getMessage("about.banner.plugins")] = getPluginsInfo("(banner|i18nCore|sgheZkCore).*")
-        about[getMessage("about.banner.other.plugins")] = getPluginsInfo("(?!(banner|i18nCore|sgheZkCore).*).*")
-        about[getMessage("about.banner.copyright")] = getCopyright()
+        about['about.banner.plugins'] = getPluginsInfo("(banner|i18nCore|sgheZkCore).*")
+        about['about.banner.other.plugins'] = getPluginsInfo("(?!(banner|i18nCore|sgheZkCore).*).*")
+        about['about.banner.copyright'] = getCopyright()
         about['api.close'] = getMessage("about.banner.close")
         return about
     }
@@ -45,7 +45,7 @@ class AboutService {
         InputStream input = null;
         try {
 
-            if (new File(propertyFileName).exists()){
+            if (propertyFileName != null && new File(propertyFileName).exists()){
                 input = new FileInputStream(propertyFileName);
                 resourceProperties.load(input);
             }
