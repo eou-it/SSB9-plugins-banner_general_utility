@@ -161,8 +161,8 @@ class SupplementalDataService {
 
             def attributeName
 
-            println "Tablename: "  + tableName
-            println "Id: " + id
+            //println "Tablename: "  + tableName
+            //println "Id: " + id
 
             sql.call("""
 	  declare
@@ -228,6 +228,136 @@ class SupplementalDataService {
             log.error "Failed to load SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
             throw e
         }
+    }
+
+    public def  persistSupplementalDataForTable(tableName,tid,prop) {
+
+        //log.trace "In persist: ${model}"
+        def sql
+
+        try {
+            sql = new Sql(sessionFactory.getCurrentSession().connection())
+            //def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(model.getClass()).tableName.toUpperCase())
+            def sdeTableName = 'GORSDAV'
+
+            def id
+            def attributeName
+            String disc
+            def parentTab
+            def dataType
+            def value
+            def discList = []
+
+            prop.each {
+
+                log.debug "KEY: ${it.key} - VALUE: ${it.value}"
+                def map = it.value
+                attributeName = it.key
+
+                map.each {
+                    def paramMap = it.value
+                    log.debug "VALUE: " + it.value
+
+                    //store the attributes with discriminators
+                    if  (paramMap.discMethod == "I") {
+                        discList << attributeName
+                    }
+
+                    id = paramMap.id
+                    value = paramMap.value
+                    disc = paramMap.disc
+                    parentTab = paramMap.pkParentTab
+
+                    parentTab = parentTab ?: getPk(tableName, tid)
+                    dataType = paramMap.dataType
+
+                    value = value ?: ""
+                    disc = disc ?: "1"
+
+                    if (value) {
+                        validateDataType(dataType, value)
+                    }
+
+                    if (log.isDebugEnabled()) debug(id, tableName, attributeName, disc, parentTab, dataType, value)
+
+                    // Validation Call
+
+                    if (value && value.getAt(0) == "0" && value.getAt(1) == ".") {  // Decimal
+                        value = value.substring(1)
+                    }
+
+                    /*
+                    println "Value: " + value
+                    println "tableName: "  + tableName
+                    println "attributeName: " + attributeName
+                    println "disc: " + disc
+                    println  "parentTab: " + parentTab
+                    println "dataType: " + dataType
+                    */
+
+                    sql.call("""
+	                       DECLARE
+
+	                        lv_msg varchar2(2000);
+	                        p_value_as_char_out varchar2(2000);
+
+	                        BEGIN
+
+	                        p_value_as_char_out := ${value};
+
+	                        lv_msg := gp_goksdif.f_validate_value(
+                             p_table_name => ${tableName},
+                             p_attr_name => ${attributeName},
+                             p_disc => ${disc},
+                             p_pk_parenttab => ${parentTab},
+                             p_attr_data_type => ${dataType},
+                             p_form_or_process => 'BANNER',
+                             p_value_as_char => p_value_as_char_out
+                        );
+
+	                         ${Sql.VARCHAR} := lv_msg;
+
+	                END ;
+                  """
+                    ) {msg ->
+                        if (msg != "Y")
+                            throw new ApplicationException(tableName, msg)
+                    }
+
+                    // End Validation
+
+                    sql.call("""declare
+					                  l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${sdeTableName},${id});
+					              begin
+					                  gp_goksdif.p_set_attribute( ${tableName}, ${attributeName}, ${disc},
+							                                      ${parentTab}, l_rowid, ${dataType}, ${value} );
+					              end;
+	                           """)
+
+
+                }
+
+            }
+
+
+            //refresh order of discriminators
+
+            discList.unique().each{
+                sql.executeUpdate("""
+                                                   update GORSDAV
+                                                        set GORSDAV_DISC = rownum
+                                                        where  GORSDAV_TABLE_NAME = ${tableName}
+                                                        and GORSDAV_PK_PARENTTAB = ${parentTab}
+                                                        and GORSDAV_ATTR_NAME = ${it}
+                                                """)
+            }
+
+
+        } catch (e) {
+            log.error "Failed to save SDE for the entity ${tableName}-${tid}  Exception: $e "
+            throw e
+        }
+
     }
 
     /**
