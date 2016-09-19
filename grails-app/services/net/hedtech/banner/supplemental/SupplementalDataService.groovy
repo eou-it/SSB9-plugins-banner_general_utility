@@ -138,9 +138,9 @@ class SupplementalDataService {
                     SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
                     Date date = formatter.parse(value);
 
-                    SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
-                    String s = formatter1.format(date);
-                    extension."value" = s
+                    //SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
+                    //String s = formatter1.format(date);
+                    extension."value" = date
                 } else {
                     extension."value" = value
                 }
@@ -492,7 +492,7 @@ class SupplementalDataService {
         def resultSet = session.createSQLQuery(
                 """  SELECT govsdav_attr_name,
                       govsdav_attr_reqd_ind,
-                      DECODE(govsdav_attr_data_type,'DATE', TO_CHAR(x.govsdav_value.accessDATE(), g\$_date.get_nls_date_format),govsdav_value_as_char),
+                      DECODE(govsdav_attr_data_type,'DATE', TO_CHAR(x.govsdav_value.accessDATE(),'DD-MON-RRRR'),govsdav_value_as_char),
                       govsdav_disc,
                       govsdav_pk_parenttab,
                       govsdav_surrogate_id,
