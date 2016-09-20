@@ -92,7 +92,7 @@ class AboutService {
             appInfo[getMessage("about.banner.application.name")] = grailsApplication.metadata['app.name']
             appInfo[getMessage("about.banner.application.version")] = grailsApplication.metadata['app.version']
         }
-        appInfo[getMessage("about.banner.db.instance.name")] = getDbInstanceName()
+        //appInfo[getMessage("about.banner.db.instance.name")] = getDbInstanceName()
         if (getUserName())
             appInfo[getMessage("about.banner.username")] = getUserName()
 
