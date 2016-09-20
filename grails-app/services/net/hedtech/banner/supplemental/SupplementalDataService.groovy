@@ -34,6 +34,31 @@ class SupplementalDataService {
      * Returns the conditions if SDE is enabled for that UI component.
      * @param block id from UI Block Component
      */
+
+
+    public boolean hasSdeForTable(tableName) {
+
+        def sdeFound = false
+
+        if (tableName == null)
+            return false
+
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+
+        try {
+            sql.call("{$Sql.VARCHAR = call gb_sde_table.f_exists($tableName)}") { sde ->
+                sdeFound = "Y".equals(sde)
+            }
+            return sdeFound
+            //return false
+        } catch (e) {
+            log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
+            throw e
+        } finally {
+            sql?.close()
+        }
+    }
+
     public boolean hasSde(id) {
 
         def sdeFound = false
@@ -177,7 +202,7 @@ class SupplementalDataService {
 
             def resultSetAttributesList = sessionFactory.getCurrentSession().createSQLQuery(
                     """SELECT DISTINCT govsdav_attr_name as attrName ,  govsdav_attr_order as attrOrder
-	         FROM govsdav WHERE govsdav_table_name= :tableName  ORDER BY 2
+	         FROM govsdav WHERE govsdav_table_name= :tableName and govsdav_disc_type = 'S' ORDER BY 2
 	""").setString("tableName", tableName).list()
 
             def supplementalProperties = [:]
