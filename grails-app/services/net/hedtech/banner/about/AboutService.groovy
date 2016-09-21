@@ -124,11 +124,16 @@ class AboutService {
     }
 
     private String getUserName() {
+        String userName = ""
         try {
-            SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase()
+            userName = SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase()
         } catch (Exception e) {
             // ignore
         }
+        if("__grails.anonymous.user__".toUpperCase().equals(userName)){
+            userName = "N/A"
+        }
+        return userName
     }
 
     private String formatCamelCaseToEnglish(value) {
