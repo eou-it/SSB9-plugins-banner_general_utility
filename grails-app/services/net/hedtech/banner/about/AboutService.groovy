@@ -29,7 +29,7 @@ class AboutService {
         about['api.title'] = getMessage("about.banner.title")
 
         about['about.banner.application.name'] = formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
-        about['about.banner.application.version'] = getMessage("about.banner.application.version") + " " +resourceProperties.getProperty("application.version")
+        about['about.banner.application.version'] = getVersion()
         about['about.banner.tab.general'] = getAppInfo()
 
         about['about.banner.plugins'] = getPluginsInfo("(banner|i18nCore|sgheZkCore).*")
@@ -89,13 +89,19 @@ class AboutService {
             appInfo[getMessage("about.banner.application.build.time")] = resourceProperties.getProperty("application.build.time");
         } else {
             appInfo[getMessage("about.banner.application.name")] = grailsApplication.metadata['app.name']
-            appInfo[getMessage("about.banner.application.version")] = getMessage("about.banner.application.version") + " " + grailsApplication.metadata['app.version']
+            appInfo[getMessage("about.banner.application.version")] = grailsApplication.metadata['app.version']
         }
         //appInfo[getMessage("about.banner.db.instance.name")] = getDbInstanceName()
         if (getUserName())
             appInfo[getMessage("about.banner.username")] = getUserName()
 
         return appInfo
+    }
+
+    private String getVersion(){
+        if (resourceProperties) {
+            getMessage("about.banner.application.version") + " " + resourceProperties.getProperty("application.version")
+        }
     }
 
     private Map getPluginsInfo(def pattern) {
