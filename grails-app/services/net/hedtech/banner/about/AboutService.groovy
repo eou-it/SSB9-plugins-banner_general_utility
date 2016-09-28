@@ -28,18 +28,29 @@ class AboutService {
 
         about['api.title'] = getMessage("about.banner.title")
 
-        about['about.banner.application.name'] = formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
+        about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
-        about['about.banner.tab.general'] = getAppInfo()
+
+        /* Commented for now because we need only application name & version number.
+         For specific role we have to show all the details but still not decided for which role to show all details.
+
+         about['about.banner.tab.general'] = getAppInfo()
 
         about['about.banner.plugins'] = getPluginsInfo("(banner|i18nCore|sgheZkCore).*")
         about['about.banner.other.plugins'] = getPluginsInfo("(?!(banner|i18nCore|sgheZkCore).*).*")
+        about['api.close'] = getMessage("about.banner.close") */
         about['about.banner.copyright'] = getCopyright()
         about['about.banner.copyrightLegalNotice'] = getCopyrightLegalNotice()
-        about['api.close'] = getMessage("about.banner.close")
         return about
     }
 
+    private String getApplicationName(){
+        if(resourceProperties){
+            getformatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
+        } else {
+            grailsApplication.metadata['app.name']
+        }
+    }
     private void loadResourcePropertiesFile() {
         String propertyFileName = ServletContextHolder.servletContext.getRealPath('/WEB-INF/classes/release.properties')
         resourceProperties = new Properties();
@@ -101,6 +112,8 @@ class AboutService {
     private String getVersion(){
         if (resourceProperties) {
             getMessage("about.banner.application.version") + " " + resourceProperties.getProperty("application.version")
+        } else {
+            getMessage("about.banner.application.version") + " " + grailsApplication.metadata['app.version']
         }
     }
 
