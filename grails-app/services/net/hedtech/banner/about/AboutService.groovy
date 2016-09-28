@@ -46,7 +46,7 @@ class AboutService {
 
     private String getApplicationName(){
         if(resourceProperties){
-            getformatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
+            formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
         } else {
             grailsApplication.metadata['app.name']
         }
