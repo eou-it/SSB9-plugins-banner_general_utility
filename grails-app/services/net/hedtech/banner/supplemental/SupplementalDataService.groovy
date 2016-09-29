@@ -26,9 +26,46 @@ class SupplementalDataService {
     def dataSource               // injected by Spring
     def sessionFactory           // injected by Spring
     def grailsApplication        // injected by Spring
+    private static String DEFAULT_DATE_FORMAT = "dd-MMM-yyyy"
 
     private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(SupplementalDataService.class)
+
+
+
+    public def saveSdeFromUiRequest(tableName, extension) {
+
+        def batch = [create: [], destroy: [], update: []]
+
+        // SDE Process --> move to services
+        def sdeModel= loadSupplementalDataForTable(tableName, extension.id)
+
+        //println "SDE-MODEL: " + sdeModel
+
+        extension.extensions.each{
+            if (it.datatype.equals("DATE")){
+                SimpleDateFormat sdf = new SimpleDateFormat(DEFAULT_DATE_FORMAT)
+                if (it.value) {
+                    Date date ;
+                    //SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                    SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+                    date = formatter.parse(it.value);
+
+                    SimpleDateFormat formatter1 = new SimpleDateFormat("dd-MMM-yyyy");
+                    String s = formatter1.format(date);
+
+                    sdeModel."${it.name.toUpperCase()}"."1".value = s
+                }
+            }else {
+                def val =  ("${it.value}".trim().toString() == "null") ? "" : "${it.value}".trim().toString()
+                sdeModel."${it.name.toUpperCase()}"."1".value = val
+            }
+        }
+
+             persistSupplementalDataForTable(tableName, extension.id, sdeModel)
+
+
+    }
 
     /**
      * Returns the conditions if SDE is enabled for that UI component.
@@ -158,6 +195,7 @@ class SupplementalDataService {
 
                 extension."name" = z
                 extension."prompt" = paramMap.prompt
+                extension."attrInfo" = paramMap.attrInfo
 
                 if (value && paramMap.dataType.equals('DATE')) {
                     SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
