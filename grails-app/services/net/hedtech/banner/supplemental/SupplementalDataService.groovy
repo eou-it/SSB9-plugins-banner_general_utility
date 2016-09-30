@@ -30,6 +30,7 @@ class SupplementalDataService {
 
     private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(SupplementalDataService.class)
+    def public i = 0
 
 
 
@@ -238,15 +239,20 @@ class SupplementalDataService {
            """
             )
 
+
+            /*
             def resultSetAttributesList = sessionFactory.getCurrentSession().createSQLQuery(
                     """SELECT DISTINCT govsdav_attr_name as attrName ,  govsdav_attr_order as attrOrder
 	         FROM govsdav WHERE govsdav_table_name= :tableName and govsdav_disc_type = 'S' ORDER BY 2
 	""").setString("tableName", tableName).list()
+             */
 
             def supplementalProperties = [:]
-            resultSetAttributesList.each() {
-                loadSupplementalProperty(it[0], supplementalProperties, tableName)
-            }
+            //resultSetAttributesList.each() {
+            //    loadSupplementalProperty(it[0], supplementalProperties, tableName)
+            //}
+
+            loadSupplementalPropertyQuick(supplementalProperties, tableName)
 
             supplementalProperties
         } catch (e) {
@@ -651,6 +657,122 @@ class SupplementalDataService {
             supplementalProperties."${attributeName}" << propValue
         }
     }
+
+
+
+
+    //Performance POC
+    private def loadSupplementalPropertyQuick( Map supplementalProperties, String tableName) {
+        println i++
+
+        def session = sessionFactory.getCurrentSession()
+
+        def resultSet = session.createSQLQuery(
+                """  SELECT govsdav_attr_name,
+                      govsdav_attr_reqd_ind,
+                      DECODE(govsdav_attr_data_type,'DATE', TO_CHAR(x.govsdav_value.accessDATE(),'DD-MON-RRRR'),govsdav_value_as_char),
+                      govsdav_disc,
+                      govsdav_pk_parenttab,
+                      govsdav_surrogate_id,
+                      govsdav_attr_data_type,
+                      REPLACE( govsdav_attr_prompt_disp, '%DISC%',govsdav_disc ),
+                      govsdav_disc_type,
+                      govsdav_disc_validation,
+                      govsdav_attr_data_len,
+                      govsdav_attr_data_scale,
+                      govsdav_attr_info,
+                      govsdav_attr_order,
+                      govsdav_disc_method,
+                      govsdav_GJAPDEF_VALIDATION,
+                      govsdav_LOV_FORM,
+                      govsdav_LOV_TABLE_OVRD,
+                      govsdav_LOV_ATTR_OVRD,
+                      govsdav_LOV_CODE_TITLE,
+                      govsdav_LOV_DESC_TITLE
+               FROM govsdav x
+                   WHERE govsdav_table_name = :tableName
+                   AND govsdav_disc_type = 'S' ORDER BY govsdav_attr_order
+               """
+        ).setString("tableName", tableName).list()
+
+
+        resultSet.each() {
+
+            def attributeName = it[0]
+
+            if (!supplementalProperties."${attributeName}") supplementalProperties."${attributeName}" = [:]
+
+
+            if (!it[9]?.isInteger())
+                it[9] = '1'
+
+            String lovValidation = it[15]
+            String lovForm = it[16]
+            String lovTable = (lovForm == 'GTQSDLV') ? 'GTVSDLV' : lovForm
+
+            def columnNames = []
+
+            /**
+             * TODO need to move this logic into SupplementalDataService's resetSDE method
+             */
+            /*
+            if (lovValidation == 'LOV_VALIDATION') {
+                log.debug("Querying for $lovForm for Table Metadata")
+                Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+                String query = "select * from " + lovTable
+                sql.query(query) { rs ->
+                    def meta = rs.metaData
+                    if (meta.columnCount <= 0) return
+
+                    log.debug("LOV Table column names ....")
+                    for (i in 0..<meta.columnCount) {
+                        log.debug "${i}: ${meta.getColumnLabel(i + 1)}".padRight(20)
+                        columnNames << meta.getColumnLabel(i + 1)
+                        log.debug "\n"
+                    }
+                    log.debug '-' * 40
+                }
+
+                log.debug("Querying on SDE Lookup Table executed")
+                sql.connection.close()
+            }
+            */
+            SupplementalPropertyDiscriminatorContent discProp =
+                    new SupplementalPropertyDiscriminatorContent(required: it[1],
+                            value: it[2],
+                            disc: (it[3] != null ? it[3] : 1),
+                            pkParentTab: it[4],
+                            id: it[5],
+                            dataType: it[6],
+                            prompt: it[7],
+                            discType: it[8],
+                            validation: it[9] != null ? it[9].toInteger() : 1,
+                            dataLength: it[10],
+                            dataScale: it[11],
+                            attrInfo: it[12],
+                            attrOrder: it[13],
+                            discMethod: it[14],
+                            lovValidation: lovValidation,
+                            lovProperties: [
+                                    lovForm: lovForm,
+                                    lovTableOverride: it[17],
+                                    lovAttributeOverride: it[18],
+                                    lovCodeTitle: it[19],
+                                    lovDescTitle: it[20],
+                                    columnNames: columnNames
+                            ]
+                    )
+
+            if (discProp.lovValidation && !(discProp.lovProperties?.lovForm)) {
+                log.error "LOV_FORM is NOT mentioned for LOV $attributeName in the table GORSDAM"
+            }
+
+            SupplementalPropertyValue propValue = new SupplementalPropertyValue([(discProp.disc): discProp])
+
+            supplementalProperties."${attributeName}" << propValue
+        }
+    }
+
 
     private def getPk(def table, def id) {
         def sql
