@@ -62,7 +62,7 @@ class SelfServiceMenuService {
                 " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
                 " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
                 " where govrole_pidm = " + pidm +
-                " and  twgrwmrl_role in " + govroleCriteria + "))" +
+                " and  twgrwmrl_role in " + govroleCriteria + ")) and TWGRMENU_URL_TEXT is not null" +
                 " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join("','") + "')"
 
         sql.eachRow(sqlQuery) {
@@ -245,7 +245,7 @@ class SelfServiceMenuService {
                         " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
                         " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
                         " where govrole_pidm = " + pidm +
-                        " and  twgrwmrl_role in " + govroleCriteria + "))" +
+                        " and  twgrwmrl_role in " + govroleCriteria + ")) and TWGRMENU_URL_TEXT is not null" +
                         " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join("','") + "')" +
                         " and  (twgrmenu_name like  " + searchValWild + " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild + ")"
             } else {
@@ -258,7 +258,7 @@ class SelfServiceMenuService {
                         " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
                         " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
                         " where govrole_pidm = " + pidm +
-                        " and  twgrwmrl_role in " + govroleCriteria + "))" +
+                        " and  twgrwmrl_role in " + govroleCriteria + ")) and TWGRMENU_URL_TEXT is not null" +
                         " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join("','") + "')" +
                         " and  (twgrmenu_name like  " + searchValWild + " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like "+ searchValWild +
                         " OR UPPER(twgrmenu_url) like " + searchValWild.toUpperCase() + ")";
