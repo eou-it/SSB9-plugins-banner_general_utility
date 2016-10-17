@@ -30,19 +30,18 @@ class SupplementalDataSSBService {
     def public i = 0
 
 
-
     public def saveSdeFromUiRequest(tableName, extension) {
 
         def batch = [create: [], destroy: [], update: []]
 
         // SDE Process --> move to services
-        def sdeModel= loadSupplementalDataForTable(tableName, extension.id)
+        def sdeModel = loadSupplementalDataForTable(tableName, extension.id)
 
-        extension.extensions.each{
-            if (it.datatype.equals("DATE")){
+        extension.extensions.each {
+            if (it.datatype.equals("DATE")) {
                 SimpleDateFormat sdf = new SimpleDateFormat(DEFAULT_DATE_FORMAT)
                 if (it.value) {
-                    Date date ;
+                    Date date;
                     SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
                     date = formatter.parse(it.value);
 
@@ -51,13 +50,13 @@ class SupplementalDataSSBService {
 
                     sdeModel."${it.name.toUpperCase()}"."1".value = s
                 }
-            }else {
-                def val =  ("${it.value}".trim().toString() == "null") ? "" : "${it.value}".trim().toString()
+            } else {
+                def val = ("${it.value}".trim().toString() == "null") ? "" : "${it.value}".trim().toString()
                 sdeModel."${it.name.toUpperCase()}"."1".value = val
             }
         }
 
-             persistSupplementalDataForTable(tableName, extension.id, sdeModel)
+        persistSupplementalDataForTable(tableName, extension.id, sdeModel)
 
 
     }
@@ -162,16 +161,16 @@ class SupplementalDataSSBService {
               ${Sql.VARCHAR} := l_ex;
 
         END ;
-            """) {sdeData ->
+            """) { sdeData ->
             sdeDataFound = sdeData
         }
         return "Y".equals(sdeDataFound)
     }
 
 
-    public def getModelExtension(tableName,id) {
+    public def getModelExtension(tableName, id) {
 
-        def sdeModel = loadSupplementalDataForTable(tableName,id)
+        def sdeModel = loadSupplementalDataForTable(tableName, id)
 
         //SDE Process
         def attributeName
@@ -210,11 +209,11 @@ class SupplementalDataSSBService {
     }
 
 
-    public def getModelExtensionData(tableName,id, model) {
+    public def getModelExtensionData(tableName, id, model) {
 
         if (!hasSdeForTable(tableName)) return model
 
-        def sdeModel = loadSupplementalDataForTable(tableName,id)
+        def sdeModel = loadSupplementalDataForTable(tableName, id)
 
         //SDE Process
         def attributeName
@@ -249,14 +248,18 @@ class SupplementalDataSSBService {
             }
         }
 
-        //return l
 
-        model.metaClass.extensions = l
+        if (model.metaClass) {
+            model.metaClass.extensions = l
+        } else {
+            model.extensions = l
+        }
+
+
     }
 
 
-
-    public def loadSupplementalDataForTable(tableName,id) {
+    public def loadSupplementalDataForTable(tableName, id) {
         try {
             def sql = new Sql(sessionFactory.getCurrentSession().connection())
 
@@ -283,7 +286,7 @@ class SupplementalDataSSBService {
     }
 
 
-     public def  persistSupplementalDataForTable(tableName,tid,prop) {
+    public def persistSupplementalDataForTable(tableName, tid, prop) {
 
         //log.trace "In persist: ${model}"
         def sql
@@ -312,7 +315,7 @@ class SupplementalDataSSBService {
                     log.debug "VALUE: " + it.value
 
                     //store the attributes with discriminators
-                    if  (paramMap.discMethod == "I") {
+                    if (paramMap.discMethod == "I") {
                         discList << attributeName
                     }
 
@@ -372,7 +375,7 @@ class SupplementalDataSSBService {
 
 	                END ;
                   """
-                    ) {msg ->
+                    ) { msg ->
                         if (msg != "Y")
                             throw new ApplicationException(tableName, msg)
                     }
@@ -392,10 +395,9 @@ class SupplementalDataSSBService {
 
             }
 
-
             //refresh order of discriminators
 
-            discList.unique().each{
+            discList.unique().each {
                 sql.executeUpdate("""
                                                    update GORSDAV
                                                         set GORSDAV_DISC = rownum
@@ -413,10 +415,8 @@ class SupplementalDataSSBService {
 
     }
 
-
-
     //Performance POC
-    private def loadSupplementalPropertyTable( Map supplementalProperties, String tableName) {
+    private def loadSupplementalPropertyTable(Map supplementalProperties, String tableName) {
 
         def session = sessionFactory.getCurrentSession()
 
@@ -455,9 +455,8 @@ class SupplementalDataSSBService {
 
             if (!supplementalProperties."${attributeName}") supplementalProperties."${attributeName}" = [:]
 
-
-           // if (!it[9]?.isInteger())
-                it[9] = '1'
+            // if (!it[9]?.isInteger())
+            it[9] = '1'
 
             String lovValidation = it[15]
             String lovForm = it[16]
@@ -482,12 +481,12 @@ class SupplementalDataSSBService {
                             discMethod: it[14],
                             lovValidation: lovValidation,
                             lovProperties: [
-                                    lovForm: lovForm,
-                                    lovTableOverride: it[17],
+                                    lovForm             : lovForm,
+                                    lovTableOverride    : it[17],
                                     lovAttributeOverride: it[18],
-                                    lovCodeTitle: it[19],
-                                    lovDescTitle: it[20],
-                                    columnNames: columnNames
+                                    lovCodeTitle        : it[19],
+                                    lovDescTitle        : it[20],
+                                    columnNames         : columnNames
                             ]
                     )
 
@@ -529,17 +528,16 @@ class SupplementalDataSSBService {
     public String getMappedDomain(String tableName) {
 
         Map x = sessionFactory.getAllClassMetadata()
-         for (Iterator i = x.values().iterator(); i.hasNext();) {
-             SingleTableEntityPersister y = (SingleTableEntityPersister) i.next();
+        for (Iterator i = x.values().iterator(); i.hasNext();) {
+            SingleTableEntityPersister y = (SingleTableEntityPersister) i.next();
 
-             String underlyingTableName = SupplementalDataUtils.getTableName(y.getTableName().toUpperCase())
+            String underlyingTableName = SupplementalDataUtils.getTableName(y.getTableName().toUpperCase())
 
-             if (tableName == underlyingTableName) {
-                 return  y.getName()
-             }
-         }
+            if (tableName == underlyingTableName) {
+                return y.getName()
+            }
+        }
     }
-
 
     /**
      * Find LOV for a specific lov code and return it in a
@@ -547,22 +545,22 @@ class SupplementalDataSSBService {
      *
      * @param lovCode
      * @param additionalParams - carries the LOV Table info.
-     * @return  - generic lookup domain object
+     * @return - generic lookup domain object
      */
-    def static findByLov (String lovCode, additionalParams= [:]) {
+    def static findByLov(String lovCode, additionalParams = [:]) {
         def lookupDomainList = []
 
         if (additionalParams) {
-            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV') ? 'GTVSDLV' : additionalParams.lovForm
             String query = "SELECT * FROM $lovTable"
             query += " WHERE ${lovTable}_CODE='$lovCode'"
 
             if (lovTable == 'GTVSDLV') {
-                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                if (additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
                     query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    staticLogger.error("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
@@ -573,31 +571,31 @@ class SupplementalDataSSBService {
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            staticLogger.debug("Querying on SDE Lookup Table executed")
             sql.connection.close()
         }
-        (lookupDomainList == [])?null:lookupDomainList[0]
+        (lookupDomainList == []) ? null : lookupDomainList[0]
     }
 
     /**
      * Find all LOV objects belong to a validation table.
      *
      * @param additionalParams - info on LOV table
-     * @return  - list of generic lookup domain objects
+     * @return - list of generic lookup domain objects
      */
-    def static findAllLovs (additionalParams = [:]) {
+    def static findAllLovs(additionalParams = [:]) {
         def lookupDomainList = []
 
         if (additionalParams) {
-            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV') ? 'GTVSDLV' : additionalParams.lovForm
             String query = "SELECT * FROM $lovTable"
 
             if (lovTable == 'GTVSDLV') {
-                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                if (additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
                     query += " where GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    staticLogger.error("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
@@ -608,11 +606,11 @@ class SupplementalDataSSBService {
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            staticLogger.debug("Querying on SDE Lookup Table executed")
             sql.connection.close()
         }
 
-        return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
+        return (lookupDomainList == []) ? ([:]) : ([list: lookupDomainList, totalCount: lookupDomainList.size()])
     }
 
     /**
@@ -622,11 +620,11 @@ class SupplementalDataSSBService {
      * @param additionalParams
      * @return - list of generic lookup domain objects
      */
-    def static findAllLovs (filter, additionalParams) {
+    def static findAllLovs(filter, additionalParams) {
         def lookupDomainList = []
 
         if (additionalParams) {
-            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV') ? 'GTVSDLV' : additionalParams.lovForm
             String query = "SELECT * FROM $lovTable"
             query += " WHERE (upper(${lovTable}_CODE) like upper('%${filter}%')"
             if (additionalParams.descNotAvailable) {
@@ -637,11 +635,11 @@ class SupplementalDataSSBService {
             query += ")"
 
             if (lovTable == 'GTVSDLV') {
-                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                if (additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
                     query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    staticLogger.error("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
@@ -652,10 +650,10 @@ class SupplementalDataSSBService {
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            staticLogger.debug("Querying on SDE Lookup Table executed")
             sql.connection.close()
         }
-        return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
+        return (lookupDomainList == []) ? ([:]) : ([list: lookupDomainList, totalCount: lookupDomainList.size()])
     }
 
 
@@ -677,21 +675,21 @@ class SupplementalDataSSBService {
      * @param tableColumnNames
      * @return
      */
-    def getDomainPropertyNames (Class domainClass, tableColumnNames) {
+    def getDomainPropertyNames(Class domainClass, tableColumnNames) {
         def columnMappings = [:]
 
         def metadata = Holders.getGrailsApplication().getMainContext().sessionFactory.getClassMetadata(domainClass)
         metadata.getPropertyNames().eachWithIndex { propertyName, i ->
             try {
                 columnMappings[propertyName] = metadata.getPropertyColumnNames(i)[0]
-            } catch (MappingException e){
+            } catch (MappingException e) {
                 // no mapping for this property; so need to skip it.
             }
         }
 
-        columnMappings?.findAll{ String prop, col ->  !prop.startsWith("_")}.keySet()    // returns keys which are prop names.
+        columnMappings?.findAll { String prop, col -> !prop.startsWith("_") }.keySet()
+        // returns keys which are prop names.
     }
-
 
     // ---------------------------- Helper Methods -----------------------------------
 
@@ -738,8 +736,7 @@ class SupplementalDataSSBService {
     private def validateDataType(dataType, String value) {
         if (dataType.equals("NUMBER") && !isNumeric(value)) {
             throw new RuntimeException("Invalid Number")
-        }
-        else if (dataType.equals("DATE") && value && !isDateValid(value)) {
+        } else if (dataType.equals("DATE") && value && !isDateValid(value)) {
             throw new RuntimeException("Invalid Date")
         }
     }
