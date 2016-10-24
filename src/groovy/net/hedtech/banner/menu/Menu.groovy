@@ -30,5 +30,6 @@ public class Menu implements Serializable {
     def module
     def captionProperty
     String platCode
+    def extensions
 }
 

@@ -19,6 +19,7 @@ class MenuService {
     def workflowMenuService
     def configurationService
     private final log = Logger.getLogger(getClass())
+    def supplementalDataSSBService
 
     /**
      * This is returns map of all menu items based on user access
@@ -257,7 +258,7 @@ class MenuService {
 
         sql.eachRow("""
                        select * from (
-                       select distinct DECODE(gutmenu_value,gutmenu_value,a.gubobjs_name) value,
+                       select distinct DECODE(gutmenu_value,gutmenu_value,a.gubobjs_name) value, a.gubobjs_surrogate_id id,
                        gutmenu_level,gutmenu_seq_no,gubobjs_ui_version,gutmenu_prior_obj,DECODE(gutmenu_objt_code,gutmenu_objt_code,a.gubobjs_objt_code) objt_code,
                        DECODE(gutmenu_desc,gutmenu_desc,a.gubobjs_desc) description,
                        gubpage_code, gubpage_name, gubmodu_url,gubmodu_code,gubmodu_plat_code
@@ -298,6 +299,10 @@ class MenuService {
             }
             mnu.platCode = it.gubmodu_plat_code
             mnu.captionProperty = mnuPrf
+
+            // SDE Process
+            supplementalDataSSBService.getModelExtensionData('GUBOBJS', it.id, mnu)
+            // End  SDE Process
 
             dataMap.add( mnu )
         }
