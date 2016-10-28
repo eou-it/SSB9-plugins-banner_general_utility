@@ -37,9 +37,9 @@ class CommonSelfServiceMenuController {
     def list = {
         String caption
         Map subMenu
-
+        String callback = XssSanitizer.sanitize(params.callback)
         if(request.parameterMap["caption"])
-            caption = request.parameterMap["caption"][0]
+            caption = XssSanitizer.sanitize(request.parameterMap["caption"][0]);
 
 
         //subMenu = getSubMenuData(Main_Menu, caption)
@@ -51,8 +51,8 @@ class CommonSelfServiceMenuController {
         }
 
 
-        if( params.callback ) {
-            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
+        if( callback ) {
+            render text: "$callback  && $callback(${subMenu as JSON});", contentType: "text/javascript"
         } else {
             render subMenu as JSON
         }
@@ -89,10 +89,11 @@ class CommonSelfServiceMenuController {
         List adminList
         List finalList = []
         String searchVal
+        String callback = XssSanitizer.sanitize(params.callback)
 
         if (DBUtility.isSSUser()) {
             if (request.parameterMap["q"])
-                searchVal = request.parameterMap["q"][0]
+                searchVal = XssSanitizer.sanitize(request.parameterMap["q"][0])
             if (searchVal && searchVal.length() >= 3) {
                 def user = SecurityContextHolder?.context?.authentication?.principal
                 adminList = selfServiceMenuService.searchMenuAppConcept(searchVal, user.pidm, request.parameterMap["ui"])
@@ -103,8 +104,8 @@ class CommonSelfServiceMenuController {
 
         subMenu = [ name:"root", caption:"root", items: composeMenuStructure(finalList, SSB_BANNER_TITLE) ]
 
-        if( params.callback ) {
-            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
+        if( callback) {
+            render text: "$callback && $callback(${subMenu as JSON});", contentType: "text/javascript"
         } else {
             render subMenu as JSON
         }
