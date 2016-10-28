@@ -105,7 +105,7 @@ class CommonSelfServiceMenuController {
         subMenu = [ name:"root", caption:"root", items: composeMenuStructure(finalList, SSB_BANNER_TITLE) ]
 
         if( callback) {
-            render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
+            render text: "$callback && $callback(${subMenu as JSON});", contentType: "text/javascript"
         } else {
             render subMenu as JSON
         }
