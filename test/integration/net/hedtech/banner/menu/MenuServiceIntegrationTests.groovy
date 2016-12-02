@@ -29,21 +29,6 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    void testBannerMenu() {
-        def map
-        map = menuService.bannerMenu()
-        assertNotNull map
-
-        def mnu = map.find {it -> it.formName == "SCACRSE"}
-
-        assertNotNull mnu
-        assertNotNull mnu.caption
-        assertNotNull mnu.platCode
-        assert mnu.formName == "SCACRSE"
-        assert mnu.pageName == "basicCourseInformation"
-    }
-
-    @Test
     void testPersonalMenu() {
         String mnu = menuService.personalMenu()
         assertNotNull mnu
@@ -51,60 +36,10 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    void testGotoMenu() {
-        ArrayList map = menuService.gotoMenu('SCA')
-        assertNotNull map
-
-        def mnu = map.find {it -> it.formName == "SCACRSE"}
-
-        assertNotNull mnu
-        assertNotNull mnu.caption
-        assertNotNull mnu.platCode
-        assert mnu.formName == "SCACRSE"
-        assert mnu.pageName == "basicCourseInformation"
-    }
-
-    @Test
-    void testGetFormName() {
-        def pageName
-        pageName = menuService.getFormName("basicCourseInformation")
-        assertNotNull pageName
-        assert pageName == "SCACRSE"
-    }
-
-    @Test
-    void testBannerCombinedMenu() {
-        def map
-        map = menuService.bannerCombinedMenu()
-        assertNotNull map
-
-        def mnu = map.find {it -> it.name == "SCACRSE"}
-
-        assertNotNull mnu
-        assertNotNull mnu.caption
-        assertNotNull mnu.platCode
-        assert mnu.name == "SCACRSE"
-        assert mnu.page == "SCACRSE"
-    }
-
-    @Test
     void testPersonalCombinedMenu() {
         String mnu = menuService.personalCombinedMenu()
         assertNotNull mnu
 
-    }
-
-    @Test
-    void testGotoCombinedMenu() {
-        ArrayList map = menuService.gotoCombinedMenu('SCA')
-        assertNotNull map
-
-        def mnu = map.find {it -> it.formName == "SCACRSE"}
-
-        assertNotNull mnu
-        assertNotNull mnu.caption
-        assertNotNull mnu.platCode
-        assert mnu.formName == "SCACRSE"
     }
 
     @Test
