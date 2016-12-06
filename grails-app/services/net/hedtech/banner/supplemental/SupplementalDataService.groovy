@@ -1,21 +1,18 @@
 package net.hedtech.banner.supplemental
 
 import grails.util.Holders
+import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
-
-import org.apache.log4j.Logger
-
-import java.text.SimpleDateFormat
-import java.text.ParseException
 import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
-import org.springframework.context.ApplicationContext
+import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import net.hedtech.banner.supplemental.SupplementalPropertyDiscriminatorContent
-import net.hedtech.banner.supplemental.SupplementalPropertyValue
-import org.hibernate.persister.entity.SingleTableEntityPersister
 import org.hibernate.MappingException
-import groovy.sql.GroovyRowResult
+import org.hibernate.persister.entity.SingleTableEntityPersister
+import org.springframework.context.ApplicationContext
+
+import java.text.ParseException
+import java.text.SimpleDateFormat
 
 /**
  * DAO for supplemental data. This strategy works against the
@@ -27,8 +24,7 @@ class SupplementalDataService {
     def sessionFactory           // injected by Spring
     def grailsApplication        // injected by Spring
 
-    private final Logger log = Logger.getLogger(getClass())
-    private static final Logger staticLogger = Logger.getLogger(SupplementalDataService.class)
+    private static final def log = Logger.getLogger(getClass())
 
     /**
      * Returns the conditions if SDE is enabled for that UI component.
@@ -63,7 +59,7 @@ class SupplementalDataService {
             return sdeFound
             //return false
         } catch (e) {
-            log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
+            log.error "ERROR: Could not SDE set up for table - $tableName." ,  e
             throw e
         } finally {
             sql?.close()
@@ -118,7 +114,6 @@ class SupplementalDataService {
         try {
             def sql = new Sql(sessionFactory.getCurrentSession().connection())
             def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(model.getClass()).tableName.toUpperCase())
-            def attributeName
             def id = model.id
 
             sql.call("""
@@ -145,7 +140,7 @@ class SupplementalDataService {
 
             supplementalProperties
         } catch (e) {
-            log.error "Failed to load SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
+            log.error "Failed to load SDE for the entity ${model.class.name}-${model.id}  Exception" , e
             throw e
         }
     }
@@ -269,7 +264,7 @@ class SupplementalDataService {
 
 
         } catch (e) {
-            log.error "Failed to save SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
+            log.error "Failed to save SDE for the entity ${model.class.name}-${model.id}  Exception" , e
             throw e
         }
     }
@@ -396,7 +391,7 @@ class SupplementalDataService {
 		               """) { key -> pk = key }
             return pk
         } catch (e) {
-            log.error "Failed to get PK for the entity. Exception: $e "
+            log.error "Failed to get PK for the entity. Exception " , e
             throw e
         }
     }
@@ -439,18 +434,18 @@ class SupplementalDataService {
                     query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    log.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table started")
+            log.debug("Querying on SDE Lookup Table started")
             Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
 
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            log.debug("Querying on SDE Lookup Table executed" )
             sql.connection.close()
         }
         (lookupDomainList == [])?null:lookupDomainList[0]
@@ -474,18 +469,18 @@ class SupplementalDataService {
                     query += " where GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    log.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table started")
+            log.debug("Querying on SDE Lookup Table started")
             Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
 
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            log.debug("Querying on SDE Lookup Table executed" )
             sql.connection.close()
         }
 
@@ -507,7 +502,7 @@ class SupplementalDataService {
             String query = "SELECT * FROM $lovTable"
             query += " WHERE (upper(${lovTable}_CODE) like upper('%${filter}%')"
             if (additionalParams.descNotAvailable) {
-                // skip the desc part.
+                log.debug("skip the desc part.")
             } else {
                 query += " OR upper(${lovTable}_DESC) like upper('%${filter}%')"
             }
@@ -518,18 +513,18 @@ class SupplementalDataService {
                     query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    log.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table started")
+            log.debug("Querying on SDE Lookup Table started")
             Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
 
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            log.debug("Querying on SDE Lookup Table executed" )
             sql.connection.close()
         }
         return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
@@ -562,7 +557,7 @@ class SupplementalDataService {
             try {
                 columnMappings[propertyName] = metadata.getPropertyColumnNames(i)[0]
             } catch (MappingException e){
-                // no mapping for this property; so need to skip it.
+                log.error "MappingException occured for finding getDomainPropertyNames" , e
             }
         }
 
@@ -590,7 +585,7 @@ class SupplementalDataService {
                 sdf.parse(dateStr)
                 return true
             } catch (ParseException e) {
-                // Ignore because its not the right format.
+                log.error "ParseException occured for method isValidDateFormats " , e
             }
         }
         return false

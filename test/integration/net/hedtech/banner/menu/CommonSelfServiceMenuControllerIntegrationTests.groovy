@@ -1,13 +1,12 @@
 package net.hedtech.banner.menu
 
+import static org.hamcrest.CoreMatchers.containsString
 import grails.converters.JSON
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-
-import static org.hamcrest.CoreMatchers.containsString
 
 class CommonSelfServiceMenuControllerIntegrationTests extends BaseIntegrationTestCase {
 

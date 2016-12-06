@@ -1,11 +1,12 @@
 /*******************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.testing
 
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.test.ZipTest
+import org.apache.log4j.Logger
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -16,7 +17,7 @@ import org.junit.Test
  */
 class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     def supplementalDataService        // injected by Spring
-
+    private static final def log = Logger.getLogger(getClass())
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
@@ -166,7 +167,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 
         supplementalDataService.persistSupplementalDataFor(model, sdeModel)
 
-        def sdeModelSdeUpdated = supplementalDataService.loadSupplementalDataForModel(model)
+        supplementalDataService.loadSupplementalDataForModel(model)
         assertEquals "User Defined 2", sdeModel.USERDEFINED."1".prompt
         assertEquals "Language update", sdeModel.LANGUAGE."1".prompt
     }
@@ -367,7 +368,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 
         supplementalDataService.persistSupplementalDataFor(model, sdeModel)
 
-        def updatedSde = ZipTest.findByCodeAndCity("02186", "Milton")
+        ZipTest.findByCodeAndCity("02186", "Milton")
         def sdeModelUpdated = supplementalDataService.loadSupplementalDataForModel(model)
 
         assertEquals "ENGLISH", sdeModelUpdated.LANGUAGE."1".value
@@ -399,7 +400,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         }
         catch (ApplicationException ae) {
             if (ae.wrappedException =~ /\*Error\* Invalid Number. Expected format: 999D99/)
-                println "Found correct message code *Error* Invalid Number. Expected format: 999D99"
+            log.debug("Found correct message code *Error* Invalid Number. Expected format: 999D99")
             else
                 fail("Did not find expected error code *Error* Invalid Number. Expected format: 999D99, sdeModel: ${ae.wrappedException}")
         }
@@ -424,12 +425,12 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         sdeModel.LANGUAGE."1".value = "my test"
 
         try {
-            def zip = supplementalDataService.persistSupplementalDataFor(model, sdeModel)
+            supplementalDataService.persistSupplementalDataFor(model, sdeModel)
             fail "This should have failed"
         }
         catch (ApplicationException ae) {
             if (ae.wrappedException =~ /\*Error\* Value 1234 not found in validation table STVTERM./)
-                println "Found correct message code *Error* Value 1234 not found in validation table STVTERM."
+                log.debug("Found correct message code *Error* Value 1234 not found in validation table STVTERM.")
             else
                 fail("Did not find expected error code *Error* Value 1234 not found in validation table STVTERM., sdeModel: ${ae.wrappedException}")
         }
@@ -449,38 +450,6 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "net.hedtech.banner.session.BannerUserSession", mappedDomain
 
     }
-
-
-
-    private def updateGORSDAVTable() {
-        def sql
-        try {
-            sql = new Sql(sessionFactory.getCurrentSession().connection())
-            sql.executeUpdate("delete gorsdav where gorsdav_table_name = 'GTVZIPC' and gorsdav_disc > 1")
-        }
-        finally {
-            sql?.close()  // note that the test will close the connection, since it's our current session's connection
-        }
-    }
-
-    private def insertUserDefinedAttrGTVZIPCTable() {
-        def sql
-        try {
-            sql = new Sql(sessionFactory.getCurrentSession().connection())
-            sql.executeUpdate("""
-            INSERT INTO GORSDAM (GORSDAM_TABLE_NAME, GORSDAM_ATTR_NAME ,
-                                 GORSDAM_ATTR_TYPE, GORSDAM_ATTR_ORDER,
-                                 GORSDAM_ATTR_REQD_IND, GORSDAM_ATTR_DATA_TYPE,
-                                 GORSDAM_ATTR_PROMPT, GORSDAM_ACTIVITY_DATE,
-                                 GORSDAM_USER_ID,GORSDAM_SDDC_CODE ) values
-            ('GTVZIPC', 'USERDEFINED','A',4,'Y','VARCHAR2','User Defined %DISC%',sysdate,user,'cyndy3')
-            """)
-        }
-        finally {
-            sql?.close()  // note that the test will close the connection, since it's our current session's connection
-        }
-    }
-
 
     private def updateGorsdamTableValidation() {
         def sql

@@ -1,22 +1,18 @@
 package net.hedtech.banner.menu
-/*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
- *******************************************************************************/
-
 
 import grails.converters.JSON
-import net.hedtech.banner.security.BannerUser
-import net.hedtech.banner.security.XssSanitizer
-import org.apache.log4j.Logger
-import org.springframework.security.core.context.SecurityContextHolder
 import net.hedtech.banner.db.dbutility.DBUtility
+import net.hedtech.banner.security.XssSanitizer
+import org.springframework.security.core.context.SecurityContextHolder
 
+/*******************************************************************************
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 class CommonSelfServiceMenuController {
     def selfServiceMenuService
     def grailsApplication
     def multiEntityProcessingService
 
-    private final log = Logger.getLogger(getClass())
 
     static final String SSB_BANNER_TITLE = "Banner Self-Service"
     static final String Main_Menu = "bmenu.P_MainMnu"

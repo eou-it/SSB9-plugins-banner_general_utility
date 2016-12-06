@@ -1,10 +1,9 @@
 /*******************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
 
-import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.core.context.SecurityContextHolder
@@ -19,7 +18,6 @@ class AboutService {
     def resourceProperties
     def messageSource
 
-    private final log = Logger.getLogger(getClass())
 
     def getAbout() {
         def about = [:]
@@ -48,13 +46,13 @@ class AboutService {
             }
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error "IOException Occured in method loadResourcePropertiesFile" , ex
         } finally {
             if (input != null) {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.error "IOException Occured in method loadResourcePropertiesFile", e
                 }
             }
         }
@@ -71,7 +69,7 @@ class AboutService {
                 mepDescription = user?.mepHomeContextDescription
             }
         } catch (Exception e) {
-            // ignore
+            log.error "Exception Occured in method getMepDescription", e
         }
 
         return mepDescription
@@ -126,7 +124,7 @@ class AboutService {
         try {
             SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase()
         } catch (Exception e) {
-            // ignore
+            log.error "Exception occured while executing getUserName method" , e
         }
     }
 

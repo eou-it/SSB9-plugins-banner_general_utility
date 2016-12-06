@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 package net.hedtech.banner.general.utility
@@ -113,7 +113,6 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull bannerUserSession.lastModifiedBy
 
         //Update the entity
-        def testDate = new Date()
         bannerUserSession.info = COURSE_DETAIL_INFORMATION
         save bannerUserSession
 
