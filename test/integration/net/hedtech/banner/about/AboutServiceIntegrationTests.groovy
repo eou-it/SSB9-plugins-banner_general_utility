@@ -1,3 +1,7 @@
+/*******************************************************************************
+ Copyright 2016 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
+
 package net.hedtech.banner.about
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -22,7 +26,7 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void getAboutsuccess(){
+    public void getAboutSuccess(){
         assertNotNull(aboutService.getAbout())
     }
 }
