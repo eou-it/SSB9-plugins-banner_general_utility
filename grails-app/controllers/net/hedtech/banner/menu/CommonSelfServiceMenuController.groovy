@@ -1,3 +1,6 @@
+/*******************************************************************************
+ Copyright 2016 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.menu
 
 import grails.converters.JSON
@@ -5,9 +8,6 @@ import net.hedtech.banner.db.dbutility.DBUtility
 import net.hedtech.banner.security.XssSanitizer
 import org.springframework.security.core.context.SecurityContextHolder
 
-/*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
- *******************************************************************************/
 class CommonSelfServiceMenuController {
     def selfServiceMenuService
     def grailsApplication
@@ -16,14 +16,14 @@ class CommonSelfServiceMenuController {
 
     static final String SSB_BANNER_TITLE = "Banner Self-Service"
     static final String Main_Menu = "bmenu.P_MainMnu"
-    static final String AMPERSAND="&";
-    static final String QUESTION_MARK="?";
-    static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
+    static final String AMPERSAND = "&";
+    static final String QUESTION_MARK = "?";
+    static final String hideSSBHeaderComps = "hideSSBHeaderComps=true";
 
     def data = {
-        if (params.refresh == 'Y'){
+        if (params.refresh == 'Y') {
             keepAlive()
-        }else if(request.parameterMap["q"]){
+        } else if (request.parameterMap["q"]) {
             searchAppConcept()
         } else {
             list()
@@ -34,20 +34,19 @@ class CommonSelfServiceMenuController {
         String caption
         Map subMenu
 
-        if(request.parameterMap["caption"])
+        if (request.parameterMap["caption"])
             caption = request.parameterMap["caption"][0]
-
 
         //subMenu = getSubMenuData(Main_Menu, caption)
 
         if (DBUtility.isSSUser()) {
             subMenu = getSubMenuData(Main_Menu, caption)
-        }else{
-            subMenu = [ name:"root", caption:"root", items: []]
+        } else {
+            subMenu = [name: "root", caption: "root", items: []]
         }
 
 
-        if( params.callback ) {
+        if (params.callback) {
             render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
         } else {
             render subMenu as JSON
@@ -55,26 +54,27 @@ class CommonSelfServiceMenuController {
 
 
     }
-    private def getSubMenuData(String mnuName,String caption ){
+
+    private def getSubMenuData(String mnuName, String caption) {
 
         Map subMenu
         List ssbList
 
-        if (mnuName){
+        if (mnuName) {
             List mnuList
             def user = SecurityContextHolder?.context?.authentication?.principal
             mnuList = selfServiceMenuService.bannerMenuAppConcept(user.pidm)
-            mnuList=setHideSSBHeaderCompsParam(mnuList)
-            ssbList =  composeMenuStructure(mnuList, SSB_BANNER_TITLE)
-            subMenu = [name:mnuName,caption:caption,items: ssbList]
+            mnuList = setHideSSBHeaderCompsParam(mnuList)
+            ssbList = composeMenuStructure(mnuList, SSB_BANNER_TITLE)
+            subMenu = [name: mnuName, caption: caption, items: ssbList]
         }
         return subMenu
     }
 
-    private List setHideSSBHeaderCompsParam(List mnuList){
-        mnuList.eachWithIndex{ SelfServiceMenu,  i ->
-            String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
-            SelfServiceMenu.url=SelfServiceMenu.url+symbol+hideSSBHeaderComps;
+    private List setHideSSBHeaderCompsParam(List mnuList) {
+        mnuList.eachWithIndex { SelfServiceMenu, i ->
+            String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK) > -1 ? AMPERSAND : QUESTION_MARK
+            SelfServiceMenu.url = SelfServiceMenu.url + symbol + hideSSBHeaderComps;
         }
         return mnuList
     }
@@ -97,9 +97,9 @@ class CommonSelfServiceMenuController {
             }
         }
 
-        subMenu = [ name:"root", caption:"root", items: composeMenuStructure(finalList, SSB_BANNER_TITLE) ]
+        subMenu = [name: "root", caption: "root", items: composeMenuStructure(finalList, SSB_BANNER_TITLE)]
 
-        if( params.callback ) {
+        if (params.callback) {
             render text: "${params.callback} && ${params.callback}(${subMenu as JSON});", contentType: "text/javascript"
         } else {
             render subMenu as JSON
@@ -125,20 +125,20 @@ class CommonSelfServiceMenuController {
         return redirectUrl
     }
 
-    private def composeMenuStructure(list, type){
+    private def composeMenuStructure(list, type) {
         List finalList = []
-        list.each {a ->
+        list.each { a ->
             def tempFormName = a.formName
             def tempParentName = a.parent
             def tempPageName = a.page
-            def tempName   = a.name
+            def tempName = a.name
 
             if (a.type == "MENU")
-                finalList.add(name:tempName,page:tempPageName,caption:a.caption,parent:tempParentName,url: getServerURL() +"/commonSelfServiceMenu?type="+type+"&menu="+tempFormName+"&caption="+a.caption,type: "MENU",menu:tempPageName)
+                finalList.add(name: tempName, page: tempPageName, caption: a.caption, parent: tempParentName, url: getServerURL() + "/commonSelfServiceMenu?type=" + type + "&menu=" + tempFormName + "&caption=" + a.caption, type: "MENU", menu: tempPageName)
 
-            if (a.type == "FORM" ){
-                if (getMultiEntityProcessingService().isMEP()){
-                    finalList.add(name: tempName, page: tempName, caption: a.caption, parent: a.url.replace("{mepCode}",session["mep"]), url: a.url.replace("{mepCode}",session["mep"]), type: "SS-APP", menu: tempFormName.replace("{mepCode}",session["mep"]), pageCaption: a.caption)
+            if (a.type == "FORM") {
+                if (getMultiEntityProcessingService().isMEP()) {
+                    finalList.add(name: tempName, page: tempName, caption: a.caption, parent: a.url.replace("{mepCode}", session["mep"]), url: a.url.replace("{mepCode}", session["mep"]), type: "SS-APP", menu: tempFormName.replace("{mepCode}", session["mep"]), pageCaption: a.caption)
                 } else {
                     finalList.add(name: tempName, page: tempName, caption: a.caption, parent: a.url, url: a.url, type: "SS-APP", menu: tempFormName, pageCaption: a.caption)
                 }
@@ -147,10 +147,10 @@ class CommonSelfServiceMenuController {
         return finalList
     }
 
-    private def keepAlive(){
+    private def keepAlive() {
         String callback = XssSanitizer.sanitize(params.callback)
 
-        if( callback ) {
+        if (callback) {
             render text: "$callback && $callback({'result':'I am Alive'});", contentType: "text/javascript"
         } else {
             render "I am Alive"
