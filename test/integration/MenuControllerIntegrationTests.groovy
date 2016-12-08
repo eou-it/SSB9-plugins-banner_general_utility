@@ -1,8 +1,6 @@
 /*******************************************************************************
  Copyright 2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
-
-import grails.converters.JSON
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
