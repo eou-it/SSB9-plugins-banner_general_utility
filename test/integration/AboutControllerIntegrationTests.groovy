@@ -1,14 +1,14 @@
 /*******************************************************************************
  Copyright 2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
-
-
-import grails.converters.JSON
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+/*
+Integration Test cases for AboutController
+ */
 class AboutControllerIntegrationTests extends BaseIntegrationTestCase {
 
     @Before
