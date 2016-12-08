@@ -26,6 +26,6 @@ class AboutControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     public void dataSuccess(){
         controller.data()
-        assertNotNull(controller.response)
+        assertEquals controller.response.status, 200
     }
 }
