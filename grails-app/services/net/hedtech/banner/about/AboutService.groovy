@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
@@ -27,22 +27,37 @@ class AboutService {
         loadResourcePropertiesFile();
 
         about['api.title'] = getMessage("about.banner.title")
-        about[getMessage("about.banner.tab.general")] = getAppInfo()
 
-        about[getMessage("about.banner.plugins")] = getPluginsInfo("(banner|i18nCore|sgheZkCore).*")
-        about[getMessage("about.banner.other.plugins")] = getPluginsInfo("(?!(banner|i18nCore|sgheZkCore).*).*")
-        about[getMessage("about.banner.copyright")] = getCopyright()
-        about['api.close'] = getMessage("about.banner.close")
+        about['about.banner.application.name'] = getApplicationName()
+        about['about.banner.application.version'] = getVersion()
+
+        /* Commented for now because we need only application name & version number.
+         For specific role we have to show all the details but still not decided for which role to show all details.
+
+         about['about.banner.tab.general'] = getAppInfo()
+
+        about['about.banner.plugins'] = getPluginsInfo("(banner|i18nCore|sgheZkCore).*")
+        about['about.banner.other.plugins'] = getPluginsInfo("(?!(banner|i18nCore|sgheZkCore).*).*")
+        about['api.close'] = getMessage("about.banner.close") */
+        about['about.banner.copyright'] = getCopyright()
+        about['about.banner.copyrightLegalNotice'] = getCopyrightLegalNotice()
         return about
     }
 
+    private String getApplicationName(){
+        if(resourceProperties){
+            formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
+        } else {
+            grailsApplication.metadata['app.name']
+        }
+    }
     private void loadResourcePropertiesFile() {
-        String propertyFileName = ServletContextHolder.servletContext.getRealPath('WEB-INF/classes/release.properties')
+        String propertyFileName = ServletContextHolder.servletContext.getRealPath('/WEB-INF/classes/release.properties')
         resourceProperties = new Properties();
         InputStream input = null;
         try {
 
-            if (new File(propertyFileName).exists()){
+            if (propertyFileName != null && new File(propertyFileName).exists()){
                 input = new FileInputStream(propertyFileName);
                 resourceProperties.load(input);
             }
@@ -81,24 +96,25 @@ class AboutService {
     private Map getAppInfo() {
         def appInfo = [:]
         if (resourceProperties) {
-            appInfo[getMessage("about.banner.application.name")] = formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
-            appInfo[getMessage("about.banner.application.version")] = resourceProperties.getProperty("application.version")
             appInfo[getMessage("about.banner.application.build.number")] = resourceProperties.getProperty("application.build.number")
             appInfo[getMessage("about.banner.application.build.time")] = resourceProperties.getProperty("application.build.time");
-            //def appName = grailsApplication.metadata['app.name']
-            //appInfo[ appName ] = grailsApplication.metadata['app.version']
         } else {
             appInfo[getMessage("about.banner.application.name")] = grailsApplication.metadata['app.name']
             appInfo[getMessage("about.banner.application.version")] = grailsApplication.metadata['app.version']
         }
-        appInfo[getMessage("about.banner.db.instance.name")] = getDbInstanceName()
+        //appInfo[getMessage("about.banner.db.instance.name")] = getDbInstanceName()
         if (getUserName())
             appInfo[getMessage("about.banner.username")] = getUserName()
 
-        if (getMepDescription())
-            appInfo[getMessage("about.banner.mep.description")] = getMepDescription()
-
         return appInfo
+    }
+
+    private String getVersion(){
+        if (resourceProperties) {
+            getMessage("about.banner.application.version") + " " + resourceProperties.getProperty("application.version")
+        } else {
+            getMessage("about.banner.application.version") + " " + grailsApplication.metadata['app.version']
+        }
     }
 
     private Map getPluginsInfo(def pattern) {
@@ -115,7 +131,11 @@ class AboutService {
     }
 
     private String getCopyright() {
-        getMessage("net.hedtech.banner.login.copyright1") + " " + getMessage("net.hedtech.banner.login.copyright2")
+        getMessage("net.hedtech.banner.login.copyright1")
+    }
+
+    private String getCopyrightLegalNotice() {
+        getMessage("net.hedtech.banner.login.copyright2")
     }
 
     private String getDbInstanceName() {
@@ -123,15 +143,24 @@ class AboutService {
     }
 
     private String getUserName() {
+        String userName = ""
         try {
-            SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase()
+            userName = SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase()
         } catch (Exception e) {
             // ignore
         }
+        if("__grails.anonymous.user__".toUpperCase().equals(userName)){
+            userName = "N/A"
+        }
+        return userName
     }
 
     private String formatCamelCaseToEnglish(value) {
-        value.replaceAll(/(\B[A-Z])/, ' $1').replaceAll("banner", "Banner")
+        if(value) {
+            value.replaceAll(/(\B[A-Z])/, ' $1').replaceAll("banner", "Banner")
+        } else{
+            value
+        }
     }
 
     private String getMessage(String key) {
