@@ -1,51 +1,86 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general
 
-import javax.persistence.*
+import javax.persistence.Table
+import javax.persistence.Entity
+import javax.persistence.NamedQueries
+import javax.persistence.NamedQuery
+import javax.persistence.Id
+import javax.persistence.Column
+import javax.persistence.SequenceGenerator
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
+import javax.persistence.Lob
+import javax.persistence.Version
+import javax.persistence.Temporal
+import javax.persistence.TemporalType
 
 @Entity
 @Table(name = "GUROCFG")
 @NamedQueries(value = [
-        @NamedQuery(name = "ConfigurationData.fetchByNameandType",
+        @NamedQuery(name = "ConfigurationData.fetchByNameAndType",
                 query = """FROM   ConfigurationData a
 		   WHERE  a.name = :name
 		   AND    a.type = :type
 	      """),
-        @NamedQuery(name = "ConfigurationData.fetchThemes",
+        @NamedQuery(name = "ConfigurationData.fetchByType",
                 query = """FROM   ConfigurationData a
 		   WHERE  a.type = :type
 	      """)
 ])
 class ConfigurationData implements Serializable{
-
+    /**
+     * Surrogate Id
+     */
     @Id
     @Column(name="GUROCFG_SURROGATE_ID")
     @SequenceGenerator(name = "GUROCFG_SEQ_GEN", sequenceName = "GUROCFG_SURROGATE_ID_SEQUENCE", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GUROCFG_SEQ_GEN")
     Long id;
 
+    /**
+     * File Name
+     */
     @Column(name="GUROCFG_NAME", nullable = false, length = 50)
     String name;
 
+    /**
+     * File Type
+     */
     @Column(name="GUROCFG_TYPE", nullable = false, length = 30)
     String type
 
+    /**
+     * Value / Content of file
+     */
     @Column(name="GUROCFG_VALUE", nullable = true)
     @Lob
     String value;
 
+    /**
+     * version
+     */
     @Version
     @Column(name="GUROCFG_VERSION" , nullable = false, precision = 19)
     Long version
 
+    /**
+     * Last modified user
+     */
     @Column(name="GUROCFG_USER_ID", length = 30)
     String lastModifiedBy
 
+    /**
+     * Data origin
+     */
     @Column(name="GUROCFG_DATA_ORIGIN", length = 30)
     String dataOrigin
 
+    /**
+     * Last modified date
+     */
     @Column(name = "GUROCFG_ACTIVITY_DATE" )
     @Temporal(TemporalType.TIMESTAMP)
     Date lastModified
@@ -96,18 +131,18 @@ class ConfigurationData implements Serializable{
                 '}';
     }
 
-    public static ConfigurationData fetchThemebyNameandType(String name, String type) {
+    public static ConfigurationData fetchByNameAndType(String name, String type) {
         List<ConfigurationData> configurationData
         configurationData = ConfigurationData.withSession {session ->
-            configurationData = session.getNamedQuery('ConfigurationData.fetchByNameandType').setString('name',name).setString('type',type).list()}
+            configurationData = session.getNamedQuery('ConfigurationData.fetchByNameAndType').setString('name',name).setString('type',type).list()}
         ConfigurationData result = configurationData?.size()>0?configurationData.get(0):null
         return result
     }
 
-    public static List fetchThemes(String type) {
+    public static List fetchByType(String type) {
         List configurationData
         configurationData = ConfigurationData.withSession {session ->
-            configurationData = session.getNamedQuery('ConfigurationData.fetchThemes').setString('type',type).list()}
+            configurationData = session.getNamedQuery('ConfigurationData.fetchByType').setString('type',type).list()}
         return configurationData
     }
 }

@@ -1,6 +1,6 @@
 
 /*******************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
  
 package net.hedtech.banner.general
@@ -13,7 +13,7 @@ import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 import net.hedtech.banner.general.ConfigurationData
 
-class ConfigurationDataTests extends BaseIntegrationTestCase {
+class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 
 	def themeService
 	
@@ -37,19 +37,31 @@ class ConfigurationDataTests extends BaseIntegrationTestCase {
 	}
 
 	@Test
-	void testFetchthemebyNameandType(){
+	void testFetchByNameAndType(){
 		def configurationData = newConfigurationData()
 		save configurationData
-		configurationData = ConfigurationData.fetchThemebyNameandType("TTTTT", "json")
+		configurationData = ConfigurationData.fetchByNameAndType("TTTTT", "json")
 		assertNotNull configurationData.id
 	}
 
 	@Test
-	void testFetchthemes(){
+	void testFetchTypes(){
 		def configurationData = newConfigurationData()
 		save configurationData
-		configurationData = ConfigurationData.fetchThemes("json")
+		configurationData = ConfigurationData.fetchByType("json")
 		assertNotNull configurationData.id
+	}
+
+	@Test
+	void testFetchNullTypes(){
+		def configurationData = ConfigurationData.fetchByType(null)
+		assertNull configurationData
+	}
+
+	@Test
+	void testFetchByNameAndTypeNull(){
+		def configurationData =  ConfigurationData.fetchByNameAndType(null)
+		assertNull configurationData
 	}
 
     @Test
