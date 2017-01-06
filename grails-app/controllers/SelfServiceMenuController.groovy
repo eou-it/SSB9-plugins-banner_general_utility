@@ -14,13 +14,11 @@ class SelfServiceMenuController {
 
     def selfServiceMenuService
     def mnuLabel = "Banner"
-    private final log = Logger.getLogger(getClass())
+    private static final def log = Logger.getLogger(getClass())
 
     def data = {
-        def menuType
         def mnuParams
         def list
-        def currentMenu
         def menuName
         def menu
 

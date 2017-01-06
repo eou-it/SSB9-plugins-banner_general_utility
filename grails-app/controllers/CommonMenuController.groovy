@@ -1,15 +1,15 @@
 /*******************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
+
 import grails.converters.JSON
+import net.hedtech.banner.db.dbutility.DBUtility
 import net.hedtech.banner.menu.Menu
 import net.hedtech.banner.security.BannerUser
-import net.hedtech.banner.utility.GeneralMenu
 import net.hedtech.banner.security.XssSanitizer
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
-import net.hedtech.banner.db.dbutility.DBUtility
 
 class CommonMenuController {
     def menuService
@@ -20,7 +20,7 @@ class CommonMenuController {
     def quickFlowMenuService
     def multiEntityProcessingService
 
-    private final log = Logger.getLogger(getClass())
+    private static final def log = Logger.getLogger(getClass())
 
     static final String BANNER_INB_URL = "bannerInbUrl"
     static final String MAGELLAN = "MAGELLAN"
@@ -61,7 +61,6 @@ class CommonMenuController {
         String mnuType
         String caption
         Map subMenu
-        Map finalMenu
         String callback = XssSanitizer.sanitize(params.callback)
 
         if (request.parameterMap["menu"])
@@ -79,8 +78,6 @@ class CommonMenuController {
         } else{
             subMenu = [ name:"root", caption:"root", items: [] ]
         }
-
-        //finalMenu = [ data: subMenu ]
 
         // Support JSON-P callback
         if( callback ) {
@@ -151,11 +148,8 @@ class CommonMenuController {
         return [self: self, parent:parent]
     }
     private def rootMenu = {
-        Map finalMenu
-        Map subMenu
         Map adminMenu
         Map personalMenu
-        Map ssbMenu
         List adminList =[]
         List personalList =[]
         List finalList = []
@@ -474,10 +468,6 @@ class CommonMenuController {
         }
         bannerInbUrl = session.getAttribute(BANNER_INB_URL)
         return bannerInbUrl
-    }
-
-    private def isSsbEnabled() {
-        grailsApplication.config.ssbEnabled instanceof Boolean ? grailsApplication.config.ssbEnabled : false
     }
 
     private def removeDuplicateEntries(list){
