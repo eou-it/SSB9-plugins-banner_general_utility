@@ -45,7 +45,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
             pidm = it.spriden_pidm
         }
         map = selfServiceMenuService.bannerMenu(null, null, pidm)
-        assert map?.size() == 0
+        assert map?.size() > 0
     }
 
     @Test
