@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -12,10 +12,11 @@ import javax.persistence.*
 @Entity
 @Table(name = 'GURAPPR')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigRolePageMapping.fetchAll', query = '''SELECT crpm FROM ConfigRolePageMapping crpm''')
+        @NamedQuery(name = 'ConfigRolePageMapping.fetchAll',
+                    query = '''FROM ConfigRolePageMapping crpm''')
 ])
 public class ConfigRolePageMapping implements Serializable {
-    private static final long serialVersionUID = 1L
+    private static final long serialVersionUID = 0L
 
     @Id
     @SequenceGenerator(name = 'GURAPPR_SEQ_GENERATOR', sequenceName = 'GURAPPR_SURROGATE_ID_SEQUENCE')
@@ -23,14 +24,14 @@ public class ConfigRolePageMapping implements Serializable {
     @Column(name = 'GURAPPR_SURROGATE_ID')
     Long id
 
-    @Temporal(TemporalType.DATE)
-    @Column(name = 'GURAPPR_ACTIVITY_DATE', nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = 'GURAPPR_ACTIVITY_DATE')
     Date lastModified
 
-    @Column(name = 'GURAPPR_DATA_ORIGIN', length = 30)
+    @Column(name = 'GURAPPR_DATA_ORIGIN')
     String dataOrigin
 
-    @Column(name = 'GURAPPR_GUBAPPL_APP_ID', nullable = false)
+    @Column(name = 'GURAPPR_GUBAPPL_APP_ID')
     Long gubapplAppId
 
     @Column(name = 'GURAPPR_USER_ID')
@@ -40,20 +41,15 @@ public class ConfigRolePageMapping implements Serializable {
     @Column(name = 'GURAPPR_VERSION')
     Long version
 
-    @Column(name = 'PAGE_ID')
+    @Column(name = 'GURAPPR_PAGE_ID')
     Long pageId
 
-    @Column(name = 'TWTVROLE_CODE')
+    @Column(name = 'GURAPPR_TWTVROLE_CODE')
     String roleCode
 
-    public ConfigRolePageMapping() {
-    }
 
     static constraints = {
-        lastModified(nullable: false)
-        dataOrigin(maxSize: 30)
         gubapplAppId(nullable: false)
-        lastModifiedBy(maxSize: 30)
         pageId(nullable: false)
         roleCode(nullable: false, maxSize: 30)
     }
@@ -110,7 +106,7 @@ public class ConfigRolePageMapping implements Serializable {
      * @return List
      */
     public static def fetchAll() {
-        def configRolePageMapping
+        ConfigRolePageMapping configRolePageMapping
         configRolePageMapping = ConfigRolePageMapping.withSession { session ->
             configRolePageMapping = session.getNamedQuery('ConfigRolePageMapping.fetchAll').list()
         }
