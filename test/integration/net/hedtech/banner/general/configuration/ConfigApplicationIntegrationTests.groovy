@@ -45,6 +45,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
     void testUpdateConfigApplication() {
         ConfigApplication configApplication = newConfigApplication()
         configApplication = configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.refresh()
 
         assertNotNull configApplication.id
         assertEquals 0L, configApplication.version
@@ -117,8 +118,8 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
 
     private ConfigApplication newConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appId: 1,
-                appName: "PlatformSandbox",
+                //appId: 1,
+                appName: "PlatformSandbox"
         )
         return configApplication
     }

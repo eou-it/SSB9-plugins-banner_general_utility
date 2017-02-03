@@ -27,28 +27,30 @@ class ConfigurationPropertiesIntegrationTest extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testFindAll() {
+    public void testFetchAll() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.refresh()
 
         ConfigurationProperties configurationProperties = getConfigurationProperties()
         configurationProperties.setGubapplAppId(configApplication.getAppId())
         configurationProperties.save(failOnError: true, flush: true)
 
-        def list = configurationProperties.findAll()
+        def list = configurationProperties.fetchAll()
         assert (list.size() >= 0)
     }
 
     @Test
-    public void testFindByAppName() {
+    public void testFetchByAppName() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.refresh()
 
         ConfigurationProperties configurationProperties = getConfigurationProperties()
         configurationProperties.setGubapplAppId(configApplication.getAppId())
         configurationProperties.save(failOnError: true, flush: true)
 
-        def list = configurationProperties.findByAppName(APP_NAME)
+        def list = configurationProperties.fetchByAppName(APP_NAME)
         assert (list.size() > 0)
     }
 
@@ -58,12 +60,9 @@ class ConfigurationPropertiesIntegrationTest extends BaseIntegrationTestCase {
      */
     private ConfigurationProperties getConfigurationProperties() {
         ConfigurationProperties configurationProperties = new ConfigurationProperties(
-                lastModifiedBy: 'TEST_USER',
-                lastModified: new Date(),
                 configName: 'TEST_CONFIG',
                 configType: 'TEST_CONFIG_TYPE',
-                configValue: 'TEST_VALUE',
-                version: 0
+                configValue: 'TEST_VALUE'
         )
         return configurationProperties
     }
@@ -74,11 +73,8 @@ class ConfigurationPropertiesIntegrationTest extends BaseIntegrationTestCase {
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                version: 0,
                 lastModified: new Date(),
-                appName: APP_NAME,
-                appId: 1,
-                lastModifiedBy: 'TEST_USER',
+                appName: APP_NAME
         )
         return configApplication
     }

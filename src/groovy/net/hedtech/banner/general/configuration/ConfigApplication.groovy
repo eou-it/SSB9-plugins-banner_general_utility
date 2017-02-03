@@ -30,7 +30,6 @@ public class ConfigApplication implements Serializable {
     @Column(name = 'GUBAPPL_SURROGATE_ID')
     Long id
 
-
     /**
      * Date that record was created or last updated.
      */
@@ -38,10 +37,11 @@ public class ConfigApplication implements Serializable {
     @Column(name = 'GUBAPPL_ACTIVITY_DATE')
     Date lastModified
 
-
     /**
      * Generated unique numeric identifier for this entity.
      */
+    @SequenceGenerator(name = 'GUBAPPL_APP_SEQ_GENERATOR', sequenceName = 'GUBAPPL_APP_ID_SEQUENCE')
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GUBAPPL_APP_SEQ_GENERATOR')
     @Column(name = 'GUBAPPL_APP_ID')
     Long appId
 
@@ -51,13 +51,11 @@ public class ConfigApplication implements Serializable {
     @Column(name = 'GUBAPPL_APP_NAME')
     String appName
 
-
     /**
      *  Data origin column for GUBAPPL
      */
     @Column(name = 'GUBAPPL_DATA_ORIGIN')
     String dataOrigin
-
 
     /**
      * Last modified by column for GUBAPPL
@@ -69,7 +67,6 @@ public class ConfigApplication implements Serializable {
     @Version
     @Column(name = 'GUBAPPL_VERSION')
     Long version
-
 
 
     boolean equals(o) {
@@ -119,13 +116,12 @@ public class ConfigApplication implements Serializable {
 
 
     static constraints = {
-        appId(nullable: false)
+        appId(nullable: true)
         appName(nullable: false, maxSize: 255)
         lastModified(nullable: true)
         lastModifiedBy(nullable: true, maxSize: 30)
         dataOrigin(nullable: true, maxSize: 30)
     }
-
 
     /**
      * Named query to fetch all data from this domain without any criteria.

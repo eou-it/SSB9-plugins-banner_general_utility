@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -61,11 +61,11 @@ public class ConfigurationProperties implements Serializable {
 
     static constraints = {
         configName(maxSize: 50)
-        lastModified(nullable: false)
+        lastModified(nullable: true)
         configType(maxSize: 30)
-        dataOrigin(maxSize: 30)
-        gubapplAppId(nullable: false)
-        lastModifiedBy(maxSize: 30)
+        dataOrigin(maxSize: 30, nullable: true)
+        gubapplAppId(nullable: true)
+        lastModifiedBy(maxSize: 30, nullable: true)
     }
 
     boolean equals(o) {

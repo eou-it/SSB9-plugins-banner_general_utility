@@ -52,6 +52,9 @@ public class ConfigRolePageMapping implements Serializable {
         gubapplAppId(nullable: false)
         pageId(nullable: false)
         roleCode(nullable: false, maxSize: 30)
+        lastModified(nullable: true)
+        lastModifiedBy(nullable: true)
+        dataOrigin(nullable: true)
     }
 
     boolean equals(o) {
@@ -106,10 +109,10 @@ public class ConfigRolePageMapping implements Serializable {
      * @return List
      */
     public static def fetchAll() {
-        ConfigRolePageMapping configRolePageMapping
-        configRolePageMapping = ConfigRolePageMapping.withSession { session ->
-            configRolePageMapping = session.getNamedQuery('ConfigRolePageMapping.fetchAll').list()
+        def list
+        list = ConfigRolePageMapping.withSession { session ->
+            list = session.getNamedQuery('ConfigRolePageMapping.fetchAll').list()
         }
-        return configRolePageMapping
+        return list
     }
 }

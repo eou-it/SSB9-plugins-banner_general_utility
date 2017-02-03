@@ -59,11 +59,11 @@ public class ConfigUserPreference implements Serializable {
 
     static constraints = {
         configName(maxSize: 50)
-        lastModified(nullable: false)
+        lastModified(nullable: true)
         configType(maxSize: 30)
-        dataOrigin(maxSize: 30)
-        gubapplAppId(unique: true, nullable: false)
-        lastModifiedBy(maxSize: 30)
+        dataOrigin(maxSize: 30, nullable: true)
+        gubapplAppId(unique: true, nullable: true)
+        lastModifiedBy(maxSize: 30, nullable: true)
     }
 
     boolean equals(o) {

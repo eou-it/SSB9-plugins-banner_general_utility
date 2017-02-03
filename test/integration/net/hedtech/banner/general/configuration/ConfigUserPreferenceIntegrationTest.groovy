@@ -25,9 +25,10 @@ class ConfigUserPreferenceIntegrationTest extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testFindAll() {
+    public void testFetchAll() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.refresh()
 
         ConfigurationProperties configurationProperties = getConfigurationProperties()
         configurationProperties.setGubapplAppId(configApplication.getAppId())
@@ -40,20 +41,20 @@ class ConfigUserPreferenceIntegrationTest extends BaseIntegrationTestCase {
         configUserPreference.save(failOnError: true, flush: true)
 
         //Save
-        def list = configUserPreference.findAll()
+        def list = configUserPreference.fetchAll()
         assert (list.size() > 0)
         assert (list.getAt(0).configValue == 'TEST_VALUE')
 
         //Update
         configUserPreference.setConfigValue('NEW_TEST_VALUE')
         configUserPreference.save(failOnError: true, flush: true)
-        list = configUserPreference.findAll()
+        list = configUserPreference.fetchAll()
         assert (list.size() > 0)
         assert (list.getAt(0).configValue == 'NEW_TEST_VALUE')
 
         //Delete
         configUserPreference.delete()
-        list = configUserPreference.findAll()
+        list = configUserPreference.fetchAll()
         assert (list.size() >= 0)
     }
 
@@ -63,11 +64,8 @@ class ConfigUserPreferenceIntegrationTest extends BaseIntegrationTestCase {
      */
     private ConfigUserPreference getConfigUserPreference() {
         ConfigUserPreference configUserPreference = new ConfigUserPreference(
-                lastModifiedBy: 'TEST_USER',
-                lastModified: new Date(),
                 pidm: 1,
-                configValue: 'TEST_VALUE',
-                version: 0
+                configValue: 'TEST_VALUE'
         )
         return configUserPreference
     }
@@ -78,22 +76,16 @@ class ConfigUserPreferenceIntegrationTest extends BaseIntegrationTestCase {
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                version: 0,
-                lastModified: new Date(),
-                appName: 'PlatformSandboxApp',
-                appId: 1,
-                lastModifiedBy: 'TEST_USER',
+                appName: 'PlatformSandboxApp'
         )
         return configApplication
     }
 
     private ConfigurationProperties getConfigurationProperties() {
         ConfigurationProperties configurationProperties = new ConfigurationProperties(
-                version: 0,
                 configName: 'CONFIG_TEST',
                 configType: 'TYPE_TEST',
-                configValue: 'TEST_VALUE',
-                lastModified: new Date()
+                configValue: 'TEST_VALUE'
         )
         return configurationProperties
     }
