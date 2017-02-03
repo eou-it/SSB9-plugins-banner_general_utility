@@ -10,9 +10,9 @@ import javax.persistence.*
  *
  */
 @Entity
-@Table(name = 'GURUCFG', schema = 'GENERAL')
+@Table(name = 'GURUCFG')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigUserPreference.findAll',
+        @NamedQuery(name = 'ConfigUserPreference.fetchAll',
                 query = '''FROM ConfigUserPreference configUsrPref''')
 ])
 public class ConfigUserPreference implements Serializable {
@@ -21,40 +21,49 @@ public class ConfigUserPreference implements Serializable {
     @Id
     @SequenceGenerator(name = 'GURUCFG_SEQ_GENERATOR', sequenceName = 'GURUCFG_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GURUCFG_SEQ_GENERATOR')
-    @Column(name = 'GURUCFG_SURROGATE_ID', precision = 19)
+    @Column(name = 'GURUCFG_SURROGATE_ID')
     Long id
 
-    @Column(name = 'CONFIG_NAME', length = 50)
+    @Column(name = 'CONFIG_NAME')
     String configName
 
     @Temporal(TemporalType.DATE)
-    @Column(name = 'GURUCFG_ACTIVITY_DATE', nullable = false)
+    @Column(name = 'GURUCFG_ACTIVITY_DATE')
     Date lastModified
 
-    @Column(name = 'GURUCFG_CONFIG_TYPE', length = 30)
+    @Column(name = 'GURUCFG_CONFIG_TYPE')
     String configType
 
     @Lob
     @Column(name = 'GURUCFG_CONFIG_VALUE')
     String configValue
 
-    @Column(name = 'GURUCFG_DATA_ORIGIN', length = 30)
+    @Column(name = 'GURUCFG_DATA_ORIGIN')
     String dataOrigin
 
-    @Column(name = 'GURUCFG_GUBAPPL_APP_ID', unique = true, nullable = false, precision = 19)
+    @Column(name = 'GURUCFG_GUBAPPL_APP_ID')
     Long gubapplAppId
 
-    @Column(name = 'GURUCFG_PIDM', precision = 19)
+    @Column(name = 'GURUCFG_PIDM')
     Long pidm
 
-    @Column(name = 'GURUCFG_USER_ID', length = 30)
+    @Column(name = 'GURUCFG_USER_ID')
     String lastModifiedBy
 
     @Version
-    @Column(name = 'GURUCFG_VERSION', precision = 19)
+    @Column(name = 'GURUCFG_VERSION')
     Long version
 
     public ConfigUserPreference() {
+    }
+
+    static constraints = {
+        configName(maxSize: 50)
+        lastModified(nullable: false)
+        configType(maxSize: 30)
+        dataOrigin(maxSize: 30)
+        gubapplAppId(unique: true, nullable: false)
+        lastModifiedBy(maxSize: 30)
     }
 
     boolean equals(o) {
@@ -114,10 +123,10 @@ public class ConfigUserPreference implements Serializable {
      * Named query to fetch all data from this domain without any criteria.
      * @return List
      */
-    public static def findAll() {
+    public static def fetchAll() {
         def configUserPreference
         configUserPreference = ConfigUserPreference.withSession { session ->
-            configUserPreference = session.getNamedQuery('ConfigUserPreference.findAll').list()
+            configUserPreference = session.getNamedQuery('ConfigUserPreference.fetchAll').list()
         }
         return configUserPreference
     }

@@ -10,11 +10,11 @@ import javax.persistence.*
  *
  */
 @Entity
-@Table(name = 'GUROCFG', schema = 'GENERAL')
+@Table(name = 'GUROCFG')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigurationProperties.findAll',
+        @NamedQuery(name = 'ConfigurationProperties.fetchAll',
                 query = '''FROM ConfigurationProperties cp'''),
-        @NamedQuery(name = 'ConfigurationProperties.findByAppName',
+        @NamedQuery(name = 'ConfigurationProperties.fetchByAppName',
                 query = '''FROM ConfigurationProperties cp
                                 WHERE cp.gubapplAppId = (SELECT capp.appId
                                                             FROM ConfigApplication capp
@@ -26,37 +26,46 @@ public class ConfigurationProperties implements Serializable {
     @Id
     @SequenceGenerator(name = 'GUROCFG_SEQ_GENERATOR', sequenceName = 'GUROCFG_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GUROCFG_SEQ_GENERATOR')
-    @Column(name = 'GUROCFG_SURROGATE_ID', precision = 19)
+    @Column(name = 'GUROCFG_SURROGATE_ID')
     Long id
 
-    @Column(name = 'CONFIG_NAME', length = 50)
+    @Column(name = 'CONFIG_NAME')
     String configName
 
     @Temporal(TemporalType.DATE)
-    @Column(name = 'GUROCFG_ACTIVITY_DATE', nullable = false)
+    @Column(name = 'GUROCFG_ACTIVITY_DATE')
     Date lastModified
 
-    @Column(name = 'GUROCFG_CONFIG_TYPE', length = 30)
+    @Column(name = 'GUROCFG_CONFIG_TYPE')
     String configType
 
     @Lob
     @Column(name = 'GUROCFG_CONFIG_VALUE')
     String configValue
 
-    @Column(name = 'GUROCFG_DATA_ORIGIN', length = 30)
+    @Column(name = 'GUROCFG_DATA_ORIGIN')
     String dataOrigin
 
-    @Column(name = 'GUROCFG_GUBAPPL_APP_ID', nullable = false, precision = 19)
+    @Column(name = 'GUROCFG_GUBAPPL_APP_ID')
     Long gubapplAppId
 
-    @Column(name = 'GUROCFG_USER_ID', length = 30)
+    @Column(name = 'GUROCFG_USER_ID')
     String lastModifiedBy
 
     @Version
-    @Column(name = 'GUROCFG_VERSION', precision = 19)
+    @Column(name = 'GUROCFG_VERSION')
     Long version
 
     public ConfigurationProperties() {
+    }
+
+    static constraints = {
+        configName(maxSize: 50)
+        lastModified(nullable: false)
+        configType(maxSize: 30)
+        dataOrigin(maxSize: 30)
+        gubapplAppId(nullable: false)
+        lastModifiedBy(maxSize: 30)
     }
 
     boolean equals(o) {
@@ -113,10 +122,10 @@ public class ConfigurationProperties implements Serializable {
      * Named query to fetch all data from this domain without any criteria.
      * @return List
      */
-    public static def findAll() {
+    public static def fetchAll() {
         def configurationProperties
         configurationProperties = ConfigurationProperties.withSession { session ->
-            configurationProperties = session.getNamedQuery('ConfigurationProperties.findAll').list()
+            configurationProperties = session.getNamedQuery('ConfigurationProperties.fetchAll').list()
         }
         return configurationProperties
     }
@@ -125,10 +134,10 @@ public class ConfigurationProperties implements Serializable {
      * Named query to fetch all data from this domain by app name.
      * @return List
      */
-    public static def findByAppName(def appName) {
+    public static def fetchByAppName(def appName) {
         def configurationProperties
         configurationProperties = ConfigurationProperties.withSession { session ->
-            configurationProperties = session.getNamedQuery('ConfigurationProperties.findByAppName')
+            configurationProperties = session.getNamedQuery('ConfigurationProperties.fetchByAppName')
                     .setString('appName', appName).list()
         }
         return configurationProperties

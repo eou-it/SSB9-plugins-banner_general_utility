@@ -10,9 +10,9 @@ import javax.persistence.*
  *
  */
 @Entity
-@Table(name = 'GURAPPR', schema = 'GENERAL')
+@Table(name = 'GURAPPR')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigRolePageMapping.findAll', query = '''SELECT crpm FROM ConfigRolePageMapping crpm''')
+        @NamedQuery(name = 'ConfigRolePageMapping.fetchAll', query = '''SELECT crpm FROM ConfigRolePageMapping crpm''')
 ])
 public class ConfigRolePageMapping implements Serializable {
     private static final long serialVersionUID = 1L
@@ -20,7 +20,7 @@ public class ConfigRolePageMapping implements Serializable {
     @Id
     @SequenceGenerator(name = 'GURAPPR_SEQ_GENERATOR', sequenceName = 'GURAPPR_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GURAPPR_SEQ_GENERATOR')
-    @Column(name = 'GURAPPR_SURROGATE_ID', precision = 19)
+    @Column(name = 'GURAPPR_SURROGATE_ID')
     Long id
 
     @Temporal(TemporalType.DATE)
@@ -30,23 +30,32 @@ public class ConfigRolePageMapping implements Serializable {
     @Column(name = 'GURAPPR_DATA_ORIGIN', length = 30)
     String dataOrigin
 
-    @Column(name = 'GURAPPR_GUBAPPL_APP_ID', nullable = false, precision = 19)
+    @Column(name = 'GURAPPR_GUBAPPL_APP_ID', nullable = false)
     Long gubapplAppId
 
-    @Column(name = 'GURAPPR_USER_ID', length = 30)
+    @Column(name = 'GURAPPR_USER_ID')
     String lastModifiedBy
 
     @Version
-    @Column(name = 'GURAPPR_VERSION', precision = 19)
+    @Column(name = 'GURAPPR_VERSION')
     Long version
 
-    @Column(name = 'PAGE_ID', nullable = false, precision = 19)
+    @Column(name = 'PAGE_ID')
     Long pageId
 
-    @Column(name = 'TWTVROLE_CODE', nullable = false, length = 30)
+    @Column(name = 'TWTVROLE_CODE')
     String roleCode
 
     public ConfigRolePageMapping() {
+    }
+
+    static constraints = {
+        lastModified(nullable: false)
+        dataOrigin(maxSize: 30)
+        gubapplAppId(nullable: false)
+        lastModifiedBy(maxSize: 30)
+        pageId(nullable: false)
+        roleCode(nullable: false, maxSize: 30)
     }
 
     boolean equals(o) {
@@ -100,10 +109,10 @@ public class ConfigRolePageMapping implements Serializable {
      * Named query to fetch all data from this domain without any criteria.
      * @return List
      */
-    public static def findAll() {
+    public static def fetchAll() {
         def configRolePageMapping
         configRolePageMapping = ConfigRolePageMapping.withSession { session ->
-            configRolePageMapping = session.getNamedQuery('ConfigRolePageMapping.findAll').list()
+            configRolePageMapping = session.getNamedQuery('ConfigRolePageMapping.fetchAll').list()
         }
         return configRolePageMapping
     }
