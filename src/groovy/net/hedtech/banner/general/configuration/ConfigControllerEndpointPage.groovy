@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -10,64 +10,82 @@ import javax.persistence.*
  *
  */
 @Entity
-@Table(name = 'GURCTLEPP', schema = 'GENERAL')
+@Table(name = 'GURCTLEPP')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigControllerEndpointPage.findAll',
-                query = '''SELECT ccep FROM ConfigControllerEndpointPage ccep'''),
-        @NamedQuery(name = ConfigControllerEndpointPage.GET_ALL_CONFIG_BY_APP_NAME,
+        @NamedQuery(name = 'ConfigControllerEndpointPage.fetchAll',
+                query = '''FROM ConfigControllerEndpointPage ccep'''),
+/*        @NamedQuery(name = ConfigControllerEndpointPage.GET_ALL_CONFIG_BY_APP_NAME,
                 query = '''SELECT new net.hedtech.banner.general.configuration.RequestURLMap(ccep.pageName, crpm.roleCode, capp.appName,
                                     ccep.displaySequence, ccep.pageId, ccep.gubapplAppId, ccep.version)
                                 FROM ConfigControllerEndpointPage ccep, ConfigRolePageMapping crpm,
                                    ConfigApplication capp
                                 WHERE (ccep.gubapplAppId = crpm.gubapplAppId AND ccep.pageId = crpm.pageId)
                                 AND (ccep.gubapplAppId = capp.appId)
-                                AND capp.appName = :appName''')
+                                AND capp.appName = :appName''')*/
 ])
-public class ConfigControllerEndpointPage implements Serializable {
-    private static final long serialVersionUID = 1L
 
-    public static final String GET_ALL_CONFIG_BY_APP_NAME = 'ConfigControllerEndpointPage.getAllConfigByAppName'
+public class ConfigControllerEndpointPage implements Serializable {
+
+    private static final long serialVersionUID = 90000L
+
 
     @Id
     @SequenceGenerator(name = 'GURCTLEPP_SEQ_GENERATOR', sequenceName = 'GURCTLEPP_SURROGATE_ID_SEQ')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GURCTLEPP_SEQ_GENERATOR')
-    @Column(name = 'GURCTLEPP_SURROGATE_ID', precision = 19)
+    @Column(name = 'GURCTLEPP_SURROGATE_ID')
     Long id
 
-    @Temporal(TemporalType.DATE)
-    @Column(name = 'GURCTLEPP_ACTIVITY_DATE', nullable = false)
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = 'GURCTLEPP_ACTIVITY_DATE')
     Date lastModified
 
-    @Column(name = 'GURCTLEPP_DATA_ORIGIN', length = 30)
+    /**
+     * Data origin column for GURCTLEPP
+     */
+
+    @Column(name = 'GURCTLEPP_DATA_ORIGIN')
     String dataOrigin
 
-    @Column(name = 'GURCTLEPP_DESCRIPTION', length = 256)
+
+    @Column(name = 'GURCTLEPP_DESCRIPTION')
     String description
 
-    @Column(name = 'GURCTLEPP_DISPLAY_SEQUENCE', precision = 19)
+
+    @Column(name = 'GURCTLEPP_DISPLAY_SEQUENCE')
     Long displaySequence
 
-    @Column(name = 'GURCTLEPP_ENABLE_DISABLE', length = 256)
+
+    @Column(name = 'GURCTLEPP_ENABLE_DISABLE')
     String enableDisable
 
-    @Column(name = 'GURCTLEPP_GUBAPPL_APP_ID', nullable = false, precision = 19)
-    Long gubapplAppId
 
-    @Column(name = 'GURCTLEPP_PAGE_NAME', length = 256)
+   /**
+    * Foreign Key : FK_GURCTLEPP_INV_GUBAPPL
+    */
+    @ManyToOne
+    @JoinColumns([
+            @JoinColumn(name = "GURCTLEPP_GUBAPPL_APP_ID", referencedColumnName = "GUBAPPL_APP_ID")
+    ])
+    ConfigApplication gubapplAppId
+
+
+    @Column(name = 'GURCTLEPP_PAGE_NAME')
     String pageName
 
-    @Column(name = 'GURCTLEPP_USER_ID', length = 30)
+
+    @Column(name = 'GURCTLEPP_USER_ID')
     String lastModifiedBy
 
+
     @Version
-    @Column(name = 'GURCTLEPP_VERSION', precision = 19)
+    @Column(name = 'GURCTLEPP_VERSION')
     Long version
 
-    @Column(name = 'GURCTLEPP_PAGE_ID', nullable = false, precision = 19)
+
+    @Column(name = 'GURCTLEPP_PAGE_ID')
     Long pageId
 
-    public ConfigControllerEndpointPage() {
-    }
 
     boolean equals(o) {
         if (this.is(o)) return true
@@ -90,6 +108,7 @@ public class ConfigControllerEndpointPage implements Serializable {
         return true
     }
 
+
     int hashCode() {
         int result
         result = (id != null ? id.hashCode() : 0)
@@ -109,7 +128,7 @@ public class ConfigControllerEndpointPage implements Serializable {
 
     @Override
     public String toString() {
-        return """\
+        return """
             ConfigControllerEndpointPage{
                 id=$id,
                 activityDate=$lastModified,
@@ -125,14 +144,26 @@ public class ConfigControllerEndpointPage implements Serializable {
             }"""
     }
 
+
+    static constraints = {
+        pageId(nullable: false, maxSize: 256)
+        pageName(nullable: true, maxSize: 256)
+        gubapplAppId(nullable: false)
+        enableDisable(nullable: true)
+        description(nullable: false)
+        lastModified(nullable: true)
+        lastModifiedBy(nullable: true, maxSize: 30)
+        dataOrigin(nullable: true, maxSize: 30)
+    }
+
     /**
      * Named query to fetch all data from this domain without any criteria.
      * @return List
      */
-    public static def findAll() {
+    public static def fetchAll() {
         def configRolePageMapping
         configRolePageMapping = ConfigControllerEndpointPage.withSession { session ->
-            configRolePageMapping = session.getNamedQuery('ConfigControllerEndpointPage.findAll').list()
+            configRolePageMapping = session.getNamedQuery('ConfigControllerEndpointPage.fetchAll').list()
         }
         return configRolePageMapping
     }
@@ -142,11 +173,11 @@ public class ConfigControllerEndpointPage implements Serializable {
      * @param appName String
      * @return list of RequestURLMap.
      */
-    public static def getAllConfigByAppName(def appName) {
+    /*public static def getAllConfigByAppName(def appName) {
         def configRolePageMapping
         configRolePageMapping = ConfigControllerEndpointPage.withSession { session ->
             configRolePageMapping = session.getNamedQuery(GET_ALL_CONFIG_BY_APP_NAME).setString('appName', appName).list()
         }
         return configRolePageMapping
-    }
+    }*/
 }

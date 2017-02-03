@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -10,12 +10,14 @@ import javax.persistence.*
  *
  */
 @Entity
-@Table(name = 'GUBAIR', schema = 'GENERAL')
+@Table(name = 'GUBAIR')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigInstance.findAll', query = '''FROM ConfigInstance configInstance''')
+        @NamedQuery(name = 'ConfigInstance.fetchAll',
+                    query = '''FROM ConfigInstance configInstance''')
 ])
+
 public class ConfigInstance implements Serializable {
-    private static final long serialVersionUID = 1L
+    private static final long serialVersionUID = 99999L
 
     @Id
     @SequenceGenerator(name = 'GUBAIR_SEQ_GENERATOR', sequenceName = 'GUBAIR_SURROGATE_ID_SEQUENCE')
@@ -100,10 +102,10 @@ public class ConfigInstance implements Serializable {
      * Named query to fetch all data from this domain without any criteria.
      * @return List
      */
-    public static def findAll() {
+    public static def fetchAll() {
         def configInstance
         configInstance = ConfigInstance.withSession { session ->
-            configInstance = session.getNamedQuery('ConfigInstance.findAll').list()
+            configInstance = session.getNamedQuery('ConfigInstance.fetchAll').list()
         }
         return configInstance
     }

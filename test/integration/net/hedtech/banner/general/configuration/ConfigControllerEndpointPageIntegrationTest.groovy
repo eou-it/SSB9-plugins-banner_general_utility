@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -14,7 +14,6 @@ import org.junit.Test
 class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCase {
 
     private static final String APP_NAME = 'PlatformSandboxApp'
-    private static final String LAST_MODIFIED_BY = 'TEST_USER'
     //private Session session
 
     @Before
@@ -29,51 +28,83 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
         super.tearDown()
     }
 
+
     @Test
-    public void testFindAll() {
-        ConfigApplication application = getConfigApplication()
-        application.save(failOnError: true, flush: true)
+    public void testSaveConfigControllerEndpointPage() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.refresh()
+        assertNotNull configApplication.id
+        assertNotNull configApplication.appId
+        assertEquals 0L, configApplication.version
 
-        ConfigControllerEndpointPage endpointPage = getDomain()
-        endpointPage.setGubapplAppId(application.getAppId())
+        ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
+        endpointPage.setGubapplAppId(configApplication)
+        endpointPage = endpointPage.save(failOnError: true, flush: true)
+
+        assertNotNull endpointPage.id
+        assertEquals 0L, endpointPage.version
+    }
+
+
+
+    @Test
+    void testDeleteConfigControllerEndpointPage() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.refresh()
+        assertNotNull configApplication.id
+        assertNotNull configApplication.appId
+        assertEquals 0L, configApplication.version
+
+        ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
+        endpointPage.setGubapplAppId(configApplication)
+
         //Save and findAll
-        endpointPage.save(failOnError: true, flush: true)
-        def list = endpointPage.findAll()
-        assert (list.size > 0)
-        assert (list.getAt(0).dataOrigin == 'Banner')
-        assert (list.getAt(0).enableDisable == 'E')
-
-        //Update and findAll
-        endpointPage.setEnableDisable('D')
-        endpointPage.save(failOnError: true, flush: true)
-        list = endpointPage.findAll()
-        assert (list.size > 0)
-        assert (list.getAt(0).dataOrigin == 'Banner')
-        assert (list.getAt(0).enableDisable == 'D')
-
-        //Delete and findAll
-        endpointPage.delete()
-        list = endpointPage.findAll()
-        assert (list.size >= 0)
+        endpointPage = endpointPage.save(failOnError: true, flush: true)
+        assertNotNull endpointPage.id
+        assertEquals 0L, endpointPage.version
+        def id = configApplication.id
+        configApplication.delete()
+        assertNull configApplication.get( id )
     }
 
     @Test
-    public void testGetAllConfigByAppNameWithSave() {
+    public void testFetchAll() {
         ConfigApplication configApplication = getConfigApplication()
-        configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.refresh()
+        assertNotNull configApplication.id
+        assertNotNull configApplication.appId
+        assertEquals 0L, configApplication.version
 
-        ConfigControllerEndpointPage endpointPage = getDomain()
-        endpointPage.setGubapplAppId(configApplication.appId)
-        endpointPage.save(failOnError: true, flush: true)
+        ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
+        endpointPage.setGubapplAppId(configApplication)
 
-        ConfigRolePageMapping configRolePageMapping = getConfigRolePageMapping()
-        configRolePageMapping.setGubapplAppId(configApplication.getAppId())
-        configRolePageMapping.setPageId(endpointPage.getPageId())
-        configRolePageMapping.save(failOnError: true, flush: true)
+        //Save and findAll
+        endpointPage = endpointPage.save(failOnError: true, flush: true)
+        assertNotNull endpointPage.id
+        assertEquals 0L, endpointPage.version
 
-        def list = endpointPage.getAllConfigByAppName(APP_NAME)
-        assert (list.size() > 0)
-        assert (list.getAt(0) instanceof RequestURLMap)
+        def list = endpointPage.fetchAll()
+        assertTrue list.size >=1
+        assertTrue (list.getAt(0).dataOrigin == 'Banner')
+        assertTrue (list.getAt(0).enableDisable == 'E')
+
+        //Update and findAll
+        endpointPage.setEnableDisable('D')
+        endpointPage = endpointPage.save(failOnError: true, flush: true)
+        assertEquals 1L, endpointPage.version
+
+        list = endpointPage.fetchAll()
+        assertTrue (list.size >= 1)
+        assertTrue (list.getAt(0).dataOrigin == 'Banner')
+        assertTrue (list.getAt(0).enableDisable == 'D')
+
+        //Delete and findAll
+        endpointPage.delete()
+        list = endpointPage.fetchAll()
+        assert (list.size >= 0)
     }
 
     @Test
@@ -153,7 +184,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
 
-        ConfigControllerEndpointPage endpointPage = getDomain()
+        ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
         endpointPage.setGubapplAppId(configApplication.appId)
         endpointPage.save(failOnError: true, flush: true)
 
@@ -168,16 +199,13 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
      * Mocking the ConfigControllerEndpointPage domain.
      * @return ConfigControllerEndpointPage
      */
-    private ConfigControllerEndpointPage getDomain() {
+    private ConfigControllerEndpointPage getConfigControllerEndpointPage() {
         ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage(
-                lastModified: new Date(),
                 description: 'TEST',
                 displaySequence: 1,
                 enableDisable: 'E',
                 pageId: 1,
-                pageName: 'TEST PAGE',
-                lastModifiedBy: LAST_MODIFIED_BY,
-                version: 0
+                pageName: 'TEST PAGE'
         )
         return configControllerEndpointPage
     }
@@ -188,11 +216,8 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
      */
     private ConfigRolePageMapping getConfigRolePageMapping() {
         ConfigRolePageMapping configRolePageMapping = new ConfigRolePageMapping(
-                lastModifiedBy: LAST_MODIFIED_BY,
                 pageId: 1,
-                lastModified: new Date(),
-                roleCode: 'TEST_ROLE',
-                version: 0,
+                roleCode: 'TEST_ROLE'
         )
         return configRolePageMapping
     }
@@ -203,11 +228,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                version: 0,
-                appId: 1,
-                lastModified: new Date(),
-                appName: APP_NAME,
-                lastModifiedBy: LAST_MODIFIED_BY,
+                  appName: APP_NAME
         )
         return configApplication
     }

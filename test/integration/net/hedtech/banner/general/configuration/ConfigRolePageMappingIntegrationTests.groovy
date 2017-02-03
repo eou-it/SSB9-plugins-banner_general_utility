@@ -11,6 +11,7 @@ import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 
 class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
+
     @Before
     public void setUp() {
         formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
@@ -113,7 +114,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
         configApplication = configApplication.refresh()
 
         ConfigControllerEndpointPage endpointPage = newConfigControllerEndPoint()
-        endpointPage.setGubapplAppId(configApplication.appId)
+        endpointPage.setGubapplAppId(configApplication)
         endpointPage = endpointPage.save(failOnError: true, flush: true)
 
         ConfigRolePageMapping configRolePageMap = newConfigRolePageMap()

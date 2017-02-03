@@ -25,40 +25,38 @@ class ConfigInstanceIntegrationTest extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testFindAll() {
+    public void testFetchAll() {
         ConfigApplication application = getConfigApplication()
         application.save(failOnError: true, flush: true)
+        application.refresh()
 
         ConfigInstance configInstance = getConfigInstance()
-        configInstance.setGubapplAppId(application.getAppId())
+        configInstance.setGubapplAppId(application.appId)
         configInstance.save(failOnError: true, flush: true)
 
         //Save
-        def list = configInstance.findAll()
+        def list = configInstance.fetchAll()
         assert (list.size() > 0)
         assert (list.getAt(0).url == 'TEST_URL')
 
         //Update
         configInstance.setUrl('NEW_TEST_URL')
         configInstance.save(failOnError: true, flush: true)
-        list = configInstance.findAll()
+        list = configInstance.fetchAll()
         assert (list.size() > 0)
         assert (list.getAt(0).url == 'NEW_TEST_URL')
 
         //Delete
         configInstance.delete()
-        list = configInstance.findAll()
+        list = configInstance.fetchAll()
         assert (list.size() >= 0)
     }
 
     private ConfigInstance getConfigInstance() {
         ConfigInstance configInstance = new ConfigInstance(
-                version: 0,
-                lastModified: new Date(),
                 env: 1,
                 gubapplAppId: 1,
                 url: 'TEST_URL',
-                lastModifiedBy: 'TEST_USER'
         )
         return configInstance
     }
@@ -69,11 +67,8 @@ class ConfigInstanceIntegrationTest extends BaseIntegrationTestCase {
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                version: 0,
                 appId: 1,
-                lastModified: new Date(),
                 appName: 'PlatformSandboxApp',
-                lastModifiedBy: 'TEST_USER',
         )
         return configApplication
     }

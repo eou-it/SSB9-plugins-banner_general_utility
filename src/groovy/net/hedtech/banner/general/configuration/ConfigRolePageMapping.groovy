@@ -16,7 +16,8 @@ import javax.persistence.*
                     query = '''FROM ConfigRolePageMapping crpm''')
 ])
 public class ConfigRolePageMapping implements Serializable {
-    private static final long serialVersionUID = 0L
+
+    private static final long serialVersionUID = 100L
 
     @Id
     @SequenceGenerator(name = 'GURAPPR_SEQ_GENERATOR', sequenceName = 'GURAPPR_SURROGATE_ID_SEQUENCE')
@@ -28,33 +29,40 @@ public class ConfigRolePageMapping implements Serializable {
     @Column(name = 'GURAPPR_ACTIVITY_DATE')
     Date lastModified
 
+
     @Column(name = 'GURAPPR_DATA_ORIGIN')
     String dataOrigin
+
 
     @Column(name = 'GURAPPR_GUBAPPL_APP_ID')
     Long gubapplAppId
 
+
     @Column(name = 'GURAPPR_USER_ID')
     String lastModifiedBy
 
+
     @Version
-    @Column(name = 'GURAPPR_VERSION')
+    @Column(name = 'GURAPPR_VERSION',  nullable = false, precision = 19)
     Long version
+
 
     @Column(name = 'GURAPPR_PAGE_ID')
     Long pageId
+
 
     @Column(name = 'GURAPPR_TWTVROLE_CODE')
     String roleCode
 
 
+
     static constraints = {
-        gubapplAppId(nullable: false)
         pageId(nullable: false)
         roleCode(nullable: false, maxSize: 30)
+        gubapplAppId(nullable: false)
         lastModified(nullable: true)
-        lastModifiedBy(nullable: true)
-        dataOrigin(nullable: true)
+        dataOrigin(nullable:true, maxSize: 30)
+        lastModifiedBy(maxSize: 30, nullable: true)
     }
 
     boolean equals(o) {
@@ -109,10 +117,10 @@ public class ConfigRolePageMapping implements Serializable {
      * @return List
      */
     public static def fetchAll() {
-        def list
-        list = ConfigRolePageMapping.withSession { session ->
-            list = session.getNamedQuery('ConfigRolePageMapping.fetchAll').list()
+        def configRolePageMapping
+        configRolePageMapping = ConfigRolePageMapping.withSession { session ->
+            configRolePageMapping = session.getNamedQuery('ConfigRolePageMapping.fetchAll').list()
         }
-        return list
+        return configRolePageMapping
     }
 }
