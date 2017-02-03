@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -10,41 +10,67 @@ import javax.persistence.*
  *
  */
 @Entity
-@Table(name = 'GUBAPPL', schema = 'GENERAL')
+@Table(name = 'GUBAPPL')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigApplication.findAll', query = '''FROM ConfigApplication capp''')
+        @NamedQuery(name = 'ConfigApplication.fetchAll',
+                query = '''FROM ConfigApplication capp''')
 ])
-public class ConfigApplication implements Serializable {
-    private static final long serialVersionUID = 1L
 
+
+public class ConfigApplication implements Serializable {
+
+    private static final long serialVersionUID = 1000L
+
+    /*
+    * Surrogate ID for GUBAPPL
+    */
     @Id
     @SequenceGenerator(name = 'GUBAPPL_SEQ_GENERATOR', sequenceName = 'GUBAPPL_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GUBAPPL_SEQ_GENERATOR')
-    @Column(name = 'GUBAPPL_SURROGATE_ID', precision = 19)
+    @Column(name = 'GUBAPPL_SURROGATE_ID')
     Long id
 
-    @Temporal(TemporalType.DATE)
-    @Column(name = 'GUBAPPL_ACTIVITY_DATE', nullable = false)
+
+    /**
+     * Date that record was created or last updated.
+     */
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = 'GUBAPPL_ACTIVITY_DATE')
     Date lastModified
 
-    @Column(name = 'GUBAPPL_APP_ID', nullable = false, precision = 19)
+
+    /**
+     * Generated unique numeric identifier for this entity.
+     */
+    @Column(name = 'GUBAPPL_APP_ID')
     Long appId
 
-    @Column(name = 'GUBAPPL_APP_NAME', length = 255)
+    /**
+     *  Name of the application.
+     */
+    @Column(name = 'GUBAPPL_APP_NAME')
     String appName
 
-    @Column(name = 'GUBAPPL_DATA_ORIGIN', length = 30)
+
+    /**
+     *  Data origin column for GUBAPPL
+     */
+    @Column(name = 'GUBAPPL_DATA_ORIGIN')
     String dataOrigin
 
-    @Column(name = 'GUBAPPL_USER_ID', length = 30)
+
+    /**
+     * Last modified by column for GUBAPPL
+     */
+    @Column(name = 'GUBAPPL_USER_ID')
     String lastModifiedBy
 
+
     @Version
-    @Column(name = 'GUBAPPL_VERSION', precision = 19)
+    @Column(name = 'GUBAPPL_VERSION')
     Long version
 
-    public ConfigApplication() {
-    }
+
 
     boolean equals(o) {
         if (this.is(o)) return true
@@ -63,15 +89,16 @@ public class ConfigApplication implements Serializable {
         return true
     }
 
+
     int hashCode() {
         int result
         result = (id != null ? id.hashCode() : 0)
-        result = 31 * result + (lastModified != null ? lastModified.hashCode() : 0)
         result = 31 * result + (appId != null ? appId.hashCode() : 0)
         result = 31 * result + (appName != null ? appName.hashCode() : 0)
         result = 31 * result + (dataOrigin != null ? dataOrigin.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
+        result = 31 * result + (lastModified != null ? lastModified.hashCode() : 0)
         return result
     }
 
@@ -81,23 +108,33 @@ public class ConfigApplication implements Serializable {
         return """\
             Gubappl{
                 id=$id,
-                activityDate=$lastModified,
                 appId=$appId,
                 appName='$appName',
                 dataOrigin='$dataOrigin',
                 userId='$lastModifiedBy',
+                activityDate=$lastModified,
                 version=$version
             }"""
     }
+
+
+    static constraints = {
+        appId(nullable: false)
+        appName(nullable: false, maxSize: 255)
+        lastModified(nullable: true)
+        lastModifiedBy(nullable: true, maxSize: 30)
+        dataOrigin(nullable: true, maxSize: 30)
+    }
+
 
     /**
      * Named query to fetch all data from this domain without any criteria.
      * @return List
      */
-    public static def findAll() {
+    public static def fetchAll() {
         def configApplication
         configApplication = ConfigApplication.withSession { session ->
-            configApplication = session.getNamedQuery('ConfigApplication.findAll').list()
+            configApplication = session.getNamedQuery('ConfigApplication.fetchAll').list()
         }
         return configApplication
     }
