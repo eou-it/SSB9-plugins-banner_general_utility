@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 import groovy.sql.Sql
@@ -9,10 +9,11 @@ import org.junit.Before
 import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 
+
 class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
     @Before
     public void setUp() {
-        formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
+        formContext = ['GUAGMNU']
         super.setUp()
     }
 
@@ -23,41 +24,46 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
 
     @Test
     void testCreateConfigApplication() {
-        def configApplication = newConfigApplication()
-        save configApplication
+        ConfigApplication configApplication = newConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+
         //Test if the generated entity now has an id assigned
         assertNotNull configApplication.id
+        assertEquals 0L, configApplication.version
     }
 
+
     @Test
-    void testFindAll(){
-        def configApplication = newConfigApplication()
-        save configApplication
-        def list = configApplication.findAll()
-        assert (list.size() >= 0)
+    void testFetchAll(){
+        ConfigApplication configApplication = newConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        def list = ConfigApplication.fetchAll()
+        assertTrue (list.size() >= 1)
     }
 
     @Test
     void testUpdateConfigApplication() {
-        def configApplication = newConfigApplication()
-        save configApplication
+        ConfigApplication configApplication = newConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
 
         assertNotNull configApplication.id
-        assertEquals 1, configApplication.version
+        assertEquals 0L, configApplication.version
         assertEquals "PlatformSandbox", configApplication.appName
         assertEquals "Banner", configApplication.dataOrigin
+
         //Update the entity
-        configApplication.appName = "TTTTT"
-        configApplication.dataOrigin = "UUUUU"
-        save configApplication
+        configApplication.appName = "PlatformSandbox 2"
+        configApplication = configApplication.save(failOnError: true, flush: true)
+
 
         configApplication = configApplication.get( configApplication.id )
-        assertEquals "TTTTT", configApplication.appName
+        assertEquals "PlatformSandbox 2", configApplication.appName
         }
+
 
     @Test
     void testOptimisticLock() {
-        def configApplication = newConfigApplication()
+        ConfigApplication configApplication = newConfigApplication()
         save configApplication
 
         def sql
@@ -69,30 +75,50 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         }
         //Try to update the entity
         configApplication.appName="UUUUU"
-        configApplication.dataOrigin= "Banner"
         shouldFail( HibernateOptimisticLockingFailureException ) {
             configApplication.save(flush: true)
         }
     }
 
+
+    @Test
+    public void testSerialization() {
+        try {
+            ConfigApplication configApplication = newConfigApplication()
+            configApplication = configApplication.save(failOnError: true, flush: true)
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            ObjectOutputStream oos = new ObjectOutputStream(out)
+            oos.writeObject(configApplication)
+            oos.close()
+
+            byte[] bytes = out.toByteArray()
+            ConfigApplication configApplication2
+            new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
+                configApplication2 = (ConfigApplication)is.readObject()
+                is.close()
+            }
+                assertEquals configApplication2.appId, configApplication.appId
+
+        } catch (e) {
+            e.printStackTrace()
+        }
+    }
+
+
     @Test
     void testDeleteConfigApplication() {
-        def configApplication = newConfigApplication()
-        save configApplication
+        ConfigApplication configApplication = newConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        assertNotNull configApplication.id
         def id = configApplication.id
-        assertNotNull id
         configApplication.delete()
         assertNull configApplication.get( id )
     }
 
-    private def newConfigApplication() {
-        def configApplication= new ConfigApplication(
-                lastModified: new Date(),
+    private ConfigApplication newConfigApplication() {
+        ConfigApplication configApplication = new ConfigApplication(
                 appId: 1,
                 appName: "PlatformSandbox",
-                dataOrigin: "Banner",
-                lastModifiedBy: 'TEST_USER',
-                version:  1,
         )
         return configApplication
     }

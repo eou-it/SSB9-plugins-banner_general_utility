@@ -63,7 +63,7 @@ public class ConfigControllerEndpointPage implements Serializable {
     @Column(name = 'GURCTLEPP_VERSION', precision = 19)
     Long version
 
-    @Column(name = 'PAGE_ID', nullable = false, precision = 19)
+    @Column(name = 'GURCTLEPP_PAGE_ID', nullable = false, precision = 19)
     Long pageId
 
     public ConfigControllerEndpointPage() {
