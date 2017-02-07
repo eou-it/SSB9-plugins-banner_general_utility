@@ -34,14 +34,6 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
 
 
     @Test
-    void testFetchAll(){
-        ConfigApplication configApplication = newConfigApplication()
-        configApplication = configApplication.save(failOnError: true, flush: true)
-        def list = ConfigApplication.fetchAll()
-        assertTrue (list.size() >= 1)
-    }
-
-    @Test
     void testUpdateConfigApplication() {
         ConfigApplication configApplication = newConfigApplication()
         configApplication = configApplication.save(failOnError: true, flush: true)
@@ -116,9 +108,86 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         assertNull configApplication.get( id )
     }
 
+
+    @Test
+    void testFetchAll(){
+        ConfigApplication configApplication = newConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        assertNotNull configApplication.id
+        def configApplications = ConfigApplication.fetchAll()
+        assertTrue configApplications.size() ==  (ConfigApplication.findAll().size())
+    }
+
+
+    @Test
+    void testFetchByValidAppName(){
+        ConfigApplication configApplication = newConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        assertNotNull configApplication.id
+
+        String appName = "PlatformSandbox"
+        def configApplications = ConfigApplication.fetchAllByAppName(appName)
+        assertTrue (configApplications.size() >= 1)
+
+        configApplications.each { it ->
+            assertTrue it.appName == appName
+        }
+    }
+
+
+    @Test
+    void testFetchByInValidAppName(){
+        ConfigApplication configApplication = newConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        assertNotNull configApplication.id
+
+        String appName = "Invalid"
+        def configApplications = ConfigApplication.fetchAllByAppName(appName)
+        assertTrue (configApplications.size() == 0)
+    }
+
+
+    @Test
+    void testFetchByNullAppName(){
+        ConfigApplication configApplication = newConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        assertNotNull configApplication.id
+
+        String appName = null
+        def configApplications = ConfigApplication.fetchAllByAppName(appName)
+        assertNull configApplications
+    }
+
+
+    @Test
+    void testToString() {
+        ConfigApplication newConfigApplication = newConfigApplication()
+        newConfigApplication.save(failOnError: true, flush: true)
+        List <ConfigApplication> configApplications = ConfigApplication.fetchAll()
+        assertFalse configApplications.isEmpty()
+        configApplications.each { configApplication ->
+            String configApplicationToString = configApplication.toString()
+            assertNotNull configApplicationToString
+            assertTrue configApplicationToString.contains('appName')
+        }
+    }
+
+
+    @Test
+    void testHashCode() {
+        ConfigApplication newConfigApplication = newConfigApplication()
+        newConfigApplication.save(failOnError: true, flush: true)
+        List <ConfigApplication> configApplications = ConfigApplication.fetchAll()
+        assertFalse configApplications.isEmpty()
+        configApplications.each { configApplication ->
+            Integer configApplicationHashCode = configApplication.hashCode()
+            assertNotNull configApplicationHashCode
+        }
+    }
+
+
     private ConfigApplication newConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                //appId: 1,
                 appName: "PlatformSandbox"
         )
         return configApplication

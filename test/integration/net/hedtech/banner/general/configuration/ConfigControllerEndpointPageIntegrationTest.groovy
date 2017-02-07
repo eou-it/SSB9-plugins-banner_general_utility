@@ -39,7 +39,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
         assertEquals 0L, configApplication.version
 
         ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
-        endpointPage.setGubapplAppId(configApplication)
+        endpointPage.setConfigApplication(configApplication)
         endpointPage = endpointPage.save(failOnError: true, flush: true)
 
         assertNotNull endpointPage.id
@@ -58,7 +58,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
         assertEquals 0L, configApplication.version
 
         ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
-        endpointPage.setGubapplAppId(configApplication)
+        endpointPage.setConfigApplication(configApplication)
 
         //Save and findAll
         endpointPage = endpointPage.save(failOnError: true, flush: true)
@@ -79,7 +79,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
         assertEquals 0L, configApplication.version
 
         ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
-        endpointPage.setGubapplAppId(configApplication)
+        endpointPage.setConfigApplication(configApplication)
 
         //Save and findAll
         endpointPage = endpointPage.save(failOnError: true, flush: true)
@@ -89,17 +89,17 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
         def list = endpointPage.fetchAll()
         assertTrue list.size >=1
         assertTrue (list.getAt(0).dataOrigin == 'Banner')
-        assertTrue (list.getAt(0).enableDisable == 'E')
+        assertTrue (list.getAt(0).enableIndicator == 'Y')
 
         //Update and findAll
-        endpointPage.setEnableDisable('D')
+        endpointPage.setEnableIndicator('N')
         endpointPage = endpointPage.save(failOnError: true, flush: true)
         assertEquals 1L, endpointPage.version
 
         list = endpointPage.fetchAll()
         assertTrue (list.size >= 1)
         assertTrue (list.getAt(0).dataOrigin == 'Banner')
-        assertTrue (list.getAt(0).enableDisable == 'D')
+        assertTrue (list.getAt(0).enableIndicator == 'N')
 
         //Delete and findAll
         endpointPage.delete()
@@ -203,7 +203,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
         ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage(
                 description: 'TEST',
                 displaySequence: 1,
-                enableDisable: 'E',
+                enableIndicator: 'Y',
                 pageId: 1,
                 pageName: 'TEST PAGE'
         )

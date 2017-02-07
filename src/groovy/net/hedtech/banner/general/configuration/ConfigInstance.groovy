@@ -17,6 +17,7 @@ import javax.persistence.*
 ])
 
 public class ConfigInstance implements Serializable {
+
     private static final long serialVersionUID = 99999L
 
     @Id
@@ -25,31 +26,41 @@ public class ConfigInstance implements Serializable {
     @Column(name = 'GUBAIR_SURROGATE_ID', precision = 19)
     Long id
 
-    @Temporal(TemporalType.DATE)
-    @Column(name = 'GUBAIR_ACTIVITY_DATE', nullable = false)
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = 'GUBAIR_ACTIVITY_DATE')
     Date lastModified
 
-    @Column(name = 'GUBAIR_DATA_ORIGIN', length = 30)
+
+    @Column(name = 'GUBAIR_DATA_ORIGIN')
     String dataOrigin
 
-    @Column(name = 'GUBAIR_ENV', nullable = false, precision = 19)
+
+    @Column(name = 'GUBAIR_ENV')
     Long env
 
-    @Column(name = 'GUBAIR_GUBAPPL_APP_ID', nullable = false, precision = 19)
-    Long gubapplAppId
+    /**
+     * Foreign Key : FK_GUBAIR_INV_GUBAPPL
+     */
+    @ManyToOne
+    @JoinColumns([
+            @JoinColumn(name = "GUBAIR_GUBAPPL_APP_ID", referencedColumnName = "GUBAPPL_APP_ID")
+    ])
+    ConfigApplication configApplication
 
-    @Column(name = 'GUBAIR_URL', length = 256)
+
+    @Column(name = 'GUBAIR_URL')
     String url
 
-    @Column(name = 'GUBAIR_USER_ID', length = 30)
+
+    @Column(name = 'GUBAIR_USER_ID')
     String lastModifiedBy
 
+
     @Version
-    @Column(name = 'GUBAIR_VERSION', precision = 19)
+    @Column(name = 'GUBAIR_VERSION')
     Long version
 
-    public ConfigInstance() {
-    }
 
     boolean equals(o) {
         if (this.is(o)) return true
@@ -60,7 +71,7 @@ public class ConfigInstance implements Serializable {
         if (lastModified != gubair.lastModified) return false
         if (dataOrigin != gubair.dataOrigin) return false
         if (env != gubair.env) return false
-        if (gubapplAppId != gubair.gubapplAppId) return false
+        if (configApplication != gubair.configApplication) return false
         if (id != gubair.id) return false
         if (url != gubair.url) return false
         if (lastModifiedBy != gubair.lastModifiedBy) return false
@@ -75,7 +86,7 @@ public class ConfigInstance implements Serializable {
         result = 31 * result + (lastModified != null ? lastModified.hashCode() : 0)
         result = 31 * result + (dataOrigin != null ? dataOrigin.hashCode() : 0)
         result = 31 * result + (env != null ? env.hashCode() : 0)
-        result = 31 * result + (gubapplAppId != null ? gubapplAppId.hashCode() : 0)
+        result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
         result = 31 * result + (url != null ? url.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
@@ -91,11 +102,20 @@ public class ConfigInstance implements Serializable {
                 activityDate=$lastModified,
                 dateOrigin='$dataOrigin',
                 env=$env,
-                gubapplAppId=$gubapplAppId,
+                configApplication=$configApplication,
                 url='$url',
                 userId='$lastModifiedBy',
                 version=$version
             }"""
+    }
+
+    static constraints = {
+        env(nullable: true)
+        url(nullable: true, maxSize: 256)
+        configApplication(nullable: false)
+        lastModified(nullable: true)
+        lastModifiedBy(nullable: true, maxSize: 30)
+        dataOrigin(nullable: true, maxSize: 30)
     }
 
     /**

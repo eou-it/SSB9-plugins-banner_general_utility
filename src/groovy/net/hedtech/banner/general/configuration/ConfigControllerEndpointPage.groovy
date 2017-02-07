@@ -14,6 +14,7 @@ import javax.persistence.*
 @NamedQueries(value = [
         @NamedQuery(name = 'ConfigControllerEndpointPage.fetchAll',
                 query = '''FROM ConfigControllerEndpointPage ccep'''),
+
 /*        @NamedQuery(name = ConfigControllerEndpointPage.GET_ALL_CONFIG_BY_APP_NAME,
                 query = '''SELECT new net.hedtech.banner.general.configuration.RequestURLMap(ccep.pageName, crpm.roleCode, capp.appName,
                                     ccep.displaySequence, ccep.pageId, ccep.gubapplAppId, ccep.version)
@@ -43,7 +44,6 @@ public class ConfigControllerEndpointPage implements Serializable {
     /**
      * Data origin column for GURCTLEPP
      */
-
     @Column(name = 'GURCTLEPP_DATA_ORIGIN')
     String dataOrigin
 
@@ -56,8 +56,8 @@ public class ConfigControllerEndpointPage implements Serializable {
     Long displaySequence
 
 
-    @Column(name = 'GURCTLEPP_ENABLE_DISABLE')
-    String enableDisable
+    @Column(name = 'GURCTLEPP_STATUS_INDICATOR')
+    String enableIndicator
 
 
    /**
@@ -67,7 +67,7 @@ public class ConfigControllerEndpointPage implements Serializable {
     @JoinColumns([
             @JoinColumn(name = "GURCTLEPP_GUBAPPL_APP_ID", referencedColumnName = "GUBAPPL_APP_ID")
     ])
-    ConfigApplication gubapplAppId
+    ConfigApplication configApplication
 
 
     @Column(name = 'GURCTLEPP_PAGE_NAME')
@@ -94,11 +94,11 @@ public class ConfigControllerEndpointPage implements Serializable {
         ConfigControllerEndpointPage gurctlepp = (ConfigControllerEndpointPage) o
 
         if (lastModified != gurctlepp.lastModified) return false
-        if (gubapplAppId != gurctlepp.gubapplAppId) return false
+        if (configApplication != gurctlepp.configApplication) return false
         if (dataOrigin != gurctlepp.dataOrigin) return false
         if (description != gurctlepp.description) return false
         if (displaySequence != gurctlepp.displaySequence) return false
-        if (enableDisable != gurctlepp.enableDisable) return false
+        if (enableIndicator != gurctlepp.enableIndicator) return false
         if (id != gurctlepp.id) return false
         if (pageId != gurctlepp.pageId) return false
         if (pageName != gurctlepp.pageName) return false
@@ -116,8 +116,8 @@ public class ConfigControllerEndpointPage implements Serializable {
         result = 31 * result + (dataOrigin != null ? dataOrigin.hashCode() : 0)
         result = 31 * result + (description != null ? description.hashCode() : 0)
         result = 31 * result + (displaySequence != null ? displaySequence.hashCode() : 0)
-        result = 31 * result + (enableDisable != null ? enableDisable.hashCode() : 0)
-        result = 31 * result + (gubapplAppId != null ? gubapplAppId.hashCode() : 0)
+        result = 31 * result + (enableIndicator != null ? enableIndicator.hashCode() : 0)
+        result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
         result = 31 * result + (pageName != null ? pageName.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
@@ -135,8 +135,8 @@ public class ConfigControllerEndpointPage implements Serializable {
                 dataOrigin='$dataOrigin',
                 description='$description',
                 displaySequence=$displaySequence,
-                enableDisable='$enableDisable',
-                gubapplAppId=$gubapplAppId,
+                enableIndicator='$enableIndicator',
+                configApplication=$configApplication,
                 pageName='$pageName',
                 userId='$lastModifiedBy',
                 version=$version,
@@ -146,10 +146,11 @@ public class ConfigControllerEndpointPage implements Serializable {
 
 
     static constraints = {
-        pageId(nullable: false, maxSize: 256)
+        pageId(nullable: true, maxSize: 256)
         pageName(nullable: true, maxSize: 256)
-        gubapplAppId(nullable: false)
-        enableDisable(nullable: true)
+        configApplication(nullable: false)
+        enableIndicator(nullable: true)
+        displaySequence(nullable: true)
         description(nullable: false)
         lastModified(nullable: true)
         lastModifiedBy(nullable: true, maxSize: 30)

@@ -33,7 +33,7 @@ class ConfigurationPropertiesIntegrationTest extends BaseIntegrationTestCase {
         configApplication = configApplication.refresh()
 
         ConfigurationProperties configurationProperties = getConfigurationProperties()
-        configurationProperties.setGubapplAppId(configApplication.getAppId())
+        configurationProperties.setConfigApplication(configApplication)
         configurationProperties.save(failOnError: true, flush: true)
 
         def list = configurationProperties.fetchAll()
@@ -47,10 +47,10 @@ class ConfigurationPropertiesIntegrationTest extends BaseIntegrationTestCase {
         configApplication = configApplication.refresh()
 
         ConfigurationProperties configurationProperties = getConfigurationProperties()
-        configurationProperties.setGubapplAppId(configApplication.getAppId())
+        configurationProperties.setConfigApplication(configApplication)
         configurationProperties.save(failOnError: true, flush: true)
 
-        def list = configurationProperties.fetchByAppName(APP_NAME)
+        def list = configurationProperties.fetchByConfigName("TEST_CONFIG")
         assert (list.size() > 0)
     }
 

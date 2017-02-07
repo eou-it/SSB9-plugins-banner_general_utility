@@ -14,11 +14,10 @@ import javax.persistence.*
 @NamedQueries(value = [
         @NamedQuery(name = 'ConfigurationProperties.fetchAll',
                 query = '''FROM ConfigurationProperties cp'''),
-        @NamedQuery(name = 'ConfigurationProperties.fetchByAppName',
+
+        @NamedQuery(name = 'ConfigurationProperties.fetchByConfigName',
                 query = '''FROM ConfigurationProperties cp
-                                WHERE cp.gubapplAppId = (SELECT capp.appId
-                                                            FROM ConfigApplication capp
-                                                            WHERE capp.appName = :appName)''')
+                                WHERE cp.configName = :configName ''')
 ])
 public class ConfigurationProperties implements Serializable {
     private static final long serialVersionUID = 1L
@@ -29,42 +28,54 @@ public class ConfigurationProperties implements Serializable {
     @Column(name = 'GUROCFG_SURROGATE_ID')
     Long id
 
-    @Column(name = 'CONFIG_NAME')
+
+    @Column(name = 'GUROCFG_CONFIG_NAME')
     String configName
 
-    @Temporal(TemporalType.DATE)
+
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = 'GUROCFG_ACTIVITY_DATE')
     Date lastModified
 
+
     @Column(name = 'GUROCFG_CONFIG_TYPE')
     String configType
+
 
     @Lob
     @Column(name = 'GUROCFG_CONFIG_VALUE')
     String configValue
 
+
     @Column(name = 'GUROCFG_DATA_ORIGIN')
     String dataOrigin
 
-    @Column(name = 'GUROCFG_GUBAPPL_APP_ID')
-    Long gubapplAppId
+    /**
+     * Foreign Key : FK_GUROCFG_INV_GUBAPPL
+     */
+    @ManyToOne
+    @JoinColumns([
+            @JoinColumn(name = "GUROCFG_GUBAPPL_APP_ID", referencedColumnName = "GUBAPPL_APP_ID")
+    ])
+    ConfigApplication configApplication
+
 
     @Column(name = 'GUROCFG_USER_ID')
     String lastModifiedBy
+
 
     @Version
     @Column(name = 'GUROCFG_VERSION')
     Long version
 
-    public ConfigurationProperties() {
-    }
+
 
     static constraints = {
         configName(maxSize: 50)
         lastModified(nullable: true)
         configType(maxSize: 30)
         dataOrigin(maxSize: 30, nullable: true)
-        gubapplAppId(nullable: true)
+        configApplication(nullable: true)
         lastModifiedBy(maxSize: 30, nullable: true)
     }
 
@@ -79,7 +90,7 @@ public class ConfigurationProperties implements Serializable {
         if (configType != gurocfg.configType) return false
         if (configValue != gurocfg.configValue) return false
         if (dataOrigin != gurocfg.dataOrigin) return false
-        if (gubapplAppId != gurocfg.gubapplAppId) return false
+        if (configApplication != gurocfg.configApplication) return false
         if (id != gurocfg.id) return false
         if (lastModifiedBy != gurocfg.lastModifiedBy) return false
         if (version != gurocfg.version) return false
@@ -95,7 +106,7 @@ public class ConfigurationProperties implements Serializable {
         result = 31 * result + (configType != null ? configType.hashCode() : 0)
         result = 31 * result + (configValue != null ? configValue.hashCode() : 0)
         result = 31 * result + (dataOrigin != null ? dataOrigin.hashCode() : 0)
-        result = 31 * result + (gubapplAppId != null ? gubapplAppId.hashCode() : 0)
+        result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
         return result
@@ -112,7 +123,7 @@ public class ConfigurationProperties implements Serializable {
                 configType='$configType',
                 configValue='$configValue',
                 dataOrigin='$dataOrigin',
-                gubapplAppId=$gubapplAppId,
+                configApplication=$configApplication,
                 userId='$lastModifiedBy',
                 version=$version
             }"""
@@ -134,11 +145,13 @@ public class ConfigurationProperties implements Serializable {
      * Named query to fetch all data from this domain by app name.
      * @return List
      */
-    public static def fetchByAppName(def appName) {
+    public static def fetchByConfigName(String configName) {
         def configurationProperties
-        configurationProperties = ConfigurationProperties.withSession { session ->
-            configurationProperties = session.getNamedQuery('ConfigurationProperties.fetchByAppName')
-                    .setString('appName', appName).list()
+        if (configName){
+            configurationProperties = ConfigurationProperties.withSession { session ->
+                configurationProperties = session.getNamedQuery('ConfigurationProperties.fetchByConfigName')
+                        .setString('configName', configName).list()
+            }
         }
         return configurationProperties
     }

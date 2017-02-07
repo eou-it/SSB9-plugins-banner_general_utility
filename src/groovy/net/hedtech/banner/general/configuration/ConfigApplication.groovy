@@ -13,7 +13,11 @@ import javax.persistence.*
 @Table(name = 'GUBAPPL')
 @NamedQueries(value = [
         @NamedQuery(name = 'ConfigApplication.fetchAll',
-                query = '''FROM ConfigApplication capp''')
+                query = '''FROM ConfigApplication capp'''),
+
+        @NamedQuery(name = "ConfigApplication.fetchAllByAppName",
+                query = """ FROM ConfigApplication capp
+        WHERE capp.appName = :appName """)
 ])
 
 
@@ -30,6 +34,7 @@ public class ConfigApplication implements Serializable {
     @Column(name = 'GUBAPPL_SURROGATE_ID')
     Long id
 
+
     /**
      * Date that record was created or last updated.
      */
@@ -37,13 +42,13 @@ public class ConfigApplication implements Serializable {
     @Column(name = 'GUBAPPL_ACTIVITY_DATE')
     Date lastModified
 
+
     /**
      * Generated unique numeric identifier for this entity.
      */
-    @SequenceGenerator(name = 'GUBAPPL_APP_SEQ_GENERATOR', sequenceName = 'GUBAPPL_APP_ID_SEQUENCE')
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GUBAPPL_APP_SEQ_GENERATOR')
     @Column(name = 'GUBAPPL_APP_ID')
     Long appId
+
 
     /**
      *  Name of the application.
@@ -51,11 +56,13 @@ public class ConfigApplication implements Serializable {
     @Column(name = 'GUBAPPL_APP_NAME')
     String appName
 
+
     /**
      *  Data origin column for GUBAPPL
      */
     @Column(name = 'GUBAPPL_DATA_ORIGIN')
     String dataOrigin
+
 
     /**
      * Last modified by column for GUBAPPL
@@ -128,10 +135,25 @@ public class ConfigApplication implements Serializable {
      * @return List
      */
     public static def fetchAll() {
-        def configApplication
-        configApplication = ConfigApplication.withSession { session ->
-            configApplication = session.getNamedQuery('ConfigApplication.fetchAll').list()
+        def configApplications
+        configApplications = ConfigApplication.withSession { session ->
+            configApplications = session.getNamedQuery('ConfigApplication.fetchAll').list()
         }
-        return configApplication
+        return configApplications
+    }
+
+    /**
+     * Named query to fetch all data from this domain With Valid Appname.
+     * @return List
+     */
+    public static def fetchAllByAppName(String appName) {
+        def configApplications
+        if(appName){
+            configApplications = ConfigApplication.withSession { session ->
+                configApplications = session.getNamedQuery('ConfigApplication.fetchAllByAppName').setString('appName', appName).list()
+
+            }
+        }
+        return configApplications
     }
 }

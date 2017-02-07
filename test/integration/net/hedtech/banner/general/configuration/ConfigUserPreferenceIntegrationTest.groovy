@@ -31,11 +31,11 @@ class ConfigUserPreferenceIntegrationTest extends BaseIntegrationTestCase {
         configApplication = configApplication.refresh()
 
         ConfigurationProperties configurationProperties = getConfigurationProperties()
-        configurationProperties.setGubapplAppId(configApplication.getAppId())
+        configurationProperties.setConfigApplication(configApplication)
         configurationProperties.save(failOnError: true, flush: true)
 
         ConfigUserPreference configUserPreference = getConfigUserPreference()
-        configUserPreference.setGubapplAppId(configApplication.getAppId())
+        configUserPreference.setConfigApplication(configApplication)
         configUserPreference.setConfigName(configurationProperties.getConfigName())
         configUserPreference.setConfigType(configurationProperties.getConfigType())
         configUserPreference.save(failOnError: true, flush: true)

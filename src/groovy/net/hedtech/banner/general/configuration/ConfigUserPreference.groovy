@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -13,10 +13,15 @@ import javax.persistence.*
 @Table(name = 'GURUCFG')
 @NamedQueries(value = [
         @NamedQuery(name = 'ConfigUserPreference.fetchAll',
-                query = '''FROM ConfigUserPreference configUsrPref''')
+                query = ''' FROM ConfigUserPreference configUsrPref '''),
+
+        @NamedQuery(name = 'ConfigUserPreference.fetchAllByPidm',
+                query = """ FROM ConfigUserPreference configUsrPref
+                WHERE configUsrPref.pidm = :pidm """)
 ])
+
 public class ConfigUserPreference implements Serializable {
-    private static final long serialVersionUID = 1L
+    private static final long serialVersionUID = 190099L
 
     @Id
     @SequenceGenerator(name = 'GURUCFG_SEQ_GENERATOR', sequenceName = 'GURUCFG_SURROGATE_ID_SEQUENCE')
@@ -24,10 +29,10 @@ public class ConfigUserPreference implements Serializable {
     @Column(name = 'GURUCFG_SURROGATE_ID')
     Long id
 
-    @Column(name = 'CONFIG_NAME')
+    @Column(name = 'GURUCFG_CONFIG_NAME')
     String configName
 
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = 'GURUCFG_ACTIVITY_DATE')
     Date lastModified
 
@@ -41,28 +46,35 @@ public class ConfigUserPreference implements Serializable {
     @Column(name = 'GURUCFG_DATA_ORIGIN')
     String dataOrigin
 
-    @Column(name = 'GURUCFG_GUBAPPL_APP_ID')
-    Long gubapplAppId
+    /**
+     * Foreign Key : FK_GURUCFG_INV_GUBAPPL
+     */
+    @ManyToOne
+    @JoinColumns([
+            @JoinColumn(name = "GURUCFG_GUBAPPL_APP_ID", referencedColumnName = "GUBAPPL_APP_ID")
+    ])
+    ConfigApplication configApplication
+
 
     @Column(name = 'GURUCFG_PIDM')
-    Long pidm
+    Integer pidm
+
 
     @Column(name = 'GURUCFG_USER_ID')
     String lastModifiedBy
+
 
     @Version
     @Column(name = 'GURUCFG_VERSION')
     Long version
 
-    public ConfigUserPreference() {
-    }
 
     static constraints = {
         configName(maxSize: 50)
         lastModified(nullable: true)
         configType(maxSize: 30)
         dataOrigin(maxSize: 30, nullable: true)
-        gubapplAppId(unique: true, nullable: true)
+        configApplication(unique: true, nullable: false)
         lastModifiedBy(maxSize: 30, nullable: true)
     }
 
@@ -77,7 +89,7 @@ public class ConfigUserPreference implements Serializable {
         if (configType != gurucfg.configType) return false
         if (configValue != gurucfg.configValue) return false
         if (dataOrigin != gurucfg.dataOrigin) return false
-        if (gubapplAppId != gurucfg.gubapplAppId) return false
+        if (configApplication != gurucfg.configApplication) return false
         if (id != gurucfg.id) return false
         if (pidm != gurucfg.pidm) return false
         if (lastModifiedBy != gurucfg.lastModifiedBy) return false
@@ -94,7 +106,7 @@ public class ConfigUserPreference implements Serializable {
         result = 31 * result + (configType != null ? configType.hashCode() : 0)
         result = 31 * result + (configValue != null ? configValue.hashCode() : 0)
         result = 31 * result + (dataOrigin != null ? dataOrigin.hashCode() : 0)
-        result = 31 * result + (gubapplAppId != null ? gubapplAppId.hashCode() : 0)
+        result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
         result = 31 * result + (pidm != null ? pidm.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
@@ -112,7 +124,7 @@ public class ConfigUserPreference implements Serializable {
                 configType='$configType',
                 configValue='$configValue',
                 dataOrigin='$dataOrigin',
-                gubapplAppId=$gubapplAppId,
+                configApplication=$configApplication,
                 pidm=$pidm,
                 userId='$lastModifiedBy',
                 version=$version
@@ -127,6 +139,16 @@ public class ConfigUserPreference implements Serializable {
         def configUserPreference
         configUserPreference = ConfigUserPreference.withSession { session ->
             configUserPreference = session.getNamedQuery('ConfigUserPreference.fetchAll').list()
+        }
+        return configUserPreference
+    }
+
+
+    public static def fetchAllByPidm(Integer pidm) {
+        def configUserPreference
+        configUserPreference = ConfigUserPreference.withSession { session ->
+            configUserPreference = session.getNamedQuery('ConfigUserPreference.fetchAllByPidm')
+                    .setInteger('pidm', pidm).list()
         }
         return configUserPreference
     }

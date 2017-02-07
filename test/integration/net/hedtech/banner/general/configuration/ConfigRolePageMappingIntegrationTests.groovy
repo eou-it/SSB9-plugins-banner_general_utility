@@ -26,7 +26,6 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testCreateConfigRolePageMapping() {
         ConfigRolePageMapping configRolePageMap = saveConfigRolePageMapping()
-
         assertNotNull configRolePageMap.id
     }
 
@@ -82,25 +81,25 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
         assertNull configRolePageMap.get(id)
     }
 
-    private def newConfigRolePageMap() {
+    private static ConfigRolePageMapping newConfigRolePageMap() {
         ConfigRolePageMapping configRolePageMap= new ConfigRolePageMapping(
                 roleCode: '1'
         )
         return configRolePageMap
     }
 
-    private def newConfigApplication() {
-        def configApplication = new ConfigApplication(
+    private static ConfigApplication newConfigApplication() {
+        ConfigApplication configApplication = new ConfigApplication(
                 appName: "PlatformSandbox",
         )
         return configApplication
     }
 
-    private ConfigControllerEndpointPage newConfigControllerEndPoint() {
+    private static ConfigControllerEndpointPage newConfigControllerEndPoint() {
         ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage(
                 description: 'TEST',
                 displaySequence: 1,
-                enableDisable: 'E',
+                enableIndicator: 'Y',
                 pageId: 1,
                 pageName: 'TEST PAGE'
         )
@@ -111,14 +110,18 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
         ConfigApplication configApplication = newConfigApplication()
         configApplication = configApplication.save(failOnError: true, flush: true)
         assertNotNull configApplication.id
+        assertEquals 0L, configApplication.version
         configApplication = configApplication.refresh()
 
         ConfigControllerEndpointPage endpointPage = newConfigControllerEndPoint()
-        endpointPage.setGubapplAppId(configApplication)
+        endpointPage.setConfigApplication(configApplication)
         endpointPage = endpointPage.save(failOnError: true, flush: true)
+        assertNotNull endpointPage.id
+        assertEquals 0L, endpointPage.version
+
 
         ConfigRolePageMapping configRolePageMap = newConfigRolePageMap()
-        configRolePageMap.setGubapplAppId(configApplication.appId)
+        configRolePageMap.setConfigApplication(configApplication)
         configRolePageMap.setPageId(endpointPage.pageId)
         configRolePageMap = configRolePageMap.save(failOnError: true, flush: true)
         configRolePageMap

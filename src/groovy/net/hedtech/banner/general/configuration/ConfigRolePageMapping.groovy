@@ -34,8 +34,14 @@ public class ConfigRolePageMapping implements Serializable {
     String dataOrigin
 
 
-    @Column(name = 'GURAPPR_GUBAPPL_APP_ID')
-    Long gubapplAppId
+    /**
+     * Foreign Key : FK_GUBAPPR_INV_GUBAPPL
+     */
+    @ManyToOne
+    @JoinColumns([
+            @JoinColumn(name = "GURAPPR_GUBAPPL_APP_ID", referencedColumnName = "GUBAPPL_APP_ID")
+    ])
+    ConfigApplication configApplication
 
 
     @Column(name = 'GURAPPR_USER_ID')
@@ -59,7 +65,7 @@ public class ConfigRolePageMapping implements Serializable {
     static constraints = {
         pageId(nullable: false)
         roleCode(nullable: false, maxSize: 30)
-        gubapplAppId(nullable: false)
+        configApplication(nullable: false)
         lastModified(nullable: true)
         dataOrigin(nullable:true, maxSize: 30)
         lastModifiedBy(maxSize: 30, nullable: true)
@@ -72,7 +78,7 @@ public class ConfigRolePageMapping implements Serializable {
         ConfigRolePageMapping gurappr = (ConfigRolePageMapping) o
 
         if (lastModified != gurappr.lastModified) return false
-        if (gubapplAppId != gurappr.gubapplAppId) return false
+        if (configApplication != gurappr.configApplication) return false
         if (roleCode != gurappr.roleCode) return false
         if (dataOrigin != gurappr.dataOrigin) return false
         if (id != gurappr.id) return false
@@ -88,7 +94,7 @@ public class ConfigRolePageMapping implements Serializable {
         result = (id != null ? id.hashCode() : 0)
         result = 31 * result + (lastModified != null ? lastModified.hashCode() : 0)
         result = 31 * result + (dataOrigin != null ? dataOrigin.hashCode() : 0)
-        result = 31 * result + (gubapplAppId != null ? gubapplAppId.hashCode() : 0)
+        result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
         result = 31 * result + (pageId != null ? pageId.hashCode() : 0)
@@ -104,7 +110,7 @@ public class ConfigRolePageMapping implements Serializable {
                 id=$id,
                 activityDate=$lastModified,
                 dataOrigin='$dataOrigin',
-                gubapplAppId=$gubapplAppId,
+                gubapplAppId=$configApplication,
                 userId='$lastModifiedBy',
                 version=$version,
                 pageId=$pageId,
