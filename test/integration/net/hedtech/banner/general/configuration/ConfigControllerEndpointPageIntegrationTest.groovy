@@ -31,16 +31,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
 
     @Test
     public void testSaveConfigControllerEndpointPage() {
-        ConfigApplication configApplication = getConfigApplication()
-        configApplication = configApplication.save(failOnError: true, flush: true)
-        configApplication = configApplication.refresh()
-        assertNotNull configApplication.id
-        assertNotNull configApplication.appId
-        assertEquals 0L, configApplication.version
-
-        ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
-        endpointPage.setConfigApplication(configApplication)
-        endpointPage = endpointPage.save(failOnError: true, flush: true)
+        ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
 
         assertNotNull endpointPage.id
         assertEquals 0L, endpointPage.version
@@ -48,7 +39,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
 
 
     @Test
-    public void testEndpointPageWithDefault() {
+    public void testEndpointPageWithDefaultValues() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication = configApplication.save(failOnError: true, flush: true)
         configApplication = configApplication.refresh()
@@ -70,40 +61,51 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
 
     @Test
     void testDeleteConfigControllerEndpointPage() {
-        ConfigApplication configApplication = getConfigApplication()
-        configApplication = configApplication.save(failOnError: true, flush: true)
-        configApplication = configApplication.refresh()
-        assertNotNull configApplication.id
-        assertNotNull configApplication.appId
-        assertEquals 0L, configApplication.version
+        ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
 
-        ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
-        endpointPage.setConfigApplication(configApplication)
-
-        //Save and findAll
-        endpointPage = endpointPage.save(failOnError: true, flush: true)
         assertNotNull endpointPage.id
+        assertNotNull endpointPage.pageId
         assertEquals 0L, endpointPage.version
-        def id = configApplication.id
-        configApplication.delete()
-        assertNull configApplication.get( id )
+
+        def id = endpointPage.id
+        endpointPage.delete()
+        assertNull endpointPage.get( id )
     }
+
+
+    @Test
+    public void testSerialization() {
+        try {
+            ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
+
+            assertNotNull endpointPage.id
+            assertNotNull endpointPage.pageId
+            assertEquals 0L, endpointPage.version
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            ObjectOutputStream oos = new ObjectOutputStream(out)
+            oos.writeObject(endpointPage)
+            oos.close()
+
+            byte[] bytes = out.toByteArray()
+            ConfigControllerEndpointPage endpointPageCopy
+            new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
+                endpointPageCopy = (ConfigControllerEndpointPage)is.readObject()
+                is.close()
+            }
+            assertEquals endpointPageCopy, endpointPage
+
+        } catch (e) {
+            e.printStackTrace()
+        }
+    }
+
 
     @Test
     public void testFetchAll() {
-        ConfigApplication configApplication = getConfigApplication()
-        configApplication = configApplication.save(failOnError: true, flush: true)
-        configApplication = configApplication.refresh()
-        assertNotNull configApplication.id
-        assertNotNull configApplication.appId
-        assertEquals 0L, configApplication.version
+        ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
 
-        ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
-        endpointPage.setConfigApplication(configApplication)
-
-        //Save and findAll
-        endpointPage = endpointPage.save(failOnError: true, flush: true)
         assertNotNull endpointPage.id
+        assertNotNull endpointPage.pageId
         assertEquals 0L, endpointPage.version
 
         def list = endpointPage.fetchAll()
@@ -124,7 +126,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
         //Delete and findAll
         endpointPage.delete()
         list = endpointPage.fetchAll()
-        assert (list.size >= 0)
+        assertEquals (list.size(), 0)
     }
 
     @Test
@@ -133,7 +135,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
             //session.beginTransaction()
 
             //saveRequiredDomains()
-            saveDomains()
+            ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
 
             def list = endpointPage.getAllConfigByAppName(APP_NAME)
             assert (list.size() > 0)
@@ -160,7 +162,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
         try {
             // Save all required domain.
             //saveRequiredDomains()
-            ConfigControllerEndpointPage endpointPage = saveDomains()
+            ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
 
             def list = endpointPage.getAllConfigByAppName(APP_NAME)
             def urlSet = new LinkedHashSet<String>()
@@ -184,7 +186,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
 
     @Test
     void testToString() {
-        ConfigControllerEndpointPage endpointPage = saveDomains()
+        ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
         endpointPage.save(failOnError: true, flush: true)
         assertNotNull endpointPage.id
         assertEquals 0L, endpointPage.version
@@ -201,7 +203,7 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
 
     @Test
     void testHashCode() {
-        ConfigControllerEndpointPage endpointPage = saveDomains()
+        ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
         endpointPage.save(failOnError: true, flush: true)
         assertNotNull endpointPage.id
         assertEquals 0L, endpointPage.version
@@ -232,22 +234,22 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
 //        session.save(configRolePageMapping)
 //    }
 
-    private ConfigControllerEndpointPage saveDomains() {
+
+    private ConfigControllerEndpointPage createConfigControllerEndPointPage() {
         ConfigApplication configApplication = getConfigApplication()
-        configApplication.save(failOnError: true, flush: true)
-        configApplication.refresh()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.refresh()
+        assertNotNull configApplication.id
+        assertNotNull configApplication.appId
+        assertEquals 0L, configApplication.version
 
         ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
         endpointPage.setConfigApplication(configApplication)
-        endpointPage.save(failOnError: true, flush: true)
-        endpointPage.refresh()
-
-        ConfigRolePageMapping configRolePageMapping = getConfigRolePageMapping()
-        configRolePageMapping.setConfigApplication(configApplication)
-        configRolePageMapping.setPageId(endpointPage.getPageId())
-        configRolePageMapping.save(failOnError: true, flush: true)
+        endpointPage = endpointPage.save(failOnError: true, flush: true)
         return endpointPage.refresh()
     }
+
+
 
     /**
      * Mocking the ConfigControllerEndpointPage domain.

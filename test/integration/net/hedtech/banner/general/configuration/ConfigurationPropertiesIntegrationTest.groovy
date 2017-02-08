@@ -27,21 +27,89 @@ class ConfigurationPropertiesIntegrationTest extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testFetchAll() {
-        ConfigApplication configApplication = getConfigApplication()
-        configApplication.save(failOnError: true, flush: true)
-        configApplication = configApplication.refresh()
+    public void testSaveConfigurationProperties() {
+        ConfigurationProperties configurationProperties = createConfigurationProperties()
+        assertNotNull configurationProperties.id
+        assertNotNull configurationProperties.configName
+        assertEquals 0L, configurationProperties.version
+    }
 
-        ConfigurationProperties configurationProperties = getConfigurationProperties()
-        configurationProperties.setConfigApplication(configApplication)
-        configurationProperties.save(failOnError: true, flush: true)
+
+    @Test
+    public void testFetchAll() {
+        ConfigurationProperties configurationProperties = createConfigurationProperties()
+        assertNotNull configurationProperties.id
+        assertNotNull configurationProperties.configName
+        assertEquals 0L, configurationProperties.version
 
         def list = configurationProperties.fetchAll()
-        assert (list.size() >= 0)
+        assert (list.size() >= 1)
+    }
+
+
+    @Test
+    public void testFetchByValidAppName() {
+        ConfigurationProperties configurationProperties = createConfigurationProperties()
+        assertNotNull configurationProperties.id
+        assertNotNull configurationProperties.configName
+        assertEquals 0L, configurationProperties.version
+
+        def list = configurationProperties.fetchByConfigName("TEST_CONFIG")
+        assertTrue (list.size() >= 1)
+    }
+
+
+    @Test
+    public void testFetchByInValidAppName() {
+        ConfigurationProperties configurationProperties = createConfigurationProperties()
+        assertNotNull configurationProperties.id
+        assertNotNull configurationProperties.configName
+        assertEquals 0L, configurationProperties.version
+
+        def list = configurationProperties.fetchByConfigName("XXX")
+        assertTrue list.size() == 0
+    }
+
+
+    @Test
+    public void testFetchByNullAppName() {
+        ConfigurationProperties configurationProperties = createConfigurationProperties()
+        assertNotNull configurationProperties.id
+        assertNotNull configurationProperties.configName
+        assertEquals 0L, configurationProperties.version
+
+        def list = configurationProperties.fetchByConfigName(null)
+        assertNull list
     }
 
     @Test
-    public void testFetchByAppName() {
+    public void testSerialization() {
+        try {
+            ConfigurationProperties configurationProperties = createConfigurationProperties()
+            assertNotNull configurationProperties.id
+            assertNotNull configurationProperties.configName
+            assertEquals 0L, configurationProperties.version
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            ObjectOutputStream oos = new ObjectOutputStream(out)
+            oos.writeObject(configurationProperties)
+            oos.close()
+
+            byte[] bytes = out.toByteArray()
+            ConfigurationProperties configurationPropertiesCopy
+            new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
+                configurationPropertiesCopy = (ConfigurationProperties)is.readObject()
+                is.close()
+            }
+            assertEquals configurationPropertiesCopy, configurationProperties
+
+        } catch (e) {
+            e.printStackTrace()
+        }
+    }
+
+
+    private ConfigurationProperties createConfigurationProperties() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
         configApplication = configApplication.refresh()
@@ -49,10 +117,9 @@ class ConfigurationPropertiesIntegrationTest extends BaseIntegrationTestCase {
         ConfigurationProperties configurationProperties = getConfigurationProperties()
         configurationProperties.setConfigApplication(configApplication)
         configurationProperties.save(failOnError: true, flush: true)
-
-        def list = configurationProperties.fetchByConfigName("TEST_CONFIG")
-        assert (list.size() > 0)
+        return configurationProperties
     }
+
 
     /**
      * Mocking ConfigurationProperties domain.

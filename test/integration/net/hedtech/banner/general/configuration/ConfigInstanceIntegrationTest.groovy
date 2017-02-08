@@ -26,17 +26,7 @@ class ConfigInstanceIntegrationTest extends BaseIntegrationTestCase {
 
     @Test
     public void testSave() {
-        ConfigApplication application = getConfigApplication()
-        application.save(failOnError: true, flush: true)
-        application.refresh()
-
-        assertNotNull application.appId
-        assertNotNull application.id
-
-        ConfigInstance configInstance = getConfigInstance()
-        configInstance.configApplication = application
-        configInstance.save(failOnError: true, flush: true)
-        configInstance.refresh()
+        ConfigInstance configInstance = createConfigInstance()
 
         assertNotNull configInstance.env
         assertNotNull configInstance.id
@@ -45,22 +35,36 @@ class ConfigInstanceIntegrationTest extends BaseIntegrationTestCase {
 
     @Test
     public void testUpdate() {
-        ConfigApplication application = getConfigApplication()
-        application.save(failOnError: true, flush: true)
-        application.refresh()
-
-        assertNotNull application.appId
-        assertNotNull application.id
-
-        ConfigInstance configInstance = getConfigInstance()
-        configInstance.configApplication = application
-        configInstance.save(failOnError: true, flush: true)
-        configInstance.refresh()
+        ConfigInstance configInstance = createConfigInstance()
 
         assertNotNull configInstance.env
         assertNotNull configInstance.id
 
-        //Save
+        def list = configInstance.fetchAll()
+        assert (list.size() > 0)
+        assert (list.getAt(0).url == '/TEST_URL')
+
+        //Update
+        configInstance.setUrl('/NEW_TEST_URL')
+        configInstance.save(failOnError: true, flush: true)
+        list = configInstance.fetchAll()
+        assert (list.size() > 0)
+        assert (list.getAt(0).url == '/NEW_TEST_URL')
+
+        //Delete
+        configInstance.delete()
+        list = configInstance.fetchAll()
+        assert list.size() >= 0
+    }
+
+
+    @Test
+    public void testFetchAll() {
+        ConfigInstance configInstance = createConfigInstance()
+
+        assertNotNull configInstance.env
+        assertNotNull configInstance.id
+
         def list = configInstance.fetchAll()
         assert (list.size() > 0)
         assert (list.getAt(0).url == '/TEST_URL')
@@ -80,7 +84,33 @@ class ConfigInstanceIntegrationTest extends BaseIntegrationTestCase {
 
 
     @Test
-    public void testFetchAll() {
+    public void testSerialization() {
+        try {
+            ConfigInstance configInstance = createConfigInstance()
+
+            assertNotNull configInstance.env
+            assertNotNull configInstance.id
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            ObjectOutputStream oos = new ObjectOutputStream(out)
+            oos.writeObject(configInstance)
+            oos.close()
+
+            byte[] bytes = out.toByteArray()
+            ConfigInstance configInstanceCopy
+            new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
+                configInstanceCopy = (ConfigInstance)is.readObject()
+                is.close()
+            }
+            assertEquals configInstanceCopy, configInstance
+
+        } catch (e) {
+            e.printStackTrace()
+        }
+    }
+
+
+    private ConfigInstance createConfigInstance() {
         ConfigApplication application = getConfigApplication()
         application.save(failOnError: true, flush: true)
         application.refresh()
@@ -91,24 +121,7 @@ class ConfigInstanceIntegrationTest extends BaseIntegrationTestCase {
         ConfigInstance configInstance = getConfigInstance()
         configInstance.configApplication = application
         configInstance.save(failOnError: true, flush: true)
-        configInstance.refresh()
-
-        //Save
-        def list = configInstance.fetchAll()
-        assert (list.size() > 0)
-        assert (list.getAt(0).url == '/TEST_URL')
-
-        //Update
-        configInstance.setUrl('/NEW_TEST_URL')
-        configInstance.save(failOnError: true, flush: true)
-        list = configInstance.fetchAll()
-        assert (list.size() > 0)
-        assert (list.getAt(0).url == '/NEW_TEST_URL')
-
-        //Delete
-        configInstance.delete()
-        list = configInstance.fetchAll()
-        assert (list.size() >= 0)
+        return configInstance.refresh()
     }
 
     private ConfigInstance getConfigInstance() {

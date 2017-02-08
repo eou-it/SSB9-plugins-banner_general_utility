@@ -90,7 +90,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
                 configApplication2 = (ConfigApplication)is.readObject()
                 is.close()
             }
-                assertEquals configApplication2.appId, configApplication.appId
+                assertEquals configApplication2, configApplication
 
         } catch (e) {
             e.printStackTrace()

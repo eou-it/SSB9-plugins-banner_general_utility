@@ -27,6 +27,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
     void testCreateConfigRolePageMapping() {
         ConfigRolePageMapping configRolePageMap = saveConfigRolePageMapping()
         assertNotNull configRolePageMap.id
+        assertEquals 0L, configRolePageMap.version
     }
 
     @Test
@@ -79,6 +80,37 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
 
         configRolePageMap.delete()
         assertNull configRolePageMap.get(id)
+    }
+
+
+    @Test
+    void testToString() {
+        ConfigRolePageMapping newConfigRolePageMap = saveConfigRolePageMapping()
+        assertNotNull newConfigRolePageMap.id
+        assertEquals 0L, newConfigRolePageMap.version
+
+        def configRolePageMaps = ConfigRolePageMapping.fetchAll()
+        assertFalse configRolePageMaps.isEmpty()
+        configRolePageMaps.each { configRolePageMap ->
+            String configRolePageMapToString = configRolePageMap.toString()
+            assertNotNull configRolePageMapToString
+            assertTrue configRolePageMapToString.contains('pageId')
+        }
+    }
+
+
+    @Test
+    void testHashCode() {
+        ConfigRolePageMapping newConfigRolePageMap = saveConfigRolePageMapping()
+        assertNotNull newConfigRolePageMap.id
+        assertEquals 0L, newConfigRolePageMap.version
+
+        def configRolePageMaps = ConfigRolePageMapping.fetchAll()
+        assertFalse configRolePageMaps.isEmpty()
+        configRolePageMaps.each { configRolePageMap ->
+            Integer configRolePageMapHashCode = configRolePageMap.hashCode()
+            assertNotNull configRolePageMapHashCode
+        }
     }
 
     private static ConfigRolePageMapping newConfigRolePageMap() {

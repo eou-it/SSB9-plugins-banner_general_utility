@@ -132,7 +132,6 @@ class GeneralRequestMapIntegrationTest extends BaseIntegrationTestCase {
         ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage(
                 description: 'TEST',
                 displaySequence: 1,
-                enableIndicator: 'Y',
                 pageId: 1,
                 pageName: 'TEST PAGE'
         )

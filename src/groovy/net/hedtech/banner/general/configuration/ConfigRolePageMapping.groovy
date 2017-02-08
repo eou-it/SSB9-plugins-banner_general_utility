@@ -123,10 +123,10 @@ public class ConfigRolePageMapping implements Serializable {
      * @return List
      */
     public static def fetchAll() {
-        def configRolePageMapping
-        configRolePageMapping = ConfigRolePageMapping.withSession { session ->
-            configRolePageMapping = session.getNamedQuery('ConfigRolePageMapping.fetchAll').list()
+        def configRolePageMappings
+        configRolePageMappings = ConfigRolePageMapping.withSession { session ->
+            configRolePageMappings = session.getNamedQuery('ConfigRolePageMapping.fetchAll').list()
         }
-        return configRolePageMapping
+        return configRolePageMappings
     }
 }
