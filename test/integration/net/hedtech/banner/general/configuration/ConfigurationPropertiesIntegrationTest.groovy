@@ -109,6 +109,39 @@ class ConfigurationPropertiesIntegrationTest extends BaseIntegrationTestCase {
     }
 
 
+    @Test
+    void testToString() {
+        ConfigurationProperties configurationProperties = createConfigurationProperties()
+        assertNotNull configurationProperties.id
+        assertNotNull configurationProperties.configName
+        assertEquals 0L, configurationProperties.version
+
+        List <ConfigurationProperties> configurationPropertyList = ConfigurationProperties.fetchAll()
+        assertFalse configurationPropertyList.isEmpty()
+        configurationPropertyList.each { each ->
+            String configurationPropertiesToString = each.toString()
+            assertNotNull configurationPropertiesToString
+            assertTrue configurationPropertiesToString.contains('configName')
+        }
+    }
+
+
+    @Test
+    void testHashCode() {
+        ConfigurationProperties configurationProperties = createConfigurationProperties()
+        assertNotNull configurationProperties.id
+        assertNotNull configurationProperties.configName
+        assertEquals 0L, configurationProperties.version
+
+        List <ConfigurationProperties> configurationPropertyList = ConfigurationProperties.fetchAll()
+        assertFalse configurationPropertyList.isEmpty()
+        configurationPropertyList.each { each ->
+            Integer configurationPropertiesHashCode = each.hashCode()
+            assertNotNull configurationPropertiesHashCode
+        }
+    }
+
+
     private ConfigurationProperties createConfigurationProperties() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
