@@ -12,12 +12,9 @@ import javax.persistence.*
 @Entity
 @Table(name = 'GUBAPPL')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigApplication.fetchAll',
-                query = '''FROM ConfigApplication capp'''),
-
-        @NamedQuery(name = "ConfigApplication.fetchAllByAppName",
-                query = """ FROM ConfigApplication capp
-        WHERE capp.appName = :appName """)
+        @NamedQuery(name = "ConfigApplication.fetchByAppName",
+                    query = """ FROM ConfigApplication capp
+                                WHERE capp.appName = :appName """)
 ])
 
 
@@ -131,29 +128,16 @@ public class ConfigApplication implements Serializable {
     }
 
     /**
-     * Named query to fetch all data from this domain without any criteria.
+     * Named query to fetch data from this domain based on valid Appname.
      * @return List
      */
-    public static def fetchAll() {
-        def configApplications
-        configApplications = ConfigApplication.withSession { session ->
-            configApplications = session.getNamedQuery('ConfigApplication.fetchAll').list()
-        }
-        return configApplications
-    }
-
-    /**
-     * Named query to fetch all data from this domain With Valid Appname.
-     * @return List
-     */
-    public static def fetchAllByAppName(String appName) {
-        def configApplications
+    public static def fetchByAppName(String appName) {
+        def configApplication
         if(appName){
-            configApplications = ConfigApplication.withSession { session ->
-                configApplications = session.getNamedQuery('ConfigApplication.fetchAllByAppName').setString('appName', appName).list()
-
+            configApplication = ConfigApplication.withSession { session ->
+                configApplication = session.getNamedQuery('ConfigApplication.fetchByAppName').setString('appName', appName).list()
             }
         }
-        return configApplications
+        return configApplication
     }
 }

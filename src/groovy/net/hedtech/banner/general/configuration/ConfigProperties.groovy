@@ -12,14 +12,11 @@ import javax.persistence.*
 @Entity
 @Table(name = 'GUROCFG')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigurationProperties.fetchAll',
-                query = '''FROM ConfigurationProperties cp'''),
-
-        @NamedQuery(name = 'ConfigurationProperties.fetchByConfigName',
-                query = '''FROM ConfigurationProperties cp
-                                WHERE cp.configName = :configName ''')
+              @NamedQuery(name = 'ConfigProperties.fetchByAppId',
+                          query = '''FROM ConfigProperties cp
+                                     WHERE cp.configAppId = :appId ''')
 ])
-public class ConfigurationProperties implements Serializable {
+public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 1L
 
     @Id
@@ -57,7 +54,7 @@ public class ConfigurationProperties implements Serializable {
     @JoinColumns([
             @JoinColumn(name = "GUROCFG_GUBAPPL_APP_ID", referencedColumnName = "GUBAPPL_APP_ID")
     ])
-    ConfigApplication configApplication
+    ConfigApplication configAppId
 
 
     @Column(name = 'GUROCFG_USER_ID')
@@ -75,7 +72,7 @@ public class ConfigurationProperties implements Serializable {
         lastModified(nullable: true)
         configType(maxSize: 30)
         dataOrigin(maxSize: 30, nullable: true)
-        configApplication(nullable: true)
+        configAppId(nullable: true)
         lastModifiedBy(maxSize: 30, nullable: true)
     }
 
@@ -83,14 +80,14 @@ public class ConfigurationProperties implements Serializable {
         if (this.is(o)) return true
         if (getClass() != o.class) return false
 
-        ConfigurationProperties gurocfg = (ConfigurationProperties) o
+        ConfigProperties gurocfg = (ConfigProperties) o
 
         if (lastModified != gurocfg.lastModified) return false
         if (configName != gurocfg.configName) return false
         if (configType != gurocfg.configType) return false
         if (configValue != gurocfg.configValue) return false
         if (dataOrigin != gurocfg.dataOrigin) return false
-        if (configApplication != gurocfg.configApplication) return false
+        if (configAppId != gurocfg.configAppId) return false
         if (id != gurocfg.id) return false
         if (lastModifiedBy != gurocfg.lastModifiedBy) return false
         if (version != gurocfg.version) return false
@@ -106,7 +103,7 @@ public class ConfigurationProperties implements Serializable {
         result = 31 * result + (configType != null ? configType.hashCode() : 0)
         result = 31 * result + (configValue != null ? configValue.hashCode() : 0)
         result = 31 * result + (dataOrigin != null ? dataOrigin.hashCode() : 0)
-        result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
+        result = 31 * result + (configAppId != null ? configAppId.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
         return result
@@ -116,43 +113,31 @@ public class ConfigurationProperties implements Serializable {
     @Override
     public String toString() {
         return """\
-            ConfigurationProperties{
+            ConfigProperties{
                 id=$id,
                 configName='$configName',
                 activityDate=$lastModified,
                 configType='$configType',
                 configValue='$configValue',
                 dataOrigin='$dataOrigin',
-                configApplication=$configApplication,
+                configAppId=$configAppId,
                 userId='$lastModifiedBy',
                 version=$version
             }"""
     }
 
     /**
-     * Named query to fetch all data from this domain without any criteria.
+     * Named query to fetch data from this domain based on App Id.
      * @return List
      */
-    public static def fetchAll() {
-        def configurationProperties
-        configurationProperties = ConfigurationProperties.withSession { session ->
-            configurationProperties = session.getNamedQuery('ConfigurationProperties.fetchAll').list()
-        }
-        return configurationProperties
-    }
-
-    /**
-     * Named query to fetch all data from this domain by app name.
-     * @return List
-     */
-    public static def fetchByConfigName(String configName) {
-        def configurationProperties
-        if (configName){
-            configurationProperties = ConfigurationProperties.withSession { session ->
-                configurationProperties = session.getNamedQuery('ConfigurationProperties.fetchByConfigName')
-                        .setString('configName', configName).list()
+    public static def fetchByAppId(Long appId) {
+        def configProperties
+        if (appId){
+            configProperties = ConfigProperties.withSession { session ->
+                configProperties = session.getNamedQuery('ConfigProperties.fetchByAppId')
+                        .setLong('appId', appId).list()
             }
         }
-        return configurationProperties
+        return configProperties
     }
 }
