@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import org.hibernate.annotations.Type
+
 import javax.persistence.*
 
 /**
@@ -56,8 +58,9 @@ public class ConfigControllerEndpointPage implements Serializable {
     Long displaySequence
 
 
+    @Type(type = "yes_no")
     @Column(name = 'GURCTLEPP_STATUS_INDICATOR')
-    String enableIndicator
+    Boolean enableIndicator = true
 
 
    /**
@@ -149,9 +152,9 @@ public class ConfigControllerEndpointPage implements Serializable {
         pageId(nullable: true, maxSize: 256)
         pageName(nullable: true, maxSize: 256)
         configApplication(nullable: false)
-        enableIndicator(nullable: true)
+        enableIndicator( nullable: false, maxSize:1)
         displaySequence(nullable: true)
-        description(nullable: false)
+        description(nullable: true)
         lastModified(nullable: true)
         lastModifiedBy(nullable: true, maxSize: 30)
         dataOrigin(nullable: true, maxSize: 30)
@@ -162,11 +165,11 @@ public class ConfigControllerEndpointPage implements Serializable {
      * @return List
      */
     public static def fetchAll() {
-        def configRolePageMapping
-        configRolePageMapping = ConfigControllerEndpointPage.withSession { session ->
-            configRolePageMapping = session.getNamedQuery('ConfigControllerEndpointPage.fetchAll').list()
+        def controllerEndpointPages
+        controllerEndpointPages = ConfigControllerEndpointPage.withSession { session ->
+            controllerEndpointPages = session.getNamedQuery('ConfigControllerEndpointPage.fetchAll').list()
         }
-        return configRolePageMapping
+        return controllerEndpointPages
     }
 
     /**
