@@ -116,12 +116,14 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
         ConfigControllerEndpointPage endpointPage = newConfigControllerEndPoint()
         endpointPage.setConfigApplication(configApplication)
         endpointPage = endpointPage.save(failOnError: true, flush: true)
+        endpointPage.refresh()
         assertNotNull endpointPage.id
         assertEquals 0L, endpointPage.version
 
 
+
         ConfigRolePageMapping configRolePageMap = newConfigRolePageMap()
-        configRolePageMap.setConfigApplication(configApplication)
+        configRolePageMap.setConfigApplication(endpointPage.configApplication)
         configRolePageMap.setPageId(endpointPage.pageId)
         configRolePageMap = configRolePageMap.save(failOnError: true, flush: true)
         configRolePageMap
