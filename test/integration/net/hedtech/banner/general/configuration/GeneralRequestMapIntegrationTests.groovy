@@ -97,7 +97,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
         GeneralRequestMap obj1 = getGeneralRequestMap()
         GeneralRequestMap obj2 = getGeneralRequestMap()
         assertEquals obj1, obj2
-        assertEquals obj1.roleCodeList, obj2.roleCodeList
+        assertEquals obj1.roleCode, obj2.roleCode
         assertEquals obj1.pageName, obj2.pageName
         assertEquals obj1.displaySequence, obj2.displaySequence
         assertEquals obj1.applicationId, obj2.applicationId
@@ -130,7 +130,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
         assertNotEquals obj1.hashCode(), obj7.hashCode()
 
         GeneralRequestMap obj8 = getGeneralRequestMap()
-        obj8.roleCodeList = 'TEST_ROLE_1'
+        obj8.roleCode = 'TEST_ROLE_1'
         assertNotEquals obj2, obj8
         assertNotEquals obj1.hashCode(), obj8.hashCode()
 
@@ -232,7 +232,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
                 pageId: 1001,
                 displaySequence: 1,
                 pageName: 'TEST_PAGE',
-                roleCodeList: 'TEST_ROLE_1, TEST_ROLE_2, TEST_ROLE_3'
+                roleCode: 'TEST_ROLE_12'
         )
         return generalRequestMap
     }

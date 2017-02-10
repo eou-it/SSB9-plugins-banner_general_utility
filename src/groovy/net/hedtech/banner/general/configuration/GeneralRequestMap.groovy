@@ -8,11 +8,11 @@ import org.hibernate.Session
 import javax.persistence.*
 
 /**
- * The persistent class for the GVQ_GURVCTAP database table.
+ * The persistent class for the GVQ_PAGE_ROLE_MAPPING database table.
  *
  */
 @Entity
-@Table(name = 'GVQ_GURVCTAP')
+@Table(name = 'GVQ_PAGE_ROLE_MAPPING')
 @NamedQueries([
         @NamedQuery(name = 'GeneralRequestMap.fetchAll', query = '''FROM GeneralRequestMap grm'''),
         @NamedQuery(name = 'GeneralRequestMap.fetchByApp',
@@ -23,25 +23,26 @@ public class GeneralRequestMap implements Serializable {
     private static final long serialVersionUID = 3080855838641210753L;
 
     @Id
+    @Column(name = 'SURROGATE_ID')
+    long id
+
     @Column(name = 'APPLICATION_ID')
     long applicationId;
 
-    @Id
+    @Column(name = 'PAGE_ID')
+    long pageId;
+
     @Column(name = 'APPLICATION_NAME')
     String applicationName;
 
     @Column(name = 'DISPLAY_SEQUENCE')
     int displaySequence;
 
-    @Id
-    @Column(name = 'PAGE_ID')
-    long pageId;
-
     @Column(name = 'PAGE_NAME')
     String pageName;
 
-    @Column(name = 'ROLE_CODE_LIST')
-    String roleCodeList;
+    @Column(name = 'ROLE_CODE')
+    String roleCode;
 
     @Version
     @Column(name = 'VERSION')
@@ -53,12 +54,13 @@ public class GeneralRequestMap implements Serializable {
 
         GeneralRequestMap that = (GeneralRequestMap) o
 
+        if (id != that.id) return false
         if (applicationId != that.applicationId) return false
         if (applicationName != that.applicationName) return false
         if (displaySequence != that.displaySequence) return false
         if (pageId != that.pageId) return false
         if (pageName != that.pageName) return false
-        if (roleCodeList != that.roleCodeList) return false
+        if (roleCode != that.roleCode) return false
         if (version != that.version) return false
 
         return true
@@ -66,12 +68,13 @@ public class GeneralRequestMap implements Serializable {
 
     int hashCode() {
         int result
+        result = (id != null ? id.hashCode() : 0)
         result = (applicationId != null ? applicationId.hashCode() : 0)
         result = 31 * result + (applicationName != null ? applicationName.hashCode() : 0)
         result = 31 * result + (displaySequence != null ? displaySequence.hashCode() : 0)
         result = 31 * result + (pageId != null ? pageId.hashCode() : 0)
         result = 31 * result + (pageName != null ? pageName.hashCode() : 0)
-        result = 31 * result + (roleCodeList != null ? roleCodeList.hashCode() : 0)
+        result = 31 * result + (roleCode != null ? roleCode.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
         return result
     }
@@ -81,12 +84,13 @@ public class GeneralRequestMap implements Serializable {
     public String toString() {
         return """\
                 GeneralRequestMap{
+                    id=$id,
                     applicationId=$applicationId,
                     applicationName='$applicationName',
                     displaySequence=$displaySequence,
                     pageId='$pageId',
                     pageName='$pageName',
-                    roleCodeList='$roleCodeList',
+                    roleCode='$roleCode',
                     version=$version
                 }"""
     }
