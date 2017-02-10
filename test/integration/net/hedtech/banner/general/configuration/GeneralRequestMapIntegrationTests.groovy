@@ -98,7 +98,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
             byte[] bytes = out.toByteArray()
             GeneralRequestMap generalRequestMapCopy
             new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
-                generalRequestMapCopy = (ConfigApplication) is.readObject()
+                generalRequestMapCopy = (GeneralRequestMap) is.readObject()
                 is.close()
             }
             assertEquals generalRequestMapCopy, generalRequestMap
