@@ -36,7 +36,7 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         configProperties.setConfigApplication(configApplication)
         configProperties.save(failOnError: true, flush: true)
 
-        def list = configProperties.fetchByAppId(1)
+        def list = ConfigProperties.fetchByAppId(configProperties.configApplication.appId)
         assert (list.size() > 0)
     }
 
@@ -48,8 +48,7 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         ConfigProperties configProperties = new ConfigProperties(
                 configName: 'TEST_CONFIG',
                 configType: 'TEST_CONFIG_TYPE',
-                configValue: 'TEST_VALUE',
-                configAppId: '1'
+                configValue: 'TEST_VALUE'
         )
         return configProperties
     }

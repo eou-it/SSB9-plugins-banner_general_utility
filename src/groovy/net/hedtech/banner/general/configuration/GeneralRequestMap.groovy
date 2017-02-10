@@ -103,11 +103,15 @@ public class GeneralRequestMap implements Serializable {
         return generalReqMapList
     }
 
-
-    public static def fetchByApp() {
+    /**
+     * Named query to fetch the data with criteria app id.
+     * @param appId
+     * @return
+     */
+    public static def fetchByApp(appId) {
         def generalReqMapList
         generalReqMapList = ConfigApplication.withSession { Session session ->
-            generalReqMapList = session.getNamedQuery('GeneralRequestMap.fetchByApp').setParameter().list()
+            generalReqMapList = session.getNamedQuery('GeneralRequestMap.fetchByApp').setParameter('appId', appId).list()
         }
         return generalReqMapList
     }

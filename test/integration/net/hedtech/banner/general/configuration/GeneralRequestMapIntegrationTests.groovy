@@ -34,6 +34,65 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
+    public void testFetchByApp() {
+        def configApplication = saveDomains()
+        def list = GeneralRequestMap.fetchByApp(configApplication.appId)
+        assert list.size() > 0
+    }
+
+    @Test
+    public void testFailCaseOnSave() {
+        def generalRequestMap = getGeneralRequestMap()
+        shouldFail(Exception) {
+            generalRequestMap.save(failOnError: true, flush: true)
+        }
+    }
+
+    @Test
+    public void testFailCaseOnUpdate() {
+        def configApplication = saveDomains()
+        def list = GeneralRequestMap.fetchByApp(configApplication.appId)
+        shouldFail(Exception) {
+            def generalRequestMap = list.get(0)
+            generalRequestMap.pageName = 'TEST_PAGE'
+            generalRequestMap.save(failOnError: true, flush: true)
+        }
+    }
+
+    @Test
+    public void testFailCaseOnDelete() {
+        def configApplication = saveDomains()
+        def list = GeneralRequestMap.fetchByApp(configApplication.appId)
+        shouldFail(Exception) {
+            def generalRequestMap = list.get(0)
+            generalRequestMap.delete(flush: true)
+        }
+    }
+
+    @Test
+    void testToString() {
+        ConfigApplication configApp = saveDomains()
+        List<ConfigApplication> generalRequestMap = GeneralRequestMap.fetchByApp(configApp.appId)
+        assertFalse generalRequestMap.isEmpty()
+        generalRequestMap.each { requestMap ->
+            String requestMapToString = requestMap.toString()
+            assertNotNull requestMapToString
+        }
+    }
+
+
+    @Test
+    void testHashCode() {
+        ConfigApplication configApp = saveDomains()
+        List<ConfigApplication> generalRequestMap = GeneralRequestMap.fetchByApp(configApp.appId)
+        assertFalse generalRequestMap.isEmpty()
+        generalRequestMap.each { requestMap ->
+            Integer requestMapHashCode = requestMap.hashCode()
+            assertNotNull requestMapHashCode
+        }
+    }
+
+    @Test
     public void testEqualAndHashcode() {
         GeneralRequestMap obj1 = getGeneralRequestMap()
         GeneralRequestMap obj2 = getGeneralRequestMap()
@@ -108,7 +167,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
         }
     }
 
-    private void saveDomains() {
+    private ConfigApplication saveDomains() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
         configApplication.refresh()
@@ -122,6 +181,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
         configRolePageMapping.setConfigApplication(configApplication)
         configRolePageMapping.setPageId(endpointPage.getPageId())
         configRolePageMapping.save(failOnError: true, flush: true)
+        return configApplication
     }
 
     /**
