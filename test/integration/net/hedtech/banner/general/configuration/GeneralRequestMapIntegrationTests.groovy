@@ -179,7 +179,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
 
         ConfigRolePageMapping configRolePageMapping = getConfigRolePageMapping()
         configRolePageMapping.setConfigApplication(configApplication)
-        configRolePageMapping.setPageId(endpointPage.getPageId())
+        configRolePageMapping.setEndpointPage(endpointPage)
         configRolePageMapping.save(failOnError: true, flush: true)
         return configApplication
     }

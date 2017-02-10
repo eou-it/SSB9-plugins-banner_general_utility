@@ -35,7 +35,7 @@ public class ConfigRolePageMapping implements Serializable {
 
 
     /**
-     * Foreign Key : FK_GUBAPPR_INV_GUBAPPL
+     * Foreign Key : FK_GURAPPR_INV_GURCTLEPP
      */
     @ManyToOne
     @JoinColumns([
@@ -53,8 +53,14 @@ public class ConfigRolePageMapping implements Serializable {
     Long version
 
 
-    @Column(name = 'GURAPPR_PAGE_ID')
-    Long pageId
+    /**
+     * Foreign Key : FK_GURAPPR_INV_GURCTLEPP
+     */
+    @ManyToOne
+    @JoinColumns([
+            @JoinColumn(name = "GURAPPR_PAGE_ID", referencedColumnName = "GURCTLEPP_PAGE_ID")
+    ])
+    ConfigControllerEndpointPage endpointPage
 
 
     @Column(name = 'GURAPPR_TWTVROLE_CODE')
@@ -63,7 +69,7 @@ public class ConfigRolePageMapping implements Serializable {
 
 
     static constraints = {
-        pageId(nullable: false)
+        endpointPage(nullable: false)
         roleCode(nullable: false, maxSize: 30)
         configApplication(nullable: false)
         lastModified(nullable: true)
@@ -82,7 +88,7 @@ public class ConfigRolePageMapping implements Serializable {
         if (roleCode != gurappr.roleCode) return false
         if (dataOrigin != gurappr.dataOrigin) return false
         if (id != gurappr.id) return false
-        if (pageId != gurappr.pageId) return false
+        if (endpointPage != gurappr.endpointPage) return false
         if (lastModifiedBy != gurappr.lastModifiedBy) return false
         if (version != gurappr.version) return false
 
@@ -97,7 +103,7 @@ public class ConfigRolePageMapping implements Serializable {
         result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
-        result = 31 * result + (pageId != null ? pageId.hashCode() : 0)
+        result = 31 * result + (endpointPage != null ? endpointPage.hashCode() : 0)
         result = 31 * result + (roleCode != null ? roleCode.hashCode() : 0)
         return result
     }
@@ -113,7 +119,7 @@ public class ConfigRolePageMapping implements Serializable {
                 gubapplAppId=$configApplication,
                 userId='$lastModifiedBy',
                 version=$version,
-                pageId=$pageId,
+                endpointPage=$endpointPage,
                 code='$roleCode'
             }"""
     }

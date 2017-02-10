@@ -15,7 +15,7 @@ import javax.persistence.*
         @NamedQuery(name = 'ConfigUserPreference.fetchAll',
                 query = ''' FROM ConfigUserPreference configUsrPref '''),
 
-        @NamedQuery(name = 'ConfigUserPreference.fetchAllByPidm',
+        @NamedQuery(name = 'ConfigUserPreference.fetchByPidm',
                 query = """ FROM ConfigUserPreference configUsrPref
                 WHERE configUsrPref.pidm = :pidm """)
 ])
@@ -135,21 +135,23 @@ public class ConfigUserPreference implements Serializable {
      * Named query to fetch all data from this domain without any criteria.
      * @return List
      */
-    public static def fetchAll() {
-        def configUserPreference
-        configUserPreference = ConfigUserPreference.withSession { session ->
-            configUserPreference = session.getNamedQuery('ConfigUserPreference.fetchAll').list()
+    public static List fetchAll() {
+        List configUserPreferences = []
+        configUserPreferences = ConfigUserPreference.withSession { session ->
+            configUserPreferences = session.getNamedQuery('ConfigUserPreference.fetchAll').list()
         }
-        return configUserPreference
+        return configUserPreferences
     }
 
 
-    public static def fetchAllByPidm(Integer pidm) {
-        def configUserPreference
-        configUserPreference = ConfigUserPreference.withSession { session ->
-            configUserPreference = session.getNamedQuery('ConfigUserPreference.fetchAllByPidm')
-                    .setInteger('pidm', pidm).list()
+    public static List fetchByPidm(Integer pidm) {
+        List configUserPreferences = []
+        if(pidm) {
+            configUserPreferences = ConfigUserPreference.withSession { session ->
+                configUserPreferences = session.getNamedQuery('ConfigUserPreference.fetchByPidm')
+                        .setInteger('pidm', pidm).list()
+            }
         }
-        return configUserPreference
+        return configUserPreferences
     }
 }

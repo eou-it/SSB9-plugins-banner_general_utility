@@ -65,7 +65,7 @@ class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull configInstance.env
         assertNotNull configInstance.id
 
-        def list = configInstance.fetchAll()
+        def list = ConfigInstance.fetchAll()
         assert (list.size() > 0)
         assert (list.getAt(0).url == '/TEST_URL')
 
@@ -106,6 +106,37 @@ class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
 
         } catch (e) {
             e.printStackTrace()
+        }
+    }
+
+
+    @Test
+    void testToString() {
+        ConfigInstance newConfigInstance = createConfigInstance()
+
+        assertNotNull newConfigInstance.env
+        assertNotNull newConfigInstance.id
+        List <ConfigInstance> configInstances = ConfigInstance.fetchAll()
+        assertFalse configInstances.isEmpty()
+        configInstances.each { configInstance ->
+            String configInstanceToString = configInstance.toString()
+            assertNotNull configInstanceToString
+            assertTrue configInstanceToString.contains('env')
+        }
+    }
+
+
+    @Test
+    void testHashCode() {
+        ConfigInstance newConfigInstance = createConfigInstance()
+
+        assertNotNull newConfigInstance.env
+        assertNotNull newConfigInstance.id
+        List <ConfigInstance> configInstances = ConfigInstance.fetchAll()
+        assertFalse configInstances.isEmpty()
+        configInstances.each { configInstance ->
+            Integer configInstanceHashCode = configInstance.hashCode()
+            assertNotNull configInstanceHashCode
         }
     }
 

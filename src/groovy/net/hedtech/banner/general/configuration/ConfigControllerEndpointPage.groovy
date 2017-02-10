@@ -17,14 +17,6 @@ import javax.persistence.*
         @NamedQuery(name = 'ConfigControllerEndpointPage.fetchAll',
                 query = '''FROM ConfigControllerEndpointPage ccep'''),
 
-/*        @NamedQuery(name = ConfigControllerEndpointPage.GET_ALL_CONFIG_BY_APP_NAME,
-                query = '''SELECT new net.hedtech.banner.general.configuration.RequestURLMap(ccep.pageName, crpm.roleCode, capp.appName,
-                                    ccep.displaySequence, ccep.pageId, ccep.gubapplAppId, ccep.version)
-                                FROM ConfigControllerEndpointPage ccep, ConfigRolePageMapping crpm,
-                                   ConfigApplication capp
-                                WHERE (ccep.gubapplAppId = crpm.gubapplAppId AND ccep.pageId = crpm.pageId)
-                                AND (ccep.gubapplAppId = capp.appId)
-                                AND capp.appName = :appName''')*/
 ])
 
 public class ConfigControllerEndpointPage implements Serializable {
@@ -172,16 +164,4 @@ public class ConfigControllerEndpointPage implements Serializable {
         return controllerEndpointPages
     }
 
-    /**
-     * Named query to fetch all data from this domain by appName.
-     * @param appName String
-     * @return list of RequestURLMap.
-     */
-    /*public static def getAllConfigByAppName(def appName) {
-        def configRolePageMapping
-        configRolePageMapping = ConfigControllerEndpointPage.withSession { session ->
-            configRolePageMapping = session.getNamedQuery(GET_ALL_CONFIG_BY_APP_NAME).setString('appName', appName).list()
-        }
-        return configRolePageMapping
-    }*/
 }

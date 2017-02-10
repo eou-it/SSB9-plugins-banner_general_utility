@@ -27,17 +27,139 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testFetchByAppId() {
+    void testCreateConfigProperties() {
+        ConfigProperties configProperties = createNewConfigProperties()
+
+        //Test if the generated entity now has an id assigned
+        assertNotNull configProperties.id
+        assertEquals 0L, configProperties.version
+        assertEquals "TEST_CONFIG", configProperties.configName
+        assertEquals "TEST_CONFIG_TYPE", configProperties.configType
+        assertEquals "TEST_VALUE", configProperties.configValue
+    }
+
+
+    @Test
+    void testDeleteConfigApplication() {
+        ConfigProperties configProperties = createNewConfigProperties()
+
+        assertNotNull configProperties.id
+        assertEquals 0L, configProperties.version
+
+        def id = configProperties.id
+        configProperties.delete()
+        assertNull configProperties.get( id )
+    }
+
+
+    @Test
+    public void testSerialization() {
+        try {
+            ConfigProperties configProperties = createNewConfigProperties()
+
+            assertNotNull configProperties.id
+            assertEquals 0L, configProperties.version
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            ObjectOutputStream oos = new ObjectOutputStream(out)
+            oos.writeObject(configProperties)
+            oos.close()
+
+            byte[] bytes = out.toByteArray()
+            ConfigProperties configPropertiesCopy
+            new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
+                configPropertiesCopy = (ConfigProperties)is.readObject()
+                is.close()
+            }
+            assertEquals configPropertiesCopy, configProperties
+
+        } catch (e) {
+            e.printStackTrace()
+        }
+    }
+
+
+    @Test
+    void testToString() {
+        ConfigProperties newConfigProperties = createNewConfigProperties()
+
+        assertNotNull newConfigProperties.id
+        assertEquals 0L, newConfigProperties.version
+
+        List <ConfigProperties> configPropertyList = ConfigProperties.fetchByAppId(newConfigProperties.configApplication.appId)
+        assertFalse configPropertyList.isEmpty()
+        configPropertyList.each { configProperties ->
+            String configPropertiesToString = configProperties.toString()
+            assertNotNull configPropertiesToString
+            assertTrue configPropertiesToString.contains('configName')
+        }
+    }
+
+
+    @Test
+    void testHashCode() {
+        ConfigProperties newConfigProperties = createNewConfigProperties()
+
+        assertNotNull newConfigProperties.id
+        assertEquals 0L, newConfigProperties.version
+
+        List <ConfigProperties> configPropertyList = ConfigProperties.fetchByAppId(newConfigProperties.configApplication.appId)
+        assertFalse configPropertyList.isEmpty()
+        configPropertyList.each { configProperties ->
+            String configPropertiesHashCode = configProperties.hashCode()
+            assertNotNull configPropertiesHashCode
+        }
+    }
+
+    @Test
+    public void testFetchByValidAppId() {
+        ConfigProperties configProperties = createNewConfigProperties()
+
+        assertNotNull configProperties.id
+        assertEquals 0L, configProperties.version
+
+        def list = ConfigProperties.fetchByAppId(configProperties.configApplication.appId)
+        assertTrue list.size() >= 1
+
+        list.each {it ->
+            assertEquals it.configApplication.appId, configProperties.configApplication.appId
+        }
+    }
+
+
+    @Test
+    void testFetchByInValidAppId(){
+        ConfigProperties configProperties = createNewConfigProperties()
+
+        assertNotNull configProperties.id
+
+        Long appID = 9999999
+        def list = ConfigProperties.fetchByAppId(appID)
+        assertTrue list.size() == 0
+    }
+
+
+    @Test
+    void testFetchByNull(){
+        ConfigProperties configProperties = createNewConfigProperties()
+
+        assertNotNull configProperties.id
+
+        Long appID = null
+        def list = ConfigProperties.fetchByAppId(appID)
+        assertTrue list.size() == 0
+    }
+
+
+    private ConfigProperties createNewConfigProperties (){
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
         configApplication = configApplication.refresh()
+        assertNotNull configApplication.id
+        assertEquals 0L, configApplication.version
 
         ConfigProperties configProperties = getConfigProperties()
         configProperties.setConfigApplication(configApplication)
         configProperties.save(failOnError: true, flush: true)
-
-        def list = ConfigProperties.fetchByAppId(configProperties.configApplication.appId)
-        assert (list.size() > 0)
     }
 
     /**

@@ -113,6 +113,32 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
         }
     }
 
+
+    @Test
+    public void testSerialization() {
+        try {
+            ConfigRolePageMapping newConfigRolePageMap = saveConfigRolePageMapping()
+            assertNotNull newConfigRolePageMap.id
+            assertEquals 0L, newConfigRolePageMap.version
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            ObjectOutputStream oos = new ObjectOutputStream(out)
+            oos.writeObject(newConfigRolePageMap)
+            oos.close()
+
+            byte[] bytes = out.toByteArray()
+            ConfigRolePageMapping configRolePageMappingCopy
+            new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
+                configRolePageMappingCopy = (ConfigRolePageMapping)is.readObject()
+                is.close()
+            }
+            assertEquals newConfigRolePageMap, configRolePageMappingCopy
+
+        } catch (e) {
+            e.printStackTrace()
+        }
+    }
+
     private static ConfigRolePageMapping newConfigRolePageMap() {
         ConfigRolePageMapping configRolePageMap= new ConfigRolePageMapping(
                 roleCode: '1'
@@ -156,7 +182,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
 
         ConfigRolePageMapping configRolePageMap = newConfigRolePageMap()
         configRolePageMap.setConfigApplication(endpointPage.configApplication)
-        configRolePageMap.setPageId(endpointPage.pageId)
+        configRolePageMap.setEndpointPage(endpointPage)
         configRolePageMap = configRolePageMap.save(failOnError: true, flush: true)
         configRolePageMap
     }

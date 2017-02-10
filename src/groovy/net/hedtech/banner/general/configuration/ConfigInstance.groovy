@@ -122,11 +122,11 @@ public class ConfigInstance implements Serializable {
      * Named query to fetch all data from this domain without any criteria.
      * @return List
      */
-    public static def fetchAll() {
-        def configInstance
-        configInstance = ConfigInstance.withSession { session ->
-            configInstance = session.getNamedQuery('ConfigInstance.fetchAll').list()
+    public static List fetchAll() {
+        List configInstances = []
+        configInstances = ConfigInstance.withSession { session ->
+            configInstances = session.getNamedQuery('ConfigInstance.fetchAll').list()
         }
-        return configInstance
+        return configInstances
     }
 }

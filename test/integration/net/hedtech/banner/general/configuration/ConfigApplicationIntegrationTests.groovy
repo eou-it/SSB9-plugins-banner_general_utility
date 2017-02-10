@@ -30,6 +30,9 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         //Test if the generated entity now has an id assigned
         assertNotNull configApplication.id
         assertEquals 0L, configApplication.version
+        assertNull  configApplication.appId
+        configApplication = configApplication.refresh()
+        assertNotNull  configApplication.appId
     }
 
 
