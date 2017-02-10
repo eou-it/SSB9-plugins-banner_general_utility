@@ -14,7 +14,7 @@ import javax.persistence.*
 @NamedQueries(value = [
               @NamedQuery(name = 'ConfigProperties.fetchByAppId',
                           query = '''FROM ConfigProperties cp
-                                     WHERE cp.configAppId = :appId ''')
+                                     WHERE cp.configApplication = :appId ''')
 ])
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 1L
@@ -54,7 +54,7 @@ public class ConfigProperties implements Serializable {
     @JoinColumns([
             @JoinColumn(name = "GUROCFG_GUBAPPL_APP_ID", referencedColumnName = "GUBAPPL_APP_ID")
     ])
-    ConfigApplication configAppId
+    ConfigApplication configApplication
 
 
     @Column(name = 'GUROCFG_USER_ID')
@@ -72,7 +72,7 @@ public class ConfigProperties implements Serializable {
         lastModified(nullable: true)
         configType(maxSize: 30)
         dataOrigin(maxSize: 30, nullable: true)
-        configAppId(nullable: true)
+        configApplication(nullable: true)
         lastModifiedBy(maxSize: 30, nullable: true)
     }
 
@@ -87,7 +87,7 @@ public class ConfigProperties implements Serializable {
         if (configType != gurocfg.configType) return false
         if (configValue != gurocfg.configValue) return false
         if (dataOrigin != gurocfg.dataOrigin) return false
-        if (configAppId != gurocfg.configAppId) return false
+        if (configApplication != gurocfg.configApplication) return false
         if (id != gurocfg.id) return false
         if (lastModifiedBy != gurocfg.lastModifiedBy) return false
         if (version != gurocfg.version) return false
@@ -103,7 +103,7 @@ public class ConfigProperties implements Serializable {
         result = 31 * result + (configType != null ? configType.hashCode() : 0)
         result = 31 * result + (configValue != null ? configValue.hashCode() : 0)
         result = 31 * result + (dataOrigin != null ? dataOrigin.hashCode() : 0)
-        result = 31 * result + (configAppId != null ? configAppId.hashCode() : 0)
+        result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
         return result
@@ -120,7 +120,7 @@ public class ConfigProperties implements Serializable {
                 configType='$configType',
                 configValue='$configValue',
                 dataOrigin='$dataOrigin',
-                configAppId=$configAppId,
+                configApplication=$configApplication,
                 userId='$lastModifiedBy',
                 version=$version
             }"""

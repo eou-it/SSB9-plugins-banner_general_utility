@@ -19,16 +19,18 @@ class ConfigPropertiesService extends ServiceBase{
     def setConfigFromDb() {
         def appName = grailsApplication.metadata['app.name']
         def configApp = ConfigApplication.fetchByAppName(appName)
-        def appId = ((ConfigApplication)((ArrayList)configApp).get(0)).appId
-        def configProp = ConfigProperties.fetchByAppId(appId)
-        configProp.each{
-            def property = new Properties()
-            def key = it.configName
-            def value = it.configValue
-            if(it.configType == 'boolean')
-                value = value.toBoolean()
-            property.put(key, value)
-            CH.config.merge(configSlurper.parse(property))
+        if(configApp.size()>0) {
+            def appId = ((ConfigApplication) ((ArrayList) configApp).get(0)).appId
+            def configProp = ConfigProperties.fetchByAppId(appId)
+            configProp?.each {
+                def property = new Properties()
+                def key = it.configName
+                def value = it.configValue
+                if (it.configType == 'boolean')
+                    value = value.toBoolean()
+                property.put(key, value)
+                CH.config.merge(configSlurper.parse(property))
+            }
         }
     }
 }

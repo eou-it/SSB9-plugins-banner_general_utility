@@ -9,9 +9,9 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * ConfigInstanceIntegrationTest.
+ * ConfigInstanceIntegrationTests.
  */
-class ConfigInstanceIntegrationTest extends BaseIntegrationTestCase {
+class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
 
     @Before
     public void setUp() {

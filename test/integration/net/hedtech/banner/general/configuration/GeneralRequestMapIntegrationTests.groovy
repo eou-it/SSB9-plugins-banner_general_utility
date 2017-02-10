@@ -11,7 +11,7 @@ import org.junit.Test
 /**
  * Integration test cases for domain GeneralRequestMap.
  */
-class GeneralRequestMapIntegrationTest extends BaseIntegrationTestCase {
+class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
 
     private static final String APP_NAME = 'PlatformSandboxApp'
 

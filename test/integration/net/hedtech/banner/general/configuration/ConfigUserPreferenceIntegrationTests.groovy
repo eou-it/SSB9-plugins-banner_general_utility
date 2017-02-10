@@ -9,9 +9,9 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * ConfigUserPreferenceIntegrationTest.
+ * ConfigUserPreferenceIntegrationTests.
  */
-class ConfigUserPreferenceIntegrationTest extends BaseIntegrationTestCase {
+class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
     @Before
     public void setUp() {
@@ -30,14 +30,14 @@ class ConfigUserPreferenceIntegrationTest extends BaseIntegrationTestCase {
         configApplication.save(failOnError: true, flush: true)
         configApplication = configApplication.refresh()
 
-        ConfigurationProperties configurationProperties = getConfigurationProperties()
-        configurationProperties.setConfigApplication(configApplication)
-        configurationProperties.save(failOnError: true, flush: true)
+        ConfigProperties configProperties = getConfigProperties()
+        configProperties.setConfigApplication(configApplication)
+        configProperties.save(failOnError: true, flush: true)
 
         ConfigUserPreference configUserPreference = getConfigUserPreference()
         configUserPreference.setConfigApplication(configApplication)
-        configUserPreference.setConfigName(configurationProperties.getConfigName())
-        configUserPreference.setConfigType(configurationProperties.getConfigType())
+        configUserPreference.setConfigName(configProperties.getConfigName())
+        configUserPreference.setConfigType(configProperties.getConfigType())
         configUserPreference.save(failOnError: true, flush: true)
 
         //Save
@@ -81,12 +81,12 @@ class ConfigUserPreferenceIntegrationTest extends BaseIntegrationTestCase {
         return configApplication
     }
 
-    private ConfigurationProperties getConfigurationProperties() {
-        ConfigurationProperties configurationProperties = new ConfigurationProperties(
+    private ConfigProperties getConfigProperties() {
+        ConfigProperties configProperties = new ConfigProperties(
                 configName: 'CONFIG_TEST',
                 configType: 'TYPE_TEST',
                 configValue: 'TEST_VALUE'
         )
-        return configurationProperties
+        return configProperties
     }
 }

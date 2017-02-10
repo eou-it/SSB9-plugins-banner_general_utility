@@ -9,9 +9,9 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * ConfigControllerEndpointPageIntegrationTest is used to test the ConfigControllerEndpointPage domain.
+ * ConfigControllerEndpointPageIntegrationTests are used to test the ConfigControllerEndpointPage domain.
  */
-class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCase {
+class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCase {
 
     private static final String APP_NAME = 'PlatformSandboxApp'
     //private Session session

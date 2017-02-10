@@ -108,17 +108,6 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         assertNull configApplication.get( id )
     }
 
-
-    @Test
-    void testFetchAll(){
-        ConfigApplication configApplication = newConfigApplication()
-        configApplication = configApplication.save(failOnError: true, flush: true)
-        assertNotNull configApplication.id
-        def configApplications = ConfigApplication.fetchAll()
-        assertTrue configApplications.size() ==  (ConfigApplication.findAll().size())
-    }
-
-
     @Test
     void testFetchByValidAppName(){
         ConfigApplication configApplication = newConfigApplication()
@@ -126,7 +115,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         assertNotNull configApplication.id
 
         String appName = "PlatformSandbox"
-        def configApplications = ConfigApplication.fetchAllByAppName(appName)
+        def configApplications = ConfigApplication.fetchByAppName(appName)
         assertTrue (configApplications.size() >= 1)
 
         configApplications.each { it ->
@@ -142,7 +131,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         assertNotNull configApplication.id
 
         String appName = "Invalid"
-        def configApplications = ConfigApplication.fetchAllByAppName(appName)
+        def configApplications = ConfigApplication.fetchByAppName(appName)
         assertTrue (configApplications.size() == 0)
     }
 
@@ -154,7 +143,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         assertNotNull configApplication.id
 
         String appName = null
-        def configApplications = ConfigApplication.fetchAllByAppName(appName)
+        def configApplications = ConfigApplication.fetchByAppName(appName)
         assertNull configApplications
     }
 
@@ -163,7 +152,8 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
     void testToString() {
         ConfigApplication newConfigApplication = newConfigApplication()
         newConfigApplication.save(failOnError: true, flush: true)
-        List <ConfigApplication> configApplications = ConfigApplication.fetchAll()
+        String appName = "PlatformSandbox"
+        List <ConfigApplication> configApplications = ConfigApplication.fetchByAppName(appName)
         assertFalse configApplications.isEmpty()
         configApplications.each { configApplication ->
             String configApplicationToString = configApplication.toString()
@@ -177,7 +167,8 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
     void testHashCode() {
         ConfigApplication newConfigApplication = newConfigApplication()
         newConfigApplication.save(failOnError: true, flush: true)
-        List <ConfigApplication> configApplications = ConfigApplication.fetchAll()
+        String appName = "PlatformSandbox"
+        List <ConfigApplication> configApplications = ConfigApplication.fetchByAppName(appName)
         assertFalse configApplications.isEmpty()
         configApplications.each { configApplication ->
             Integer configApplicationHashCode = configApplication.hashCode()
