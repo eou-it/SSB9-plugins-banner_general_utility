@@ -26,7 +26,7 @@ public class ConfigProperties implements Serializable {
     Long id
 
 
-    @Column(name = 'GUROCFG_CONFIG_NAME')
+    @Column(name = 'GUROCFG_NAME')
     String configName
 
 
@@ -35,12 +35,12 @@ public class ConfigProperties implements Serializable {
     Date lastModified
 
 
-    @Column(name = 'GUROCFG_CONFIG_TYPE')
+    @Column(name = 'GUROCFG_TYPE')
     String configType
 
 
     @Lob
-    @Column(name = 'GUROCFG_CONFIG_VALUE')
+    @Column(name = 'GUROCFG_VALUE')
     String configValue
 
 
