@@ -10,7 +10,7 @@ import org.apache.log4j.Logger
 
 class ConfigPropertiesService extends ServiceBase{
 
-    static transactional = true
+    static transactional = false
     private static final LOGGER = Logger.getLogger(getClass())
 
     def grailsApplication
