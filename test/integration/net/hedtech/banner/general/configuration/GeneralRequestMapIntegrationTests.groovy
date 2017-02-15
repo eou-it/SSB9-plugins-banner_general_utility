@@ -29,15 +29,35 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     @Test
     public void testFetchAll() {
         saveDomains()
+
         def list = GeneralRequestMap.fetchAll()
-        assert list.size() > 0
+        assert list.size() >= 1
+
+        def generalReqMapTestAppName = list.find { p -> p.applicationName = APP_NAME }
+        assertTrue generalReqMapTestAppName.applicationName == APP_NAME
+
+        def generalReqMapTestPageName = list.find { p -> p.pageName == 'TEST PAGE' }
+        assertTrue generalReqMapTestPageName.pageName == 'TEST PAGE'
+
+        def generalReqMapTestRoleCode = list.find { p -> p.roleCode == 'TEST_ROLE' }
+        assertTrue generalReqMapTestRoleCode.roleCode == 'TEST_ROLE'
     }
 
     @Test
-    public void testFetchByApp() {
+    public void testFetchByAppId() {
         def configApplication = saveDomains()
-        def list = GeneralRequestMap.fetchByApp(configApplication.appId)
-        assert list.size() > 0
+
+        def list = GeneralRequestMap.fetchByAppId(configApplication.appId)
+        assert list.size() >= 1
+
+        def generalReqMapTestAppName = list.find { p -> p.applicationName = APP_NAME }
+        assertTrue generalReqMapTestAppName.applicationName == APP_NAME
+
+        def generalReqMapTestPageName = list.find { p -> p.pageName == 'TEST PAGE' }
+        assertTrue generalReqMapTestPageName.pageName == 'TEST PAGE'
+
+        def generalReqMapTestRoleCode = list.find { p -> p.roleCode == 'TEST_ROLE' }
+        assertTrue generalReqMapTestRoleCode.roleCode == 'TEST_ROLE'
     }
 
     @Test
@@ -51,7 +71,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     @Test
     public void testFailCaseOnUpdate() {
         def configApplication = saveDomains()
-        def list = GeneralRequestMap.fetchByApp(configApplication.appId)
+        def list = GeneralRequestMap.fetchByAppId(configApplication.appId)
         shouldFail(Exception) {
             def generalRequestMap = list.get(0)
             generalRequestMap.pageName = 'TEST_PAGE'
@@ -62,7 +82,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     @Test
     public void testFailCaseOnDelete() {
         def configApplication = saveDomains()
-        def list = GeneralRequestMap.fetchByApp(configApplication.appId)
+        def list = GeneralRequestMap.fetchByAppId(configApplication.appId)
         shouldFail(Exception) {
             def generalRequestMap = list.get(0)
             generalRequestMap.delete(flush: true)
@@ -72,7 +92,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testToString() {
         ConfigApplication configApp = saveDomains()
-        List<ConfigApplication> generalRequestMap = GeneralRequestMap.fetchByApp(configApp.appId)
+        List<ConfigApplication> generalRequestMap = GeneralRequestMap.fetchByAppId(configApp.appId)
         assertFalse generalRequestMap.isEmpty()
         generalRequestMap.each { requestMap ->
             String requestMapToString = requestMap.toString()
@@ -84,7 +104,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testHashCode() {
         ConfigApplication configApp = saveDomains()
-        List<ConfigApplication> generalRequestMap = GeneralRequestMap.fetchByApp(configApp.appId)
+        List<ConfigApplication> generalRequestMap = GeneralRequestMap.fetchByAppId(configApp.appId)
         assertFalse generalRequestMap.isEmpty()
         generalRequestMap.each { requestMap ->
             Integer requestMapHashCode = requestMap.hashCode()

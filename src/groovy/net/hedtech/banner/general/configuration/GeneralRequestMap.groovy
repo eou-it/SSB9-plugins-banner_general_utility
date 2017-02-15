@@ -15,7 +15,7 @@ import javax.persistence.*
 @Table(name = 'GVQ_PAGE_ROLE_MAPPING')
 @NamedQueries([
         @NamedQuery(name = 'GeneralRequestMap.fetchAll', query = '''FROM GeneralRequestMap grm'''),
-        @NamedQuery(name = 'GeneralRequestMap.fetchByApp',
+        @NamedQuery(name = 'GeneralRequestMap.fetchByAppId',
                 query = '''FROM GeneralRequestMap grm
                     WHERE grm.applicationId = :appId''')
 ])
@@ -99,9 +99,9 @@ public class GeneralRequestMap implements Serializable {
      * Named query to fetch all data from this domain without any criteria.
      * @return List
      */
-    public static def fetchAll() {
-        def generalReqMapList
-        generalReqMapList = ConfigApplication.withSession { session ->
+    public static List fetchAll() {
+        List generalReqMapList
+        generalReqMapList = ConfigApplication.withSession { Session session ->
             generalReqMapList = session.getNamedQuery('GeneralRequestMap.fetchAll').list()
         }
         return generalReqMapList
@@ -112,10 +112,10 @@ public class GeneralRequestMap implements Serializable {
      * @param appId
      * @return
      */
-    public static def fetchByApp(appId) {
-        def generalReqMapList
+    public static List fetchByAppId(appId) {
+        List generalReqMapList
         generalReqMapList = ConfigApplication.withSession { Session session ->
-            generalReqMapList = session.getNamedQuery('GeneralRequestMap.fetchByApp').setParameter('appId', appId).list()
+            generalReqMapList = session.getNamedQuery('GeneralRequestMap.fetchByAppId').setParameter('appId', appId).list()
         }
         return generalReqMapList
     }

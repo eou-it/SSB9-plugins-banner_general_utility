@@ -69,7 +69,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
 
         def id = endpointPage.id
         endpointPage.delete()
-        assertNull endpointPage.get( id )
+        assertNull endpointPage.get(id)
     }
 
 
@@ -89,7 +89,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
             byte[] bytes = out.toByteArray()
             ConfigControllerEndpointPage endpointPageCopy
             new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
-                endpointPageCopy = (ConfigControllerEndpointPage)is.readObject()
+                endpointPageCopy = (ConfigControllerEndpointPage) is.readObject()
                 is.close()
             }
             assertEquals endpointPageCopy, endpointPage
@@ -110,8 +110,12 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
 
         def list = endpointPage.fetchAll()
         assertTrue list.size >= 1
-        assertTrue list.getAt(0).dataOrigin == 'Banner'
-        assertTrue list.getAt(0).enableIndicator
+
+        def endPointPage1 = list.find { p -> p.dataOrigin == 'Banner' }
+        assertTrue endPointPage1.dataOrigin == 'Banner'
+
+        def endPointPage2 = list.find { p -> p.enableIndicator == true }
+        assertTrue endPointPage2.enableIndicator
 
         //Update and findAll
         endpointPage.setEnableIndicator(false)
@@ -120,13 +124,17 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
 
         list = endpointPage.fetchAll()
         assertTrue list.size >= 1
-        assertTrue list.getAt(0).dataOrigin == 'Banner'
-        assertTrue list.getAt(0).enableIndicator == false
+
+        endPointPage2 = list.find { p -> p.enableIndicator == false }
+        assertFalse endPointPage2.enableIndicator
 
         //Delete and findAll
+        def id = endpointPage.id
         endpointPage.delete()
         list = endpointPage.fetchAll()
-        assertEquals (list.size(), 0)
+        def eppDeleted = list.find {p -> p.id == id}
+
+        assertNull eppDeleted
     }
 
     @Test
@@ -249,8 +257,6 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         return endpointPage.refresh()
     }
 
-
-
     /**
      * Mocking the ConfigControllerEndpointPage domain.
      * @return ConfigControllerEndpointPage
@@ -284,7 +290,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                  appName: APP_NAME
+                appName: APP_NAME
         )
         return configApplication
     }
