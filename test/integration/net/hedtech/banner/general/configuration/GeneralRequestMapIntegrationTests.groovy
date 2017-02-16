@@ -33,15 +33,13 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
         def list = GeneralRequestMap.fetchAll()
         assert list.size() >= 1
 
-        def generalReqMapTestAppName = list.find { p -> p.applicationName = APP_NAME }
-        assertTrue generalReqMapTestAppName.applicationName == APP_NAME
-
-        def generalReqMapTestPageName = list.find { p -> p.pageName == 'TEST PAGE' }
-        assertTrue generalReqMapTestPageName.pageName == 'TEST PAGE'
-
-        def generalReqMapTestRoleCode = list.find { p -> p.roleCode == 'TEST_ROLE' }
-        assertTrue generalReqMapTestRoleCode.roleCode == 'TEST_ROLE'
+        list.each { requestMap ->
+            assertEquals APP_NAME, requestMap.applicationName
+            assertEquals "TEST PAGE", requestMap.pageName
+            assertEquals "TEST_ROLE", requestMap.roleCode
+        }
     }
+
 
     @Test
     public void testFetchByAppId() {
@@ -50,14 +48,13 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
         def list = GeneralRequestMap.fetchByAppId(configApplication.appId)
         assert list.size() >= 1
 
-        def generalReqMapTestAppName = list.find { p -> p.applicationName = APP_NAME }
-        assertTrue generalReqMapTestAppName.applicationName == APP_NAME
+        list.each { requestMap ->
+            assertEquals configApplication.appId, requestMap.applicationId
+            assertEquals APP_NAME, requestMap.applicationName
+            assertEquals "TEST PAGE", requestMap.pageName
+            assertEquals "TEST_ROLE", requestMap.roleCode
+        }
 
-        def generalReqMapTestPageName = list.find { p -> p.pageName == 'TEST PAGE' }
-        assertTrue generalReqMapTestPageName.pageName == 'TEST PAGE'
-
-        def generalReqMapTestRoleCode = list.find { p -> p.roleCode == 'TEST_ROLE' }
-        assertTrue generalReqMapTestRoleCode.roleCode == 'TEST_ROLE'
     }
 
     @Test
