@@ -105,9 +105,9 @@ class SelfServiceMenuService {
         def govroleCriteria
         def govroles = []
         def sqlQuery;
-        String pidmCondition = "twgrrole_pidm is NULL"
+        //String pidmCondition = "twgrrole_pidm is NULL"
         if (pidm) {
-            pidmCondition = "twgrrole_pidm = " + pidm
+            //pidmCondition = "twgrrole_pidm = " + pidm
             govroles = getGovRole(""+pidm);
             govroleCriteria = getGovRoleCriteria(govroles);
         }
@@ -116,14 +116,14 @@ class SelfServiceMenuService {
                 "TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND "+
                 "FROM twgrmenu   WHERE  twgrmenu_name = ? " +
                 "AND twgrmenu_enabled = 'Y'" +
-                "AND twgrmenu_source_ind =  (select nvl( max(twgrmenu_source_ind ),'B') FROM twgrmenu WHERE  twgrmenu_name = ? AND twgrmenu_source_ind='L')"+
+                " AND twgrmenu_source_ind =  (select nvl( max(twgrmenu_source_ind ),'B') FROM twgrmenu WHERE  twgrmenu_name = ? AND twgrmenu_source_ind='L')"+
                 "AND ( twgrmenu_url IN (select twgrwmrl_name FROM twgrwmrl, twgrmenu WHERE twgrmenu.twgrmenu_name = ? AND twgrwmrl_name = twgrmenu.twgrmenu_url "+
-                "AND twgrwmrl_source_ind = (select nvl( max(twgrwmrl_source_ind ),'B')" +
-                "FROM twgrwmrl WHERE  twgrwmrl_name = twgrmenu_url AND twgrwmrl_source_ind='L')"
+                " AND twgrwmrl_source_ind = (select nvl( max(twgrwmrl_source_ind ),'B')" +
+                " FROM twgrwmrl WHERE  twgrwmrl_name = twgrmenu_url AND twgrwmrl_source_ind='L')"
         sqlQuery = govroleCriteria ? sqlQuery +
-                            " AND twgrwmrl_role in " + govroleCriteria + ") " : sqlQuery
+                            " AND twgrwmrl_role in " + govroleCriteria : sqlQuery + " AND twgrwmrl_role in ('')"
         sqlQuery = sqlQuery +
-                "or twgrmenu_db_link_ind = 'N') " +
+                " ) or twgrmenu_db_link_ind = 'N') " +
                 " ORDER BY twgrmenu_sequence"
 
         def randomSequence = RandomUtils.nextInt(1000);
@@ -146,7 +146,6 @@ class SelfServiceMenuService {
             dataMap.add(mnu)
 
         };
-        println sqlQuery
 
         log.trace("ProcessMenu executed for Menu name:" + menuName)
         return dataMap
