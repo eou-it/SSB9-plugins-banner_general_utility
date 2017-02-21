@@ -24,6 +24,7 @@ class RequestURLMapService extends RequestmapFilterInvocationDefinition {
     def configApplicationService
     def configControllerEndpointPageService
     def configRolePageMappingService
+    def springSecurityService
 
     /**
      * Grails Application name from the Grails context holder.
@@ -234,7 +235,7 @@ class RequestURLMapService extends RequestmapFilterInvocationDefinition {
             def findEndPointPageQuery = ConfigControllerEndpointPage.where {
                 pageName == pageName
                 configApplication == configApplication
-                displaySequence == map.findIndexOf { it.key == pageName }
+                //displaySequence == map.findIndexOf { it.key == pageName }
             }
             def existingEndpointPage = findEndPointPageQuery.find()
             if (!existingEndpointPage) {
@@ -269,6 +270,7 @@ class RequestURLMapService extends RequestmapFilterInvocationDefinition {
                 }
             }
         }
+        springSecurityService.clearCachedRequestmaps()
     }
 
     /**
