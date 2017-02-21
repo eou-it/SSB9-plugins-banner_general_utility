@@ -10,7 +10,6 @@ import grails.transaction.Transactional
 import grails.util.Holders
 import org.hibernate.classic.Session
 import org.springframework.http.HttpMethod
-import org.springframework.security.core.context.SecurityContextHolder
 
 /**
  * The service class extends the RequestmapFilterInvocationDefinition to override the required methods to do the
@@ -42,9 +41,6 @@ class RequestURLMapService extends RequestmapFilterInvocationDefinition {
     @Override
     protected void initialize() {
         if (initialized) {
-            if (compiled.size() == 0) {
-                reset()
-            }
             return;
         }
 
@@ -99,23 +95,20 @@ class RequestURLMapService extends RequestmapFilterInvocationDefinition {
             def roleList = []
             def grmListFinal = []
             grmList.each { GeneralRequestMap grm ->
-                //int count = 0
                 grmListFinal << grm
                 int displaySeq = grm.displaySequence
                 def roleCode = (grm.roleCode == 'WEBUSER' ? 'IS_AUTHENTICATED_ANONYMOUSLY' : grm.roleCode)
-//                if (displaySeq == 5 && count == 0) {
-//                    GeneralRequestMap generalRequestMap = new GeneralRequestMap()
-//                    generalRequestMap.roleCode = 'GUEST'
-//                    generalRequestMap.pageName = key
-//                    grmListFinal << generalRequestMap
-//                    count++
-//                }
                 roleList << pushValuesToPrepareSelfServiceRoles(roleCode)
             }
             grmListFinal.each {
                 HttpMethod method = null
                 data.add(new InterceptedUrl(key, super.split(roleList?.join(',')), method))
             }
+        }
+        LinkedHashMap<String, List> interceptUrlMapFromConfig = Holders.config.grails.plugin.springsecurity.interceptUrlMap
+        interceptUrlMapFromConfig.each { String k, List<String> v ->
+            HttpMethod method = null
+            data.add(new InterceptedUrl(k, super.split(v?.join(',')), method))
         }
         data
     }
@@ -215,62 +208,6 @@ class RequestURLMapService extends RequestmapFilterInvocationDefinition {
         def appList = session.createQuery('''SELECT capp.appId FROM ConfigApplication capp
                                                         WHERE capp.appName = :appName''').setString('appName', APP_NAME).list()
         appList
-    }
-
-    /**
-     * This method will get called from BootStrap.groovy to save the static url and mapped roles for it.
-     * This will called only once at the time of server startup.
-     */
-    @Transactional
-    public void saveMapFromConfig() {
-        LinkedHashMap<String, List> map = Holders.config.selfService.staticRequestMap
-        Session session = getHibernateSession()
-        List appList = getAppIdByAppName(session)
-        def appId = appList ? appList.get(0) : null
-        def lastModifiedBy = SecurityContextHolder.context?.authentication?.principal?.username
-        lastModifiedBy = (lastModifiedBy == null ? 'GRAILS' : lastModifiedBy)
-        ConfigApplication configApplication = configApplicationService.get(appId)
-        map.each { pageName, roleCodeList ->
-            ConfigControllerEndpointPage controllerEndpointPage
-            def findEndPointPageQuery = ConfigControllerEndpointPage.where {
-                pageName == pageName
-                configApplication == configApplication
-                //displaySequence == map.findIndexOf { it.key == pageName }
-            }
-            def existingEndpointPage = findEndPointPageQuery.find()
-            if (!existingEndpointPage) {
-                ConfigControllerEndpointPage endpointPage = new ConfigControllerEndpointPage(
-                        pageName: pageName,
-                        configApplication: configApplication,
-                        displaySequence: map.findIndexOf { it.key == pageName },
-                        lastModified: new Date(),
-                        lastModifiedBy: lastModifiedBy
-                )
-                controllerEndpointPage = configControllerEndpointPageService.create(endpointPage)
-                controllerEndpointPage = controllerEndpointPage.refresh()
-            } else {
-                controllerEndpointPage = existingEndpointPage.refresh()
-            }
-            roleCodeList.each { String roleCode ->
-                def findRoleMappingQuery = ConfigRolePageMapping.where {
-                    configApplication == configApplication
-                    endpointPage == controllerEndpointPage
-                    roleCode == (roleCode == 'IS_AUTHENTICATED_ANONYMOUSLY' ? 'WEBUSER' : roleCode)
-                }
-                def existingRolePageMapping = findRoleMappingQuery.find()
-                if (!existingRolePageMapping) {
-                    existingRolePageMapping = new ConfigRolePageMapping(
-                            configApplication: configApplication,
-                            endpointPage: controllerEndpointPage,
-                            roleCode: (roleCode == 'IS_AUTHENTICATED_ANONYMOUSLY' ? 'WEBUSER' : roleCode),
-                            lastModified: new Date(),
-                            lastModifiedBy: lastModifiedBy
-                    )
-                    configRolePageMappingService.create(existingRolePageMapping)
-                }
-            }
-        }
-        springSecurityService.clearCachedRequestmaps()
     }
 
     /**

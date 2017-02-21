@@ -1,3 +1,8 @@
+import grails.plugin.springsecurity.SecurityConfigType
+import grails.plugin.springsecurity.SpringSecurityUtils
+import grails.util.Holders
+import net.hedtech.banner.general.configuration.RequestURLMapService
+
 class BannerGeneralUtilityGrailsPlugin {
     String version = "9.20"
 
@@ -5,7 +10,7 @@ class BannerGeneralUtilityGrailsPlugin {
     def grailsVersion = "2.2.1 > *"
 
     // the other plugins this plugin depends on
-    def dependsOn = [ 'springSecurityCore': '1.2.7.3 => *',
+    def dependsOn = ['springSecurityCore': '1.2.7.3 => *',
     ]
 
     // resources that are excluded from plugin packaging
@@ -40,6 +45,8 @@ class BannerGeneralUtilityGrailsPlugin {
 
     // Online location of the plugin's browseable source code.
 //    def scm = [ url: "http://svn.codehaus.org/grails-plugins/" ]
+    String securityConfigType = SpringSecurityUtils.securityConfigType
+    ConfigObject conf = SpringSecurityUtils.securityConfig
 
     def doWithWebDescriptor = { xml ->
         // TODO Implement additions to web.xml (optional), this event occurs before
@@ -47,6 +54,19 @@ class BannerGeneralUtilityGrailsPlugin {
 
     def doWithSpring = {
         // TODO Implement runtime spring config (optional)
+
+        /**
+         * If the securityConfigType = 'Requestmap' then the "RequestURLMapService" will be get injected
+         * which extends "RequestmapFilterInvocationDefinition", this service will fetch the RequestMap from the
+         * DB and put it on "InterceptedURLMap" dynamically.
+         */
+        if (securityConfigType == 'Requestmap') {
+            objectDefinitionSource(RequestURLMapService) {
+                if (conf.rejectIfNoRule instanceof Boolean) {
+                    rejectIfNoRule = conf.rejectIfNoRule
+                }
+            }
+        }
     }
 
     def doWithDynamicMethods = { ctx ->

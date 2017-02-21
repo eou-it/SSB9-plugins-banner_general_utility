@@ -19,7 +19,6 @@ class BannerGeneralUtilityBootStrap {
 
     def menuService
     def configPropertiesService
-    def requestURLMapService
 
     def init = { servletContext ->
 
@@ -29,8 +28,6 @@ class BannerGeneralUtilityBootStrap {
         }
 
         configPropertiesService.setConfigFromDb()
-        requestURLMapService.saveMapFromConfig()
-        requestURLMapService.reset()
     }
 
     def destroy = {
