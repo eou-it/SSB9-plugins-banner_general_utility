@@ -17,7 +17,7 @@ import javax.persistence.*
         @NamedQuery(name = 'GeneralRequestMap.fetchAll', query = '''FROM GeneralRequestMap grm'''),
         @NamedQuery(name = 'GeneralRequestMap.fetchByAppId',
                 query = '''FROM GeneralRequestMap grm
-                    WHERE grm.applicationId = :appId''')
+                                WHERE grm.applicationId = :appId''')
 ])
 public class GeneralRequestMap implements Serializable {
     private static final long serialVersionUID = 3080855838641210753L;
@@ -47,6 +47,23 @@ public class GeneralRequestMap implements Serializable {
     @Version
     @Column(name = 'VERSION')
     Long version;
+
+    GeneralRequestMap(String pageName, String roleCode, String applicationName,
+                      int displaySequence, long pageId, long applicationId, Long version) {
+        this.pageName = pageName
+        this.roleCode = roleCode
+        this.applicationName = applicationName
+        this.displaySequence = displaySequence
+        this.pageId = pageId
+        this.applicationId = applicationId
+        this.version = version
+    }
+
+    GeneralRequestMap() {}
+
+    static mapping = {
+        cache true
+    }
 
     boolean equals(o) {
         if (this.is(o)) return true

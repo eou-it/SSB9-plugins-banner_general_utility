@@ -20,7 +20,6 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        //session = getHibernateSession()
     }
 
     @After
@@ -132,7 +131,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         def id = endpointPage.id
         endpointPage.delete()
         list = endpointPage.fetchAll()
-        def eppDeleted = list.find {p -> p.id == id}
+        def eppDeleted = list.find { p -> p.id == id }
 
         assertNull eppDeleted
     }
@@ -143,11 +142,11 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
             //session.beginTransaction()
 
             //saveRequiredDomains()
-            ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
-
-            def list = endpointPage.getAllConfigByAppName(APP_NAME)
+            ConfigApplication configApplication = ConfigApplication.fetchByAppName(APP_NAME)
+            configApplication = configApplication.refresh()
+            List<GeneralRequestMap> list = GeneralRequestMap.fetchByAppId(configApplication.appId)
             assert (list.size() > 0)
-            assert (list.getAt(0) instanceof RequestURLMap)
+            assert (list.getAt(0) instanceof GeneralRequestMap)
         } catch (e) {
 
         }
@@ -170,17 +169,19 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         try {
             // Save all required domain.
             //saveRequiredDomains()
-            ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
+            createConfigControllerEndPointPage()
+            ConfigApplication configApplication = ConfigApplication.fetchByAppName(APP_NAME)
+            configApplication = configApplication.refresh()
+            List<GeneralRequestMap> list = GeneralRequestMap.fetchByAppId(configApplication.appId)
+            //def list = endpointPage.getAllConfigByAppName(APP_NAME)
+            Set<String> urlSet = new LinkedHashSet<String>()
+            list.each { GeneralRequestMap requestURLMap -> urlSet.add(requestURLMap.pageName) }
 
-            def list = endpointPage.getAllConfigByAppName(APP_NAME)
-            def urlSet = new LinkedHashSet<String>()
-            list.each { RequestURLMap requestURLMap -> urlSet.add(requestURLMap.url) }
-
-            def requestMap = new LinkedHashMap<String, ArrayList<RequestURLMap>>()
+            def requestMap = new LinkedHashMap<String, ArrayList<GeneralRequestMap>>()
             urlSet.each { String url ->
-                def patternList = new ArrayList<RequestURLMap>()
-                list.each { RequestURLMap requestURLMap ->
-                    if (requestURLMap.url.equals(url)) {
+                def patternList = new ArrayList<GeneralRequestMap>()
+                list.each { GeneralRequestMap requestURLMap ->
+                    if (requestURLMap.pageName.equals(url)) {
                         patternList << requestURLMap
                     }
                 }
@@ -224,25 +225,6 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         }
     }
 
-    /**
-     * Saving the required domains for test.
-     * @param session Hibernate session.
-     */
-//    private void saveRequiredDomains() {
-//        ConfigApplication configApplication = getConfigApplication()
-//        session.save(configApplication)
-//
-//        ConfigControllerEndpointPage endpointPage = getDomain()
-//        endpointPage.setGubapplAppId(configApplication.getAppId())
-//        session.save(endpointPage)
-//
-//        ConfigRolePageMapping configRolePageMapping = getConfigRolePageMapping()
-//        configRolePageMapping.setGubapplAppId(configApplication.getAppId())
-//        configRolePageMapping.setPageId(endpointPage.getPageId())
-//        session.save(configRolePageMapping)
-//    }
-
-
     private ConfigControllerEndpointPage createConfigControllerEndPointPage() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication = configApplication.save(failOnError: true, flush: true)
@@ -266,7 +248,6 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
                 description: 'TEST',
                 displaySequence: 1,
                 enableIndicator: true,
-                pageId: 1,
                 pageName: 'TEST PAGE'
         )
         return configControllerEndpointPage
@@ -278,7 +259,6 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
      */
     private ConfigRolePageMapping getConfigRolePageMapping() {
         ConfigRolePageMapping configRolePageMapping = new ConfigRolePageMapping(
-                pageId: 1,
                 roleCode: 'TEST_ROLE'
         )
         return configRolePageMapping
@@ -294,18 +274,5 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         )
         return configApplication
     }
-
-    /**
-     * This private method will be used to test for RequestmapFilterInvocationDefinition interceptor
-     * which the filter is invoked before grails config.
-     * @return Session Hibernate session.
-     */
-//    private Session getHibernateSession() {
-//        def dataSource = Holders.grailsApplication.mainContext.getBean('dataSource')
-//        def ctx = Holders.grailsApplication.mainContext
-//        def sessionFactory = ctx.sessionFactory
-//        session = sessionFactory.openSession(dataSource.getSsbConnection())
-//        return session
-//    }
 
 }
