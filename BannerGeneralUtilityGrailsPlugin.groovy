@@ -1,7 +1,5 @@
-import grails.plugin.springsecurity.SecurityConfigType
 import grails.plugin.springsecurity.SpringSecurityUtils
-import grails.util.Holders
-import net.hedtech.banner.general.configuration.RequestURLMapService
+import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
 
 class BannerGeneralUtilityGrailsPlugin {
     String version = "9.20"
@@ -56,12 +54,12 @@ class BannerGeneralUtilityGrailsPlugin {
         // TODO Implement runtime spring config (optional)
 
         /**
-         * If the securityConfigType = 'Requestmap' then the "RequestURLMapService" will be get injected
-         * which extends "RequestmapFilterInvocationDefinition", this service will fetch the RequestMap from the
-         * DB and put it on "InterceptedURLMap" dynamically.
+         * If the securityConfigType = 'InterceptUrlMap' then the "GeneralPageRoleMappingService" will be get injected
+         * which extends "RequestmapFilterInvocationDefinition", this service will fetch the InterceptUrlMap from the
+         * DB and Config.groovy.
          */
-        if (securityConfigType == 'Requestmap') {
-            objectDefinitionSource(RequestURLMapService) {
+        if (securityConfigType == 'InterceptUrlMap') {
+            objectDefinitionSource(GeneralPageRoleMappingService) {
                 if (conf.rejectIfNoRule instanceof Boolean) {
                     rejectIfNoRule = conf.rejectIfNoRule
                 }

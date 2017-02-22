@@ -144,9 +144,9 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
             //saveRequiredDomains()
             ConfigApplication configApplication = ConfigApplication.fetchByAppName(APP_NAME)
             configApplication = configApplication.refresh()
-            List<GeneralRequestMap> list = GeneralRequestMap.fetchByAppId(configApplication.appId)
+            List<GeneralPageRoleMapping> list = GeneralPageRoleMapping.fetchByAppId(configApplication.appId)
             assert (list.size() > 0)
-            assert (list.getAt(0) instanceof GeneralRequestMap)
+            assert (list.getAt(0) instanceof GeneralPageRoleMapping)
         } catch (e) {
 
         }
@@ -172,15 +172,15 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
             createConfigControllerEndPointPage()
             ConfigApplication configApplication = ConfigApplication.fetchByAppName(APP_NAME)
             configApplication = configApplication.refresh()
-            List<GeneralRequestMap> list = GeneralRequestMap.fetchByAppId(configApplication.appId)
+            List<GeneralPageRoleMapping> list = GeneralPageRoleMapping.fetchByAppId(configApplication.appId)
             //def list = endpointPage.getAllConfigByAppName(APP_NAME)
             Set<String> urlSet = new LinkedHashSet<String>()
-            list.each { GeneralRequestMap requestURLMap -> urlSet.add(requestURLMap.pageName) }
+            list.each { GeneralPageRoleMapping requestURLMap -> urlSet.add(requestURLMap.pageName) }
 
-            def requestMap = new LinkedHashMap<String, ArrayList<GeneralRequestMap>>()
+            def requestMap = new LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>>()
             urlSet.each { String url ->
-                def patternList = new ArrayList<GeneralRequestMap>()
-                list.each { GeneralRequestMap requestURLMap ->
+                def patternList = new ArrayList<GeneralPageRoleMapping>()
+                list.each { GeneralPageRoleMapping requestURLMap ->
                     if (requestURLMap.pageName.equals(url)) {
                         patternList << requestURLMap
                     }

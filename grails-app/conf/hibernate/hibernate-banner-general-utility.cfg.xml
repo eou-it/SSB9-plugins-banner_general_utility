@@ -27,6 +27,6 @@ there is no concept of an 'entity manager' within this project.
         <mapping class="net.hedtech.banner.general.configuration.ConfigRolePageMapping"/>
         <mapping class="net.hedtech.banner.general.configuration.ConfigProperties"/>
         <mapping class="net.hedtech.banner.general.configuration.ConfigUserPreference"/>
-        <mapping class="net.hedtech.banner.general.configuration.GeneralRequestMap"/>
+        <mapping class="net.hedtech.banner.general.configuration.GeneralPageRoleMapping"/>
     </session-factory>
 </hibernate-configuration>

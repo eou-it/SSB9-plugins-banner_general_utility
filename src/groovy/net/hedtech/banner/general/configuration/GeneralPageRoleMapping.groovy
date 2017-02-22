@@ -14,12 +14,12 @@ import javax.persistence.*
 @Entity
 @Table(name = 'GVQ_PAGE_ROLE_MAPPING')
 @NamedQueries([
-        @NamedQuery(name = 'GeneralRequestMap.fetchAll', query = '''FROM GeneralRequestMap grm'''),
-        @NamedQuery(name = 'GeneralRequestMap.fetchByAppId',
-                query = '''FROM GeneralRequestMap grm
+        @NamedQuery(name = 'GeneralPageRoleMapping.fetchAll', query = '''FROM GeneralPageRoleMapping grm'''),
+        @NamedQuery(name = 'GeneralPageRoleMapping.fetchByAppId',
+                query = '''FROM GeneralPageRoleMapping grm
                                 WHERE grm.applicationId = :appId''')
 ])
-public class GeneralRequestMap implements Serializable {
+public class GeneralPageRoleMapping implements Serializable {
     private static final long serialVersionUID = 3080855838641210753L;
 
     @Id
@@ -48,7 +48,7 @@ public class GeneralRequestMap implements Serializable {
     @Column(name = 'VERSION')
     Long version;
 
-    GeneralRequestMap(String pageName, String roleCode, String applicationName,
+    GeneralPageRoleMapping(String pageName, String roleCode, String applicationName,
                       int displaySequence, long pageId, long applicationId, Long version) {
         this.pageName = pageName
         this.roleCode = roleCode
@@ -59,7 +59,7 @@ public class GeneralRequestMap implements Serializable {
         this.version = version
     }
 
-    GeneralRequestMap() {}
+    GeneralPageRoleMapping() {}
 
     static mapping = {
         cache true
@@ -69,7 +69,7 @@ public class GeneralRequestMap implements Serializable {
         if (this.is(o)) return true
         if (getClass() != o.class) return false
 
-        GeneralRequestMap that = (GeneralRequestMap) o
+        GeneralPageRoleMapping that = (GeneralPageRoleMapping) o
 
         if (id != that.id) return false
         if (applicationId != that.applicationId) return false
@@ -100,7 +100,7 @@ public class GeneralRequestMap implements Serializable {
     @Override
     public String toString() {
         return """\
-                GeneralRequestMap{
+                GeneralPageRoleMapping{
                     id=$id,
                     applicationId=$applicationId,
                     applicationName='$applicationName',
@@ -119,7 +119,7 @@ public class GeneralRequestMap implements Serializable {
     public static List fetchAll() {
         List generalReqMapList
         generalReqMapList = ConfigApplication.withSession { Session session ->
-            generalReqMapList = session.getNamedQuery('GeneralRequestMap.fetchAll').list()
+            generalReqMapList = session.getNamedQuery('GeneralPageRoleMapping.fetchAll').list()
         }
         return generalReqMapList
     }
@@ -132,7 +132,7 @@ public class GeneralRequestMap implements Serializable {
     public static List fetchByAppId(appId) {
         List generalReqMapList
         generalReqMapList = ConfigApplication.withSession { Session session ->
-            generalReqMapList = session.getNamedQuery('GeneralRequestMap.fetchByAppId').setParameter('appId', appId).list()
+            generalReqMapList = session.getNamedQuery('GeneralPageRoleMapping.fetchByAppId').setParameter('appId', appId).list()
         }
         return generalReqMapList
     }

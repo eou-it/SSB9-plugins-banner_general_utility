@@ -9,9 +9,9 @@ import org.junit.Before
 import org.junit.Test
 
 /**
- * Integration test cases for domain GeneralRequestMap.
+ * Integration test cases for domain GeneralPageRoleMapping.
  */
-class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
+class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
 
     private static final String APP_NAME = 'PlatformSandboxApp'
 
@@ -30,14 +30,13 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     public void testFetchAll() {
         saveDomains()
 
-        def list = GeneralRequestMap.fetchAll()
+        def list = GeneralPageRoleMapping.fetchAll()
         assert list.size() >= 1
 
-        list.each { requestMap ->
-            assertEquals APP_NAME, requestMap.applicationName
-            assertEquals "TEST PAGE", requestMap.pageName
-            assertEquals "TEST_ROLE", requestMap.roleCode
-        }
+        def generalReqMapTestPageName = list.find { p -> p.pageName == 'TEST PAGE' }
+        assertEquals generalReqMapTestPageName.applicationName, APP_NAME
+        assertEquals generalReqMapTestPageName.pageName, 'TEST PAGE'
+        assertEquals generalReqMapTestPageName.roleCode, 'TEST_ROLE'
     }
 
 
@@ -45,7 +44,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     public void testFetchByAppId() {
         def configApplication = saveDomains()
 
-        def list = GeneralRequestMap.fetchByAppId(configApplication.appId)
+        def list = GeneralPageRoleMapping.fetchByAppId(configApplication.appId)
         assert list.size() >= 1
 
         list.each { requestMap ->
@@ -68,7 +67,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     @Test
     public void testFailCaseOnUpdate() {
         def configApplication = saveDomains()
-        def list = GeneralRequestMap.fetchByAppId(configApplication.appId)
+        def list = GeneralPageRoleMapping.fetchByAppId(configApplication.appId)
         shouldFail(Exception) {
             def generalRequestMap = list.get(0)
             generalRequestMap.pageName = 'TEST_PAGE'
@@ -79,7 +78,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     @Test
     public void testFailCaseOnDelete() {
         def configApplication = saveDomains()
-        def list = GeneralRequestMap.fetchByAppId(configApplication.appId)
+        def list = GeneralPageRoleMapping.fetchByAppId(configApplication.appId)
         shouldFail(Exception) {
             def generalRequestMap = list.get(0)
             generalRequestMap.delete(flush: true)
@@ -89,7 +88,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testToString() {
         ConfigApplication configApp = saveDomains()
-        List<ConfigApplication> generalRequestMap = GeneralRequestMap.fetchByAppId(configApp.appId)
+        List<ConfigApplication> generalRequestMap = GeneralPageRoleMapping.fetchByAppId(configApp.appId)
         assertFalse generalRequestMap.isEmpty()
         generalRequestMap.each { requestMap ->
             String requestMapToString = requestMap.toString()
@@ -101,7 +100,7 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testHashCode() {
         ConfigApplication configApp = saveDomains()
-        List<ConfigApplication> generalRequestMap = GeneralRequestMap.fetchByAppId(configApp.appId)
+        List<ConfigApplication> generalRequestMap = GeneralPageRoleMapping.fetchByAppId(configApp.appId)
         assertFalse generalRequestMap.isEmpty()
         generalRequestMap.each { requestMap ->
             Integer requestMapHashCode = requestMap.hashCode()
@@ -111,8 +110,8 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void testEqualAndHashcode() {
-        GeneralRequestMap obj1 = getGeneralRequestMap()
-        GeneralRequestMap obj2 = getGeneralRequestMap()
+        GeneralPageRoleMapping obj1 = getGeneralRequestMap()
+        GeneralPageRoleMapping obj2 = getGeneralRequestMap()
         assertEquals obj1, obj2
         assertEquals obj1.roleCode, obj2.roleCode
         assertEquals obj1.pageName, obj2.pageName
@@ -121,37 +120,37 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
         assertEquals obj1.applicationName, obj2.applicationName
         assertEquals obj1.pageId, obj2.pageId
 
-        GeneralRequestMap obj3 = getGeneralRequestMap()
+        GeneralPageRoleMapping obj3 = getGeneralRequestMap()
         obj3.applicationId = 100002
         assertNotEquals obj2, obj3
         assertNotEquals obj1.hashCode(), obj3.hashCode()
 
-        GeneralRequestMap obj4 = getGeneralRequestMap()
+        GeneralPageRoleMapping obj4 = getGeneralRequestMap()
         obj4.pageId = 1000002
         assertNotEquals obj2, obj4
         assertNotEquals obj1.hashCode(), obj4.hashCode()
 
-        GeneralRequestMap obj5 = getGeneralRequestMap()
+        GeneralPageRoleMapping obj5 = getGeneralRequestMap()
         obj5.applicationName = 'TEST_APP_2'
         assertNotEquals obj2, obj5
         assertNotEquals obj1.hashCode(), obj5.hashCode()
 
-        GeneralRequestMap obj6 = getGeneralRequestMap()
+        GeneralPageRoleMapping obj6 = getGeneralRequestMap()
         obj6.displaySequence = 2
         assertNotEquals obj2, obj6
         assertNotEquals obj1.hashCode(), obj6.hashCode()
 
-        GeneralRequestMap obj7 = getGeneralRequestMap()
+        GeneralPageRoleMapping obj7 = getGeneralRequestMap()
         obj7.pageName = 'PAGE_NAME_TEST'
         assertNotEquals obj2, obj7
         assertNotEquals obj1.hashCode(), obj7.hashCode()
 
-        GeneralRequestMap obj8 = getGeneralRequestMap()
+        GeneralPageRoleMapping obj8 = getGeneralRequestMap()
         obj8.roleCode = 'TEST_ROLE_1'
         assertNotEquals obj2, obj8
         assertNotEquals obj1.hashCode(), obj8.hashCode()
 
-        GeneralRequestMap obj9 = getGeneralRequestMap()
+        GeneralPageRoleMapping obj9 = getGeneralRequestMap()
         obj9.version = 1
         assertNotEquals obj2, obj9
         assertNotEquals obj1.hashCode(), obj9.hashCode()
@@ -165,16 +164,16 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
     @Test
     public void testSerialization() {
         try {
-            GeneralRequestMap generalRequestMap = getGeneralRequestMap()
+            GeneralPageRoleMapping generalRequestMap = getGeneralRequestMap()
             ByteArrayOutputStream out = new ByteArrayOutputStream()
             ObjectOutputStream oos = new ObjectOutputStream(out)
             oos.writeObject(generalRequestMap)
             oos.close()
 
             byte[] bytes = out.toByteArray()
-            GeneralRequestMap generalRequestMapCopy
+            GeneralPageRoleMapping generalRequestMapCopy
             new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
-                generalRequestMapCopy = (GeneralRequestMap) is.readObject()
+                generalRequestMapCopy = (GeneralPageRoleMapping) is.readObject()
                 is.close()
             }
             assertEquals generalRequestMapCopy, generalRequestMap
@@ -242,8 +241,8 @@ class GeneralRequestMapIntegrationTests extends BaseIntegrationTestCase {
      * Mocking ConfigApplication domain.
      * @return ConfigApplication
      */
-    private GeneralRequestMap getGeneralRequestMap() {
-        GeneralRequestMap generalRequestMap = new GeneralRequestMap(
+    private GeneralPageRoleMapping getGeneralRequestMap() {
+        GeneralPageRoleMapping generalRequestMap = new GeneralPageRoleMapping(
                 applicationId: 100001,
                 applicationName: APP_NAME,
                 pageId: 1001,
