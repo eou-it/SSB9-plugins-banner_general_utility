@@ -94,9 +94,9 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         mergedData.putAll(interceptedUrlMapFromDB);
 
         // Merge the InterceptedUrlMap from DB and Config.groovy
-        for (String key : interceptedUrlMapFromConfig.keySet()) {
-            List<String> list2 = interceptedUrlMapFromConfig.get(key);
-            List<String> list3 = mergedData.get(key);
+        for (String key : interceptedUrlMapFromConfig?.keySet()) {
+            List<String> list2 = interceptedUrlMapFromConfig?.get(key);
+            List<String> list3 = mergedData?.get(key);
             if (list3 != null) {
                 list3.addAll(list2);
                 list3 = list3.unique {x, y -> x <=> y}
@@ -139,11 +139,11 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * Method is used to get the Hibernate session from the main context by the help of datasource.
      * @return Session     Classic hibernate session.
      */
-    private static Session getHibernateSession() {
+    private Session getHibernateSession() {
         def dataSource = Holders.grailsApplication.mainContext.getBean('dataSource')
         def ctx = Holders.grailsApplication.mainContext
-        def sessionFactory = ctx.sessionFactory
-        Session session = sessionFactory.openSession(dataSource.getSsbConnection())
+        def hibernateSessionFactory = (!sessionFactory ? ctx.sessionFactory : sessionFactory)
+        Session session = hibernateSessionFactory.openSession(dataSource.getSsbConnection())
         session
     }
 
