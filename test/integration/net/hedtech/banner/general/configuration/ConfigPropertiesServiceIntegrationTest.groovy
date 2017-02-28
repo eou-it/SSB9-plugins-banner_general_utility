@@ -4,6 +4,7 @@
 
 package net.hedtech.banner.general.configuration
 
+import grails.util.Holders
 import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import grails.util.Holders as CH
@@ -20,7 +21,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     def configApplicationService
     def grailsApplication
 
-    def appName
+    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
     private static final String CONFIG_NAME = 'TEST_CONFIG'
     private static final String CONFIG_VALUE = 'TEST_VALUE'
 
@@ -28,7 +29,6 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        appName = grailsApplication.metadata['app.name']
     }
 
     @After
@@ -47,17 +47,25 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
      * Saving the ConfigProperties
      * @return
      */
-    private ConfigProperties createNewConfigProperties() {
+    private void createNewConfigProperties() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication = configApplicationService.create(configApplication)
         configApplication.refresh()
         assertNotNull configApplication.id
         assertEquals 0L, configApplication.version
 
+        def configProps = []
+
         ConfigProperties configProperties = getConfigProperties()
         configProperties.setConfigApplication(configApplication)
-        configProperties = configPropertiesService.create(configProperties)
-        return configProperties
+        configProps.add(configProperties)
+
+        ConfigProperties configPropertiesBoolean = getConfigProperties()
+        configPropertiesBoolean.configType = 'boolean'
+        configPropertiesBoolean.configName = CONFIG_NAME + '-boolean'
+        configPropertiesBoolean.setConfigApplication(configApplication)
+        configProps.add(configPropertiesBoolean)
+        configPropertiesService.create(configProps)
     }
 
     /**
@@ -81,7 +89,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
                 lastModified: new Date(),
-                appName: appName
+                appName: APP_NAME
         )
         return configApplication
     }

@@ -37,17 +37,17 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
     @Override
     protected void initialize() {
         if (initialized) {
-            return;
+            return
         }
 
         try {
-            reset();
-            initialized = true;
+            reset()
+            initialized = true
         }
         catch (RuntimeException e) {
             log.warn("Exception initializing; this is ok if it's at startup and due " +
                     "to GORM not being initialized yet since the first web request will " +
-                    "re-initialize. Error message is: {}", e.getMessage());
+                    "re-initialize. Error message is: {}", e.getMessage())
         }
     }
 
@@ -56,7 +56,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      */
     @Override
     public synchronized void reset() {
-        resetConfigs();
+        resetConfigs()
 
         List<InterceptedUrl> data = pageRoleMappingListFromDBAndConfig()
 
@@ -65,7 +65,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         }
 
         if (log.isTraceEnabled()) {
-            log.trace("configs: {}", getConfigAttributeMap());
+            log.trace("configs: {}", getConfigAttributeMap())
         }
     }
 
@@ -74,7 +74,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      */
     private List<InterceptedUrl> pageRoleMappingListFromDBAndConfig() {
         List<InterceptedUrl> data = new ArrayList<InterceptedUrl>()
-        def map = list()
+        def map = getList()
         LinkedHashMap<String, List<String>> interceptedUrlMapFromDB = new LinkedHashMap<String, List<String>>()
         map.each { String key, ArrayList<GeneralPageRoleMapping> grmList ->
             def roleList = []
@@ -91,18 +91,18 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         LinkedHashMap<String, ArrayList<String>> interceptedUrlMapFromConfig = ReflectionUtils.getConfigProperty("interceptUrlMap")
         LinkedHashMap<String, List<String>> mergedData = new LinkedHashMap<String, List<String>>()
 
-        mergedData.putAll(interceptedUrlMapFromDB);
+        mergedData.putAll(interceptedUrlMapFromDB)
 
         // Merge the InterceptedUrlMap from DB and Config.groovy
         for (String key : interceptedUrlMapFromConfig?.keySet()) {
-            List<String> list2 = interceptedUrlMapFromConfig?.get(key);
-            List<String> list3 = mergedData?.get(key);
+            List<String> list2 = interceptedUrlMapFromConfig?.get(key)
+            List<String> list3 = mergedData?.get(key)
             if (list3 != null) {
-                list3.addAll(list2);
-                list3 = list3.unique {x, y -> x <=> y}
+                list3.addAll(list2)
+                list3 = list3.unique { x, y -> x <=> y }
             } else {
-                list2 = list2.unique {x, y -> x <=> y}
-                mergedData.put(key, list2);
+                list2 = list2.unique { x, y -> x <=> y }
+                mergedData.put(key, list2)
             }
         }
 
@@ -127,19 +127,10 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
     }
 
     /**
-     * This private method will be called when this filter is invoked before grails config,
-     */
-    @Transactional(readOnly = true)
-    private def list() {
-        Session session = getHibernateSession()
-        fetchGeneralPageRoleMappingByAppId(session)
-    }
-
-    /**
      * Method is used to get the Hibernate session from the main context by the help of datasource.
      * @return Session     Classic hibernate session.
      */
-    private Session getHibernateSession() {
+    protected Session getHibernateSession() {
         def dataSource = Holders.grailsApplication.mainContext.getBean('dataSource')
         def ctx = Holders.grailsApplication.mainContext
         def hibernateSessionFactory = (!sessionFactory ? ctx.sessionFactory : sessionFactory)
@@ -148,12 +139,29 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
     }
 
     /**
-     * This method will be called from the GeneralPageRoleMappingController.
+     * This method will be get the list of all intercepted url map from DB and Config.groovy.
      * @return list
      */
     @Transactional(readOnly = true)
-    public def getList() {
-        fetchGeneralPageRoleMappingByAppId(sessionFactory.getCurrentSession())
+    private def getList() {
+        fetchGeneralPageRoleMappingByAppId(getHibernateSession())
+    }
+
+    /**
+     * This method can be called from the controller to get merged InterceptedUrlMap
+     * from DB and Config.groovy.
+     * @return
+     */
+    public def fetchListOfInterceptURLMap() {
+        return getList()
+    }
+
+    /**
+     * Return the compiled intercepted url map.
+     * @return  compiled map.
+     */
+    public def fetchCompiledValue(){
+        return compiled
     }
 
     /**
@@ -166,17 +174,24 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         try {
             List appList = getAppIdByAppName(session)
             if (appList) {
-                def appId = appList.get(0)
-                list = session.createQuery('''SELECT new GeneralPageRoleMapping(generalPageRoleMapping.pageName,
+                def appId
+                if (!sessionFactory) {
+                    appId = appList.get(0)
+                    list = session.createQuery('''SELECT new GeneralPageRoleMapping(generalPageRoleMapping.pageName,
                                                         generalPageRoleMapping.roleCode,
                                                         generalPageRoleMapping.applicationName,
                                                         generalPageRoleMapping.displaySequence,
                                                         generalPageRoleMapping.pageId,
                                                         generalPageRoleMapping.applicationId,
                                                         generalPageRoleMapping.version)
-                                                from GeneralPageRoleMapping generalPageRoleMapping
-                                                WHERE generalPageRoleMapping.applicationId = :appId''')
-                        .setParameter('appId', appId).list()
+                                                  FROM GeneralPageRoleMapping generalPageRoleMapping
+                                                  WHERE generalPageRoleMapping.applicationId = :appId''')
+                                    .setParameter('appId', appId).list()
+                } else {
+                    appId = appList.get(0)?.appId
+                    list = GeneralPageRoleMapping.fetchByAppId(appId)
+                }
+
                 def urlSet = new LinkedHashSet<String>()
                 list.each { GeneralPageRoleMapping grm ->
                     urlSet.add(grm.pageName)
@@ -193,7 +208,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
                 }
             }
         } catch (e) {
-            log.warn("Exception in get list of GeneralPageRoleMapping", e.getMessage());
+            log.warn("Exception in get list of GeneralPageRoleMapping", e.getMessage())
         } finally {
             session.close()
         }
@@ -206,44 +221,14 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * @return List    List for application id's.
      */
     private List getAppIdByAppName(Session session) {
-        def appList = session.createQuery('''SELECT capp.appId FROM ConfigApplication capp
-                                                        WHERE capp.appName = :appName''').setString('appName', APP_NAME).list()
+        def appList
+        if (!sessionFactory) {
+            appList = session.createQuery('''SELECT capp.appId FROM ConfigApplication capp
+                                             WHERE capp.appName = :appName''').setString('appName', APP_NAME).list()
+        } else {
+            appList = ConfigApplication.fetchByAppName(APP_NAME)
+        }
         appList
     }
 
-    /**
-     * Save the GeneralPageRoleMapping.
-     * @param generalPageRoleMapping
-     * @return savedGeneralPageRoleMapping
-     * TODO - Still this method is dummy and need to implement.
-     */
-    @Transactional
-    public def save(def generalPageRoleMapping) {
-        // Save the GeneralPageRoleMapping and return the saved obj.
-        def saved
-        saved
-    }
-
-    /**
-     * Update the GeneralPageRoleMapping map.
-     * TODO - Still this method is dummy and need to implement.
-     * @param generalPageRoleMapping
-     * @return updatedGeneralPageRoleMapping
-     */
-    @Transactional
-    public def update(def generalPageRoleMapping) {
-        // Update the GeneralPageRoleMapping and return the updated obj.
-        def updated
-        updated
-    }
-
-    /**
-     * Delete the GeneralPageRoleMapping map.
-     * TODO - Still this method is dummy and need to implement.
-     * @param generalPageRoleMapping
-     */
-    @Transactional
-    public void delete(def generalPageRoleMapping) {
-        // Delete the GeneralPageRoleMapping.
-    }
 }

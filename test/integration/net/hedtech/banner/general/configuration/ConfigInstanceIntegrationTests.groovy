@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
@@ -12,6 +13,8 @@ import org.junit.Test
  * ConfigInstanceIntegrationTests.
  */
 class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
+
+    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
 
     @Before
     public void setUp() {
@@ -169,7 +172,7 @@ class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
                 appId: 1,
-                appName: 'PlatformSandboxApp',
+                appName: APP_NAME
         )
         return configApplication
     }

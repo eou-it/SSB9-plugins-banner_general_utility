@@ -107,7 +107,7 @@ public class ConfigApplication implements Serializable {
     @Override
     public String toString() {
         return """\
-            Gubappl{
+            ConfigApplication{
                 id=$id,
                 appId=$appId,
                 appName='$appName',

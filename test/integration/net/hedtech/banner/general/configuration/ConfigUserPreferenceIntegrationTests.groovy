@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -18,6 +19,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
     def sql
     def conn
     Integer pidm
+    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
 
     @Before
     public void setUp() {
@@ -200,7 +202,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appName: 'PlatformSandboxApp'
+                appName: APP_NAME
         )
         return configApplication
     }

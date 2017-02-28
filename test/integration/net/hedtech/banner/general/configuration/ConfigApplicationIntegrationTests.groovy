@@ -2,6 +2,8 @@
  Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
+
+import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -11,6 +13,9 @@ import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureExcep
 
 
 class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
+
+    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
+
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
@@ -44,7 +49,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
 
         assertNotNull configApplication.id
         assertEquals 0L, configApplication.version
-        assertEquals "PlatformSandbox", configApplication.appName
+        assertEquals APP_NAME, configApplication.appName
         assertEquals "Banner", configApplication.dataOrigin
 
         //Update the entity
@@ -117,12 +122,11 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         configApplication = configApplication.save(failOnError: true, flush: true)
         assertNotNull configApplication.id
 
-        String appName = "PlatformSandbox"
-        def configApplications = ConfigApplication.fetchByAppName(appName)
+        def configApplications = ConfigApplication.fetchByAppName(APP_NAME)
         assertTrue (configApplications.size() >= 1)
 
         configApplications.each { it ->
-            assertTrue it.appName == appName
+            assertTrue it.appName == APP_NAME
         }
     }
 
@@ -155,8 +159,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
     void testToString() {
         ConfigApplication newConfigApplication = newConfigApplication()
         newConfigApplication.save(failOnError: true, flush: true)
-        String appName = "PlatformSandbox"
-        List <ConfigApplication> configApplications = ConfigApplication.fetchByAppName(appName)
+        List <ConfigApplication> configApplications = ConfigApplication.fetchByAppName(APP_NAME)
         assertFalse configApplications.isEmpty()
         configApplications.each { configApplication ->
             String configApplicationToString = configApplication.toString()
@@ -170,8 +173,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
     void testHashCode() {
         ConfigApplication newConfigApplication = newConfigApplication()
         newConfigApplication.save(failOnError: true, flush: true)
-        String appName = "PlatformSandbox"
-        List <ConfigApplication> configApplications = ConfigApplication.fetchByAppName(appName)
+        List <ConfigApplication> configApplications = ConfigApplication.fetchByAppName(APP_NAME)
         assertFalse configApplications.isEmpty()
         configApplications.each { configApplication ->
             Integer configApplicationHashCode = configApplication.hashCode()
@@ -182,7 +184,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
 
     private ConfigApplication newConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appName: "PlatformSandbox"
+                appName: APP_NAME
         )
         return configApplication
     }

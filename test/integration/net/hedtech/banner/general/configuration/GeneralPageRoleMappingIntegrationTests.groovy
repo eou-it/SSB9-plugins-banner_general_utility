@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
@@ -13,7 +14,7 @@ import org.junit.Test
  */
 class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
 
-    private static final String APP_NAME = 'PlatformSandboxApp'
+    final private static String APP_NAME = Holders.grailsApplication.metadata['app.name']
 
     @Before
     public void setUp() {
@@ -242,14 +243,8 @@ class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
      * @return ConfigApplication
      */
     private GeneralPageRoleMapping getGeneralRequestMap() {
-        GeneralPageRoleMapping generalRequestMap = new GeneralPageRoleMapping(
-                applicationId: 100001,
-                applicationName: APP_NAME,
-                pageId: 1001,
-                displaySequence: 1,
-                pageName: 'TEST_PAGE',
-                roleCode: 'TEST_ROLE_12'
-        )
+        GeneralPageRoleMapping generalRequestMap = new GeneralPageRoleMapping("TEST_PAGE", "TEST_ROLE_12", APP_NAME,
+                                                        1, 1001l, 100001l, 0L)
         return generalRequestMap
     }
 }

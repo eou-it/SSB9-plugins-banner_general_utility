@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -11,6 +12,8 @@ import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 
 class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
+
+    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
 
     @Before
     public void setUp() {
@@ -148,7 +151,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
 
     private static ConfigApplication newConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appName: "PlatformSandbox",
+                appName: APP_NAME
         )
         return configApplication
     }

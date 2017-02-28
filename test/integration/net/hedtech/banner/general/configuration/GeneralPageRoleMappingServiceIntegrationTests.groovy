@@ -26,15 +26,44 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
     @After
     public void tearDown() {
         super.tearDown()
+        generalPageRoleMappingService.initialized = false
     }
 
     @Test
     public void testInitialize() {
         saveDomains()
 
-        assertFalse generalPageRoleMappingService.initialized
+        def properties = new Properties()
+        properties.put('grails.plugin.springsecurity.interceptUrlMap', getInterceptedURLMap())
+        def configSlurper = new ConfigSlurper()
+        Holders.config.merge(configSlurper.parse(properties))
+
         generalPageRoleMappingService.initialize()
-        assertTrue generalPageRoleMappingService.initialized
+        assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
+
+        def list = generalPageRoleMappingService.fetchListOfInterceptURLMap()
+        assertTrue list.size() >= 0
+
+        Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
+    }
+
+    @Test
+    public void testInitializeWithoutSessionFactory() {
+        def oldSessionFactory = generalPageRoleMappingService.sessionFactory
+        generalPageRoleMappingService.sessionFactory = null
+
+        saveDomains()
+
+        def properties = new Properties()
+        properties.put('grails.plugin.springsecurity.interceptUrlMap', getInterceptedURLMap())
+        def configSlurper = new ConfigSlurper()
+        Holders.config.merge(configSlurper.parse(properties))
+
+        generalPageRoleMappingService.initialize()
+        assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
+
+        generalPageRoleMappingService.sessionFactory = oldSessionFactory
+        Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
     }
 
     private ConfigApplication saveDomains() {
@@ -105,5 +134,34 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
                 roleCode: 'TEST_ROLE_12'
         )
         return generalRequestMap
+    }
+
+    private def getInterceptedURLMap() {
+        return [
+                '/'                         : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+                '/login/**'                 : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+                '/logout/**'                : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+                '/ssb/uiCatalog/index'      : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+                '/ssb/AuthenticationTesting': ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'],
+                '/ssb/survey/**'            : ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M'],
+                '/ssb/userAgreement/**'     : ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M'],
+                '/ssb/securityQA/**'        : ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M'],
+                '/ssb/theme/**'             : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+                '/ssb/themeEditor/**'       : ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M'],
+                '/**'                       : ['IS_AUTHENTICATED_ANONYMOUSLY']
+        ]
     }
 }
