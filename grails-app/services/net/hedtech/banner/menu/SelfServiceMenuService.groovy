@@ -140,7 +140,7 @@ class SelfServiceMenuService {
             mnu.url = it.twgrmenu_db_link_ind == "Y" ? getMepSsb8UrlFromConfig() + it.twgrmenu_url : it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
-
+            mnu.sourceIndicator = it.twgrmenu_source_ind
             dataMap.add(mnu)
 
         };
@@ -339,10 +339,9 @@ class SelfServiceMenuService {
                 else
                     govroleCriteria = govroleCriteria + " ,'" + it.value + "'"
             }
-
+            govroleCriteria = govroleCriteria + ")"
         }
 
-        govroleCriteria = govroleCriteria + ")"
         return govroleCriteria;
     }
 

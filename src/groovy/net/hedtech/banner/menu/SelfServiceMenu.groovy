@@ -22,5 +22,6 @@ public class SelfServiceMenu implements Serializable {
     def pageCaption
     def captionProperty
     def uiVersion
+    def sourceIndicator
 }
 
