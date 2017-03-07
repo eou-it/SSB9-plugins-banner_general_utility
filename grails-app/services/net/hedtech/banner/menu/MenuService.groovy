@@ -1,15 +1,13 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.menu
 
-import grails.util.Holders
+import groovy.sql.Sql
 import net.hedtech.banner.utility.GeneralMenu
+import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
-
-import groovy.sql.Sql
-import org.apache.log4j.Logger
 
 class MenuService {
     static transactional = true
@@ -18,7 +16,7 @@ class MenuService {
     def grailsApplication
     def workflowMenuService
     def configurationService
-    private final log = Logger.getLogger(getClass())
+    private static final def log = Logger.getLogger(getClass())
 
     /**
      * This is returns map of all menu items based on user access
@@ -50,7 +48,6 @@ class MenuService {
         def dataMap = []
         def mnuPrf = getMnuPref()
         Sql sql
-        def parent
         String param = getMenuProcedureParam()
         log.debug("Personal Menu started")
         sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -176,7 +173,7 @@ class MenuService {
                 isMnuPref = true
         }
         catch (Exception e) {
-            log.error("ERROR: Could not get menu preferences. $e")
+            log.error "ERROR: Could not get menu preferences.", e
             throw e
         }
         return isMnuPref
@@ -383,7 +380,6 @@ class MenuService {
         def menuMap = []
         def mnuPrf = getMnuPref()
         Sql sql
-        def parent
         log.debug("Personal Menu started")
         sql = new Sql(sessionFactory.getCurrentSession().connection())
         sql.execute("Begin gukmenu.p_bld_pers_menu('MAG'); End;")
@@ -498,7 +494,7 @@ class MenuService {
             if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).releaseCb == 'Y')
                 isReleasePref = true
         }catch (Exception e) {
-            log.error("ERROR: Could not get release preferences. $e")
+            log.error "ERROR: Could not get release preferences.", e
             throw e
         }
         return isReleasePref
@@ -510,7 +506,7 @@ class MenuService {
             if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).dbaseInstitutionCb == 'Y')
                 isDBInstancePref = true
         }catch (Exception e) {
-            log.error("ERROR: Could not get db instance preferences. $e")
+            log.error "ERROR: Could not get db instance preferences.", e
             throw e
         }
         return isDBInstancePref
@@ -522,7 +518,7 @@ class MenuService {
             if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameCb == 'Y')
                 formNamePref = true
         }catch (Exception e) {
-            log.error("ERROR: Could not get form name preferences. $e")
+            log.error "ERROR: Could not get form name preferences." , e
             throw e
         }
         return formNamePref

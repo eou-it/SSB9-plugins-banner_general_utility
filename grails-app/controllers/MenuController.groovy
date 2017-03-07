@@ -1,9 +1,9 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
+
 import net.hedtech.banner.menu.Menu
 import org.apache.log4j.Logger
-import net.hedtech.banner.security.FormContext
 
 /**
  * Menu controller returns menu as XML format
@@ -16,7 +16,7 @@ class MenuController {
 
     def menuService
     def mnuLabel = "Banner"
-    private final log = Logger.getLogger(getClass())
+    private static final def log = Logger.getLogger(getClass())
 
     def data = {
         def menuType

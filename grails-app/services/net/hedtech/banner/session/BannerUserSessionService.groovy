@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.session
 
@@ -16,7 +16,7 @@ class BannerUserSessionService {
     def sessionFactory                     // injected by Spring
     def grailsApplication                  // injected by Spring
 
-    private final log = Logger.getLogger(getClass())
+    private static final def log = Logger.getLogger(getClass())
 
 
     /**
