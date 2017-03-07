@@ -88,23 +88,8 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
                 interceptedUrlMapFromDB.put(key, super.split(roleList?.join(',')))
             }
         }
-        LinkedHashMap<String, ArrayList<String>> interceptedUrlMapFromConfig = ReflectionUtils.getConfigProperty("interceptUrlMap")
-        LinkedHashMap<String, List<String>> mergedData = new LinkedHashMap<String, List<String>>()
-
-        mergedData.putAll(interceptedUrlMapFromDB)
-
-        // Merge the InterceptedUrlMap from DB and Config.groovy
-        for (String key : interceptedUrlMapFromConfig?.keySet()) {
-            List<String> list2 = interceptedUrlMapFromConfig?.get(key)
-            List<String> list3 = mergedData?.get(key)
-            if (list3 != null) {
-                list3.addAll(list2)
-                list3 = list3.unique { x, y -> x <=> y }
-            } else {
-                list2 = list2.unique { x, y -> x <=> y }
-                mergedData.put(key, list2)
-            }
-        }
+        Map interceptedUrlMapFromConfig = ReflectionUtils.getConfigProperty("interceptUrlMap")
+        Map mergedData = mergeMap(interceptedUrlMapFromConfig, interceptedUrlMapFromDB)
 
         // Prepare List of interceptedUrlMap from the Merged data.
         mergedData.each { k, v ->
@@ -112,6 +97,29 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
             data.add(new InterceptedUrl(k, super.split(v?.join(',')), method))
         }
         data
+    }
+
+    /**
+     * Method is used to merging two maps.
+     * @param firstMap Map
+     * @param secondMap Map
+     * @return Map
+     */
+    private Map mergeMap(Map firstMap, Map secondMap) {
+        def resultMap = [:]
+        resultMap.putAll(firstMap)
+        resultMap.putAll(secondMap)
+
+        resultMap.each { key, value ->
+            if (firstMap[key] && secondMap[key]) {
+                resultMap[key] = firstMap[key] + secondMap[key]
+            }
+            if (resultMap[key] instanceof List) {
+                resultMap[key].unique { x, y -> x <=> y }
+            }
+        }
+
+        return resultMap
     }
 
     /**
@@ -158,9 +166,9 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
 
     /**
      * Return the compiled intercepted url map.
-     * @return  compiled map.
+     * @return compiled map.
      */
-    public def fetchCompiledValue(){
+    public def fetchCompiledValue() {
         return compiled
     }
 
@@ -186,7 +194,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
                                                         generalPageRoleMapping.version)
                                                   FROM GeneralPageRoleMapping generalPageRoleMapping
                                                   WHERE generalPageRoleMapping.applicationId = :appId''')
-                                    .setParameter('appId', appId).list()
+                            .setParameter('appId', appId).list()
                 } else {
                     appId = appList.get(0)?.appId
                     list = GeneralPageRoleMapping.fetchByAppId(appId)
