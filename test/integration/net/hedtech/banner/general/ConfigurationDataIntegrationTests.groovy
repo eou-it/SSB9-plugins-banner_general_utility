@@ -55,12 +55,12 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	@Test
 	void testFetchNullTypes(){
 		def configurationData = ConfigurationData.fetchByType(null)
-		assertNull configurationData
+		 assertTrue configurationData.size() ==0
 	}
 
 	@Test
 	void testFetchByNameAndTypeNull(){
-		def configurationData =  ConfigurationData.fetchByNameAndType(null)
+		def configurationData =  ConfigurationData.fetchByNameAndType(null,null)
 		assertNull configurationData
 	}
 
