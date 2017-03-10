@@ -15,7 +15,8 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 
 /**
- * DAO for supplemental data. This strategy works against the
+ * DAO for supplemental data to support Banner SS applications.
+ * This strategy works against the
  * GOVSDAV view for both reading and writing supplemental data.
  */
 class SupplementalDataSSBService {
@@ -27,14 +28,14 @@ class SupplementalDataSSBService {
 
     private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(SupplementalDataSSBService.class)
-    def public i = 0
 
-
+    /**
+     * Saves SDE Extensions.
+     */
     public def saveSdeFromUiRequest(tableName, extension) {
 
         def batch = [create: [], destroy: [], update: []]
 
-        // SDE Process --> move to services
         def sdeModel = loadSupplementalDataForTable(tableName, extension.id)
 
         extension.extensions.each {
@@ -63,10 +64,8 @@ class SupplementalDataSSBService {
 
     /**
      * Returns the conditions if SDE is enabled for that UI component.
-     * @param block id from UI Block Component
+     * @param tableName table name with SDE on
      */
-
-
     public boolean hasSdeForTable(tableName) {
 
         def sdeFound = false
@@ -81,7 +80,6 @@ class SupplementalDataSSBService {
                 sdeFound = "Y".equals(sde)
             }
             return sdeFound
-            //return false
         } catch (e) {
             log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
             throw e
@@ -90,6 +88,10 @@ class SupplementalDataSSBService {
         }
     }
 
+    /**
+     * Returns the conditions if SDE data is available for the model.
+     * @param id the surrogate id on a table
+     */
     public boolean hasSde(id) {
 
         def sdeFound = false
@@ -117,7 +119,6 @@ class SupplementalDataSSBService {
                 sdeFound = "Y".equals(sde)
             }
             return sdeFound
-            //return false
         } catch (e) {
             log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
             throw e
@@ -136,10 +137,7 @@ class SupplementalDataSSBService {
 
         def id = model.id
 
-
-
         def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(model.getClass())?.tableName.toUpperCase())
-
 
         if (tableName == null)
             return false
@@ -167,7 +165,11 @@ class SupplementalDataSSBService {
         return "Y".equals(sdeDataFound)
     }
 
-
+    /**
+     * Returns the model extension
+     * @param tableName the table name associated with SDE
+     * @param id the surrogate id on a table
+     */
     public def getModelExtension(tableName, id) {
 
         def sdeModel = loadSupplementalDataForTable(tableName, id)
@@ -208,7 +210,12 @@ class SupplementalDataSSBService {
         return l
     }
 
-
+    /**
+     * Returns the model extension
+     * @param tableName the table name associated with SDE
+     * @param id the surrogate id on a table
+     * @param model the domain model
+     */
     public def getModelExtensionData(tableName, id, model) {
 
         if (!hasSdeForTable(tableName)) return model
@@ -248,17 +255,18 @@ class SupplementalDataSSBService {
             }
         }
 
-
         if (model.metaClass) {
             model.metaClass.extensions = l
         } else {
             model.extensions = l
         }
-
-
     }
 
-
+    /**
+     * Returns the SDE metadata
+     * @param tableName the table name associated with SDE
+     * @param id the surrogate id on a table
+     */
     public def loadSupplementalDataForTable(tableName, id) {
         try {
             def sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -280,15 +288,18 @@ class SupplementalDataSSBService {
 
             supplementalProperties
         } catch (e) {
-            //log.error "Failed to load SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
+            log.error "Failed to load SDE for the entity. Exception: $e "
             throw e
         }
     }
 
-
+    /**
+     * Persists the SDE metadata
+     * @param tableName the table name associated with SDE
+     * @param tid the surrogate id on a table
+     * @param prop the SDE properties
+     */
     public def persistSupplementalDataForTable(tableName, tid, prop) {
-
-        //log.trace "In persist: ${model}"
         def sql
 
         try {
@@ -341,15 +352,6 @@ class SupplementalDataSSBService {
                     if (value && value.getAt(0) == "0" && value.getAt(1) == ".") {  // Decimal
                         value = value.substring(1)
                     }
-
-                    /*
-                    println "Value: " + value
-                    println "tableName: "  + tableName
-                    println "attributeName: " + attributeName
-                    println "disc: " + disc
-                    println  "parentTab: " + parentTab
-                    println "dataType: " + dataType
-                    */
 
                     sql.call("""
 	                       DECLARE
@@ -415,7 +417,7 @@ class SupplementalDataSSBService {
 
     }
 
-    //Performance POC
+
     private def loadSupplementalPropertyTable(Map supplementalProperties, String tableName) {
 
         def session = sessionFactory.getCurrentSession()
@@ -767,6 +769,4 @@ class SupplementalDataSSBService {
          ){key ->
          log.info "ROWID:" +	key}**************************************************************   */
     }
-
-
 }
