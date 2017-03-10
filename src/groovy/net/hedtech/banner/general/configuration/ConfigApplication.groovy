@@ -135,7 +135,7 @@ public class ConfigApplication implements Serializable {
         def configApplication
         if(appName){
             configApplication = ConfigApplication.withSession { session ->
-                configApplication = session.getNamedQuery('ConfigApplication.fetchByAppName').setString('appName', appName).list()
+                configApplication = session.getNamedQuery('ConfigApplication.fetchByAppName').setString('appName', appName).uniqueResult()
             }
         }
         return configApplication

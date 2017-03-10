@@ -11,23 +11,25 @@ import org.apache.log4j.Logger
 class ConfigPropertiesService extends ServiceBase{
 
     static transactional = false
-    private static final LOGGER = Logger.getLogger(getClass())
+    private static final LOGGER = Logger.getLogger(ConfigPropertiesService.getClass().getName())
 
     def grailsApplication
-    def configSlurper = new ConfigSlurper()
+    ConfigSlurper configSlurper = new ConfigSlurper()
 
     def setConfigFromDb() {
-        def appName = grailsApplication.metadata['app.name']
-        def configApp = ConfigApplication.fetchByAppName(appName)
-        if(configApp.size()>0) {
-            def appId = ((ConfigApplication) ((ArrayList) configApp).get(0)).appId
-            def configProp = ConfigProperties.fetchByAppId(appId)
+        String appName = grailsApplication.metadata['app.name']
+        ConfigApplication configApp = ConfigApplication.fetchByAppName("a")
+        if(configApp) {
+            def appId = configApp.appId
+            ArrayList configProp = ConfigProperties.fetchByAppId(appId)
             configProp?.each {
-                def property = new Properties()
+                Properties property = new Properties()
                 def key = it.configName
                 def value = it.configValue
-                if (it.configType == 'boolean')
+                if ('boolean' == it.configType)
                     value = value.toBoolean()
+                else if ('integer' == it.configType)
+                    value = value.toInteger()
                 property.put(key, value)
                 CH.config.merge(configSlurper.parse(property))
             }
