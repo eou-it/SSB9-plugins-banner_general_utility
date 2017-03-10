@@ -22,11 +22,6 @@ import org.springframework.http.HttpMethod
 class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefinition {
 
     /**
-     * Grails Application name from the Grails context holder.
-     */
-    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
-
-    /**
      * This will be injected by the spring only when making this service call from the GeneralPageRoleMappingController.
      */
     def sessionFactory
@@ -229,6 +224,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * @return List    List for application id's.
      */
     private List getAppIdByAppName(Session session) {
+        final def APP_NAME = Holders.grailsApplication.metadata['app.name']
         def appList
         if (!sessionFactory) {
             appList = session.createQuery('''SELECT capp.appId FROM ConfigApplication capp
