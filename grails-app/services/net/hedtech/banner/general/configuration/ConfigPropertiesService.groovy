@@ -18,7 +18,7 @@ class ConfigPropertiesService extends ServiceBase{
 
     def setConfigFromDb() {
         String appName = grailsApplication.metadata['app.name']
-        ConfigApplication configApp = ConfigApplication.fetchByAppName("a")
+        ConfigApplication configApp = ConfigApplication.fetchByAppName(appName)
         if(configApp) {
             def appId = configApp.appId
             ArrayList configProp = ConfigProperties.fetchByAppId(appId)
