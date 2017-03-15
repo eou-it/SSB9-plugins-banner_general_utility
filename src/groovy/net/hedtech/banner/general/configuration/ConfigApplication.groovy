@@ -44,7 +44,7 @@ public class ConfigApplication implements Serializable {
      * Generated unique numeric identifier for this entity.
      */
     @Column(name = 'GUBAPPL_APP_ID')
-    Long appId
+    String appId
 
 
     /**
@@ -120,7 +120,7 @@ public class ConfigApplication implements Serializable {
 
 
     static constraints = {
-        appId(nullable: true)
+        appId(nullable: false, maxSize: 10)
         appName(nullable: false, maxSize: 255)
         lastModified(nullable: true)
         lastModifiedBy(nullable: true, maxSize: 30)

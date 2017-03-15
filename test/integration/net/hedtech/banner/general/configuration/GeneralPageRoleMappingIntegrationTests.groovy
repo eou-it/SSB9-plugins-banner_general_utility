@@ -14,12 +14,15 @@ import org.junit.Test
  */
 class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
 
-    final private static String APP_NAME = Holders.grailsApplication.metadata['app.name']
+    private def appName
+    private def appId
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+        appName = Holders.grailsApplication.metadata['app.name']
+        appId = 'TESTAPP'
     }
 
     @After
@@ -35,7 +38,7 @@ class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
         assert list.size() >= 1
 
         def generalReqMapTestPageName = list.find { p -> p.pageName == 'TEST PAGE' }
-        assertEquals generalReqMapTestPageName.applicationName, APP_NAME
+        assertEquals generalReqMapTestPageName.applicationName, appName
         assertEquals generalReqMapTestPageName.pageName, 'TEST PAGE'
         assertEquals generalReqMapTestPageName.roleCode, 'TEST_ROLE'
     }
@@ -50,7 +53,7 @@ class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
 
         list.each { requestMap ->
             assertEquals configApplication.appId, requestMap.applicationId
-            assertEquals APP_NAME, requestMap.applicationName
+            assertEquals appName, requestMap.applicationName
             assertEquals "TEST PAGE", requestMap.pageName
             assertEquals "TEST_ROLE", requestMap.roleCode
         }
@@ -233,7 +236,8 @@ class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appName: APP_NAME
+                appName: appName,
+                appId: appId
         )
         return configApplication
     }
@@ -243,8 +247,8 @@ class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
      * @return ConfigApplication
      */
     private GeneralPageRoleMapping getGeneralRequestMap() {
-        GeneralPageRoleMapping generalRequestMap = new GeneralPageRoleMapping("TEST_PAGE", "TEST_ROLE_12", APP_NAME,
-                                                        1, 1001l, 100001l, 0L)
+        GeneralPageRoleMapping generalRequestMap = new GeneralPageRoleMapping("TEST_PAGE", "TEST_ROLE_12", appName,
+                1, 1001l, appId, 0L)
         return generalRequestMap
     }
 }

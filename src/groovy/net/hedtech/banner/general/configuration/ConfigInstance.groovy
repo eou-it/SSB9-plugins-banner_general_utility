@@ -37,7 +37,7 @@ public class ConfigInstance implements Serializable {
 
 
     @Column(name = 'GUBCEUR_ENVIRNOMENT_SEQ')
-    Long env
+    String env
 
     /**
      * Foreign Key : FK_GUBCEUR_INV_GUBAPPL

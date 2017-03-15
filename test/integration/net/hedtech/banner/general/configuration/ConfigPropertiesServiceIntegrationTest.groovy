@@ -21,7 +21,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     def configApplicationService
     def grailsApplication
 
-    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
+    private def appName
+    private def appId
     private static final String CONFIG_NAME = 'TEST_CONFIG'
     private static final String CONFIG_VALUE = 'TEST_VALUE'
 
@@ -29,6 +30,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+        appName = Holders.grailsApplication.metadata['app.name']
+        appId = 'TESTAPP'
     }
 
     @After
@@ -89,7 +92,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
                 lastModified: new Date(),
-                appName: APP_NAME
+                appName: appName,
+                appId: appId
         )
         return configApplication
     }

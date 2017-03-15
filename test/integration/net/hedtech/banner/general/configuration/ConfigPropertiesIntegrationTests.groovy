@@ -14,12 +14,15 @@ import org.junit.Test
  */
 class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
 
-    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
+    private def appName
+    private def appId
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+        appName = Holders.grailsApplication.metadata['app.name']
+        appId = 'TESTAPP'
     }
 
     @After
@@ -49,7 +52,7 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
 
         def id = configProperties.id
         configProperties.delete()
-        assertNull configProperties.get( id )
+        assertNull configProperties.get(id)
     }
 
 
@@ -68,7 +71,7 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
             byte[] bytes = out.toByteArray()
             ConfigProperties configPropertiesCopy
             new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
-                configPropertiesCopy = (ConfigProperties)is.readObject()
+                configPropertiesCopy = (ConfigProperties) is.readObject()
                 is.close()
             }
             assertEquals configPropertiesCopy, configProperties
@@ -86,7 +89,7 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull newConfigProperties.id
         assertEquals 0L, newConfigProperties.version
 
-        List <ConfigProperties> configPropertyList = ConfigProperties.fetchByAppId(newConfigProperties.configApplication.appId)
+        List<ConfigProperties> configPropertyList = ConfigProperties.fetchByAppId(newConfigProperties.configApplication.appId)
         assertFalse configPropertyList.isEmpty()
         configPropertyList.each { configProperties ->
             String configPropertiesToString = configProperties.toString()
@@ -103,7 +106,7 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull newConfigProperties.id
         assertEquals 0L, newConfigProperties.version
 
-        List <ConfigProperties> configPropertyList = ConfigProperties.fetchByAppId(newConfigProperties.configApplication.appId)
+        List<ConfigProperties> configPropertyList = ConfigProperties.fetchByAppId(newConfigProperties.configApplication.appId)
         assertFalse configPropertyList.isEmpty()
         configPropertyList.each { configProperties ->
             String configPropertiesHashCode = configProperties.hashCode()
@@ -121,26 +124,26 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         def list = ConfigProperties.fetchByAppId(configProperties.configApplication.appId)
         assertTrue list.size() >= 1
 
-        list.each {it ->
+        list.each { it ->
             assertEquals it.configApplication.appId, configProperties.configApplication.appId
         }
     }
 
 
     @Test
-    void testFetchByInValidAppId(){
+    void testFetchByInValidAppId() {
         ConfigProperties configProperties = createNewConfigProperties()
 
         assertNotNull configProperties.id
 
-        Long appID = 9999999
+        String appID = 'invalidApp'
         def list = ConfigProperties.fetchByAppId(appID)
         assertTrue list.size() == 0
     }
 
 
     @Test
-    void testFetchByNull(){
+    void testFetchByNull() {
         ConfigProperties configProperties = createNewConfigProperties()
 
         assertNotNull configProperties.id
@@ -151,7 +154,7 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    private ConfigProperties createNewConfigProperties (){
+    private ConfigProperties createNewConfigProperties() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
         configApplication = configApplication.refresh()
@@ -183,7 +186,8 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
                 lastModified: new Date(),
-                appName: APP_NAME
+                appName: appName,
+                appId: appId
         )
         return configApplication
     }

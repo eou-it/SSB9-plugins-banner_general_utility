@@ -35,7 +35,7 @@ public class ConfigRolePageMapping implements Serializable {
 
 
     /**
-     * Foreign Key : FK_GURAPPR_INV_GURCTLEPP
+     * Foreign Key : FK_GURAPPR_INV_GURCTLEP
      */
     @ManyToOne
     @JoinColumns([
@@ -54,16 +54,16 @@ public class ConfigRolePageMapping implements Serializable {
 
 
     /**
-     * Foreign Key : FK_GURAPPR_INV_GURCTLEPP
+     * Foreign Key : FK_GURAPPR_INV_GURCTLEP
      */
     @ManyToOne
     @JoinColumns([
-            @JoinColumn(name = "GURAPPR_PAGE_ID", referencedColumnName = "GURCTLEPP_PAGE_ID")
+            @JoinColumn(name = "GURAPPR_PAGE_ID", referencedColumnName = "GURCTLEP_PAGE_ID")
     ])
     ConfigControllerEndpointPage endpointPage
 
 
-    @Column(name = 'GURAPPR_TWTVROLE_CODE')
+    @Column(name = 'GURAPPR_ROLE_CODE')
     String roleCode
 
 

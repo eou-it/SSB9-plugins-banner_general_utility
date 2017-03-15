@@ -14,13 +14,16 @@ import org.junit.Test
  */
 class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCase {
 
-    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
+    private def appName
+    private def appId
     //private Session session
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+        appName = Holders.grailsApplication.metadata['app.name']
+        appId = 'TESTAPP'
     }
 
     @After
@@ -143,7 +146,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
             //session.beginTransaction()
 
             //saveRequiredDomains()
-            ConfigApplication configApplication = ConfigApplication.fetchByAppName(APP_NAME)
+            ConfigApplication configApplication = ConfigApplication.fetchByAppName(appName)
             configApplication = configApplication.refresh()
             List<GeneralPageRoleMapping> list = GeneralPageRoleMapping.fetchByAppId(configApplication.appId)
             assert (list.size() > 0)
@@ -171,10 +174,10 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
             // Save all required domain.
             //saveRequiredDomains()
             createConfigControllerEndPointPage()
-            ConfigApplication configApplication = ConfigApplication.fetchByAppName(APP_NAME)
+            ConfigApplication configApplication = ConfigApplication.fetchByAppName(appName)
             configApplication = configApplication.refresh()
             List<GeneralPageRoleMapping> list = GeneralPageRoleMapping.fetchByAppId(configApplication.appId)
-            //def list = endpointPage.getAllConfigByAppName(APP_NAME)
+            //def list = endpointPage.getAllConfigByAppName(appName)
             Set<String> urlSet = new LinkedHashSet<String>()
             list.each { GeneralPageRoleMapping requestURLMap -> urlSet.add(requestURLMap.pageName) }
 
@@ -271,7 +274,8 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appName: APP_NAME
+                appName: appName,
+                appId: appId
         )
         return configApplication
     }

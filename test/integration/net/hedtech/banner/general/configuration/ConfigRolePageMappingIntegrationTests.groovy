@@ -13,12 +13,15 @@ import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureExcep
 
 class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
 
-    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
+    private def appName
+    private def appId
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
         super.setUp()
+        appName = Holders.grailsApplication.metadata['app.name']
+        appId = 'TESTAPP'
     }
 
     @After
@@ -132,7 +135,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
             byte[] bytes = out.toByteArray()
             ConfigRolePageMapping configRolePageMappingCopy
             new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
-                configRolePageMappingCopy = (ConfigRolePageMapping)is.readObject()
+                configRolePageMappingCopy = (ConfigRolePageMapping) is.readObject()
                 is.close()
             }
             assertEquals newConfigRolePageMap, configRolePageMappingCopy
@@ -142,21 +145,22 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
         }
     }
 
-    private static ConfigRolePageMapping newConfigRolePageMap() {
-        ConfigRolePageMapping configRolePageMap= new ConfigRolePageMapping(
+    private ConfigRolePageMapping newConfigRolePageMap() {
+        ConfigRolePageMapping configRolePageMap = new ConfigRolePageMapping(
                 roleCode: '1'
         )
         return configRolePageMap
     }
 
-    private static ConfigApplication newConfigApplication() {
+    private ConfigApplication newConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appName: APP_NAME
+                appName: appName,
+                appId: appId
         )
         return configApplication
     }
 
-    private static ConfigControllerEndpointPage newConfigControllerEndPoint() {
+    private ConfigControllerEndpointPage newConfigControllerEndPoint() {
         ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage(
                 description: 'TEST',
                 displaySequence: 1,

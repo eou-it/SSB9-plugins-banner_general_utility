@@ -27,7 +27,7 @@ public class GeneralPageRoleMapping implements Serializable {
     long id
 
     @Column(name = 'APPLICATION_ID')
-    long applicationId;
+    String applicationId;
 
     @Column(name = 'PAGE_ID')
     long pageId;
@@ -49,7 +49,7 @@ public class GeneralPageRoleMapping implements Serializable {
     Long version;
 
     GeneralPageRoleMapping(String pageName, String roleCode, String applicationName,
-                      int displaySequence, long pageId, long applicationId, Long version) {
+                      int displaySequence, long pageId, String applicationId, Long version) {
         this.pageName = pageName
         this.roleCode = roleCode
         this.applicationName = applicationName

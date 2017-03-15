@@ -8,11 +8,11 @@ import org.hibernate.annotations.Type
 import javax.persistence.*
 
 /**
- * The persistent class for the GURCTLEPP database table.
+ * The persistent class for the GURCTLEP database table.
  *
  */
 @Entity
-@Table(name = 'GURCTLEPP')
+@Table(name = 'GURCTLEP')
 @NamedQueries(value = [
         @NamedQuery(name = 'ConfigControllerEndpointPage.fetchAll',
                 query = '''FROM ConfigControllerEndpointPage ccep'''),
@@ -25,60 +25,60 @@ public class ConfigControllerEndpointPage implements Serializable {
 
 
     @Id
-    @SequenceGenerator(name = 'GURCTLEPP_SEQ_GENERATOR', sequenceName = 'GURCTLEPP_SURROGATE_ID_SEQ')
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GURCTLEPP_SEQ_GENERATOR')
-    @Column(name = 'GURCTLEPP_SURROGATE_ID')
+    @SequenceGenerator(name = 'GURCTLEP_SEQ_GENERATOR', sequenceName = 'GURCTLEP_SURROGATE_ID_SEQ')
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GURCTLEP_SEQ_GENERATOR')
+    @Column(name = 'GURCTLEP_SURROGATE_ID')
     Long id
 
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = 'GURCTLEPP_ACTIVITY_DATE')
+    @Column(name = 'GURCTLEP_ACTIVITY_DATE')
     Date lastModified
 
     /**
-     * Data origin column for GURCTLEPP
+     * Data origin column for GURCTLEP
      */
-    @Column(name = 'GURCTLEPP_DATA_ORIGIN')
+    @Column(name = 'GURCTLEP_DATA_ORIGIN')
     String dataOrigin
 
 
-    @Column(name = 'GURCTLEPP_DESCRIPTION')
+    @Column(name = 'GURCTLEP_DESCRIPTION')
     String description
 
 
-    @Column(name = 'GURCTLEPP_DISPLAY_SEQUENCE')
+    @Column(name = 'GURCTLEP_DISPLAY_SEQUENCE')
     Long displaySequence
 
 
     @Type(type = "yes_no")
-    @Column(name = 'GURCTLEPP_STATUS_INDICATOR')
+    @Column(name = 'GURCTLEP_STATUS_INDICATOR')
     Boolean enableIndicator = true
 
 
    /**
-    * Foreign Key : FK_GURCTLEPP_INV_GUBAPPL
+    * Foreign Key : FK_GURCTLEP_INV_GUBAPPL
     */
     @ManyToOne
     @JoinColumns([
-            @JoinColumn(name = "GURCTLEPP_GUBAPPL_APP_ID", referencedColumnName = "GUBAPPL_APP_ID")
+            @JoinColumn(name = "GURCTLEP_GUBAPPL_APP_ID", referencedColumnName = "GUBAPPL_APP_ID")
     ])
     ConfigApplication configApplication
 
 
-    @Column(name = 'GURCTLEPP_PAGE_NAME')
+    @Column(name = 'GURCTLEP_PAGE_NAME')
     String pageName
 
 
-    @Column(name = 'GURCTLEPP_USER_ID')
+    @Column(name = 'GURCTLEP_USER_ID')
     String lastModifiedBy
 
 
     @Version
-    @Column(name = 'GURCTLEPP_VERSION')
+    @Column(name = 'GURCTLEP_VERSION')
     Long version
 
 
-    @Column(name = 'GURCTLEPP_PAGE_ID')
+    @Column(name = 'GURCTLEP_PAGE_ID')
     Long pageId
 
 
@@ -86,19 +86,19 @@ public class ConfigControllerEndpointPage implements Serializable {
         if (this.is(o)) return true
         if (getClass() != o.class) return false
 
-        ConfigControllerEndpointPage gurctlepp = (ConfigControllerEndpointPage) o
+        ConfigControllerEndpointPage gurctlep = (ConfigControllerEndpointPage) o
 
-        if (lastModified != gurctlepp.lastModified) return false
-        if (configApplication != gurctlepp.configApplication) return false
-        if (dataOrigin != gurctlepp.dataOrigin) return false
-        if (description != gurctlepp.description) return false
-        if (displaySequence != gurctlepp.displaySequence) return false
-        if (enableIndicator != gurctlepp.enableIndicator) return false
-        if (id != gurctlepp.id) return false
-        if (pageId != gurctlepp.pageId) return false
-        if (pageName != gurctlepp.pageName) return false
-        if (lastModifiedBy != gurctlepp.lastModifiedBy) return false
-        if (version != gurctlepp.version) return false
+        if (lastModified != gurctlep.lastModified) return false
+        if (configApplication != gurctlep.configApplication) return false
+        if (dataOrigin != gurctlep.dataOrigin) return false
+        if (description != gurctlep.description) return false
+        if (displaySequence != gurctlep.displaySequence) return false
+        if (enableIndicator != gurctlep.enableIndicator) return false
+        if (id != gurctlep.id) return false
+        if (pageId != gurctlep.pageId) return false
+        if (pageName != gurctlep.pageName) return false
+        if (lastModifiedBy != gurctlep.lastModifiedBy) return false
+        if (version != gurctlep.version) return false
 
         return true
     }

@@ -14,12 +14,15 @@ import org.junit.Test
  */
 class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
 
-    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
+    private def appName
+    private def appId
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+        appName = Holders.grailsApplication.metadata['app.name']
+        appId = 'TESTAPP'
     }
 
     @After
@@ -102,7 +105,7 @@ class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
             byte[] bytes = out.toByteArray()
             ConfigInstance configInstanceCopy
             new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
-                configInstanceCopy = (ConfigInstance)is.readObject()
+                configInstanceCopy = (ConfigInstance) is.readObject()
                 is.close()
             }
             assertEquals configInstanceCopy, configInstance
@@ -119,7 +122,7 @@ class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
 
         assertNotNull newConfigInstance.env
         assertNotNull newConfigInstance.id
-        List <ConfigInstance> configInstances = ConfigInstance.fetchAll()
+        List<ConfigInstance> configInstances = ConfigInstance.fetchAll()
         assertFalse configInstances.isEmpty()
         configInstances.each { configInstance ->
             String configInstanceToString = configInstance.toString()
@@ -135,7 +138,7 @@ class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
 
         assertNotNull newConfigInstance.env
         assertNotNull newConfigInstance.id
-        List <ConfigInstance> configInstances = ConfigInstance.fetchAll()
+        List<ConfigInstance> configInstances = ConfigInstance.fetchAll()
         assertFalse configInstances.isEmpty()
         configInstances.each { configInstance ->
             Integer configInstanceHashCode = configInstance.hashCode()
@@ -161,6 +164,8 @@ class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
     private ConfigInstance getConfigInstance() {
         ConfigInstance configInstance = new ConfigInstance(
                 url: '/TEST_URL',
+                env: 'TESTENV'
+
         )
         return configInstance
     }
@@ -171,8 +176,8 @@ class ConfigInstanceIntegrationTests extends BaseIntegrationTestCase {
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appId: 1,
-                appName: APP_NAME
+                appId: appId,
+                appName: appName
         )
         return configApplication
     }

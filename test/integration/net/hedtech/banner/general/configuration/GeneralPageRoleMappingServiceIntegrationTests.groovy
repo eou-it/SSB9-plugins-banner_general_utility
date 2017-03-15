@@ -15,12 +15,15 @@ import org.junit.Test
 class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def generalPageRoleMappingService
-    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
+    private def appName
+    private def appId
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+        appName = Holders.grailsApplication.metadata['app.name']
+        appId = 'TESTAPP'
     }
 
     @After
@@ -64,6 +67,20 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
 
         generalPageRoleMappingService.sessionFactory = oldSessionFactory
         Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
+    }
+
+    @Test
+    public void testMergeMap() {
+        def map = getInterceptedURLMap()
+        def merged = generalPageRoleMappingService.mergeMap(map, map)
+        assertEquals map, merged
+
+        map = [:]
+        merged = generalPageRoleMappingService.mergeMap(map, map)
+        assertTrue merged.isEmpty()
+
+        String value = generalPageRoleMappingService.pushValuesToPrepareSelfServiceRoles('STUDENT')
+        assertEquals value, 'ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M'
     }
 
     private ConfigApplication saveDomains() {
@@ -115,7 +132,8 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appName: APP_NAME
+                appName: appName,
+                appId: appId
         )
         return configApplication
     }
@@ -126,8 +144,8 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
      */
     private GeneralPageRoleMapping getGeneralRequestMap() {
         GeneralPageRoleMapping generalRequestMap = new GeneralPageRoleMapping(
-                applicationId: 100001,
-                applicationName: APP_NAME,
+                applicationId: appId,
+                applicationName: appName,
                 pageId: 1001,
                 displaySequence: 1,
                 pageName: 'TEST_PAGE',
@@ -146,7 +164,8 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
                                                'ROLE_SELFSERVICE_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M',
-                                               'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'],
+                                               'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M',
+                                               'WEBUSER'],
                 '/ssb/survey/**'            : ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',

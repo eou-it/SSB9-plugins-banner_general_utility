@@ -12,14 +12,17 @@ import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 
 
-class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
+class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase {
 
-    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
+    private def appName
+    private def appId
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+        appName = Holders.grailsApplication.metadata['app.name']
+        appId = 'TESTAPP'
     }
 
     @After
@@ -35,9 +38,8 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         //Test if the generated entity now has an id assigned
         assertNotNull configApplication.id
         assertEquals 0L, configApplication.version
-        assertNull  configApplication.appId
         configApplication = configApplication.refresh()
-        assertNotNull  configApplication.appId
+        assertNotNull configApplication.appId
     }
 
 
@@ -49,7 +51,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
 
         assertNotNull configApplication.id
         assertEquals 0L, configApplication.version
-        assertEquals APP_NAME, configApplication.appName
+        assertEquals appName, configApplication.appName
         assertEquals "Banner", configApplication.dataOrigin
 
         //Update the entity
@@ -57,9 +59,9 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         configApplication = configApplication.save(failOnError: true, flush: true)
 
 
-        configApplication = configApplication.get( configApplication.id )
+        configApplication = configApplication.get(configApplication.id)
         assertEquals "PlatformSandbox 2", configApplication.appName
-        }
+    }
 
 
     @Test
@@ -69,14 +71,14 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
 
         def sql
         try {
-            sql = new Sql( sessionFactory.getCurrentSession().connection() )
-            sql.executeUpdate( "update general.GUBAPPL set GUBAPPL_VERSION = 999 where GUBAPPL_SURROGATE_ID = ?", [ configApplication.id ] )
+            sql = new Sql(sessionFactory.getCurrentSession().connection())
+            sql.executeUpdate("update general.GUBAPPL set GUBAPPL_VERSION = 999 where GUBAPPL_SURROGATE_ID = ?", [configApplication.id])
         } finally {
             sql?.close() // note that the test will close the connection, since it's our current session's connection
         }
         //Try to update the entity
-        configApplication.appName="UUUUU"
-        shouldFail( HibernateOptimisticLockingFailureException ) {
+        configApplication.appName = "UUUUU"
+        shouldFail(HibernateOptimisticLockingFailureException) {
             configApplication.save(flush: true)
         }
     }
@@ -95,10 +97,10 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
             byte[] bytes = out.toByteArray()
             ConfigApplication configApplication2
             new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
-                configApplication2 = (ConfigApplication)is.readObject()
+                configApplication2 = (ConfigApplication) is.readObject()
                 is.close()
             }
-                assertEquals configApplication2, configApplication
+            assertEquals configApplication2, configApplication
 
         } catch (e) {
             e.printStackTrace()
@@ -113,45 +115,43 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
         assertNotNull configApplication.id
         def id = configApplication.id
         configApplication.delete()
-        assertNull configApplication.get( id )
+        assertNull configApplication.get(id)
     }
 
     @Test
-    void testFetchByValidAppName(){
+    void testFetchByValidAppName() {
         ConfigApplication configApplication = newConfigApplication()
         configApplication = configApplication.save(failOnError: true, flush: true)
         assertNotNull configApplication.id
 
-        def configApplications = ConfigApplication.fetchByAppName(APP_NAME)
-        assertTrue (configApplications.size() >= 1)
+        ConfigApplication configApp = ConfigApplication.fetchByAppName(appName)
+        assertNotNull configApplication
 
-        configApplications.each { it ->
-            assertTrue it.appName == APP_NAME
-        }
+        assertTrue configApp.appName == appName
     }
 
 
     @Test
-    void testFetchByInValidAppName(){
+    void testFetchByInValidAppName() {
         ConfigApplication configApplication = newConfigApplication()
         configApplication = configApplication.save(failOnError: true, flush: true)
         assertNotNull configApplication.id
 
         String appName = "Invalid"
-        def configApplications = ConfigApplication.fetchByAppName(appName)
-        assertTrue (configApplications.size() == 0)
+        def configApp = ConfigApplication.fetchByAppName(appName)
+        assertNull(configApp)
     }
 
 
     @Test
-    void testFetchByNullAppName(){
+    void testFetchByNullAppName() {
         ConfigApplication configApplication = newConfigApplication()
         configApplication = configApplication.save(failOnError: true, flush: true)
         assertNotNull configApplication.id
 
         String appName = null
-        def configApplications = ConfigApplication.fetchByAppName(appName)
-        assertNull configApplications
+        def configApp = ConfigApplication.fetchByAppName(appName)
+        assertNull configApp
     }
 
 
@@ -159,13 +159,13 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
     void testToString() {
         ConfigApplication newConfigApplication = newConfigApplication()
         newConfigApplication.save(failOnError: true, flush: true)
-        List <ConfigApplication> configApplications = ConfigApplication.fetchByAppName(APP_NAME)
-        assertFalse configApplications.isEmpty()
-        configApplications.each { configApplication ->
-            String configApplicationToString = configApplication.toString()
-            assertNotNull configApplicationToString
-            assertTrue configApplicationToString.contains('appName')
-        }
+
+        ConfigApplication configApplication = ConfigApplication.fetchByAppName(appName)
+        assertNotNull configApplication
+
+        String configApplicationToString = configApplication.toString()
+        assertNotNull configApplicationToString
+        assertTrue configApplicationToString.contains('appName')
     }
 
 
@@ -173,18 +173,19 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase{
     void testHashCode() {
         ConfigApplication newConfigApplication = newConfigApplication()
         newConfigApplication.save(failOnError: true, flush: true)
-        List <ConfigApplication> configApplications = ConfigApplication.fetchByAppName(APP_NAME)
-        assertFalse configApplications.isEmpty()
-        configApplications.each { configApplication ->
-            Integer configApplicationHashCode = configApplication.hashCode()
-            assertNotNull configApplicationHashCode
-        }
+
+        ConfigApplication configApp = ConfigApplication.fetchByAppName(appName)
+        assertNotNull configApp
+
+        Integer configApplicationHashCode = configApp.hashCode()
+        assertNotNull configApplicationHashCode
     }
 
 
     private ConfigApplication newConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appName: APP_NAME
+                appName: appName,
+                appId: appId
         )
         return configApplication
     }

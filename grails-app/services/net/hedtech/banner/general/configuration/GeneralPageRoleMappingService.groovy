@@ -9,6 +9,7 @@ import grails.plugin.springsecurity.ReflectionUtils
 import grails.plugin.springsecurity.web.access.intercept.InterceptUrlMapFilterInvocationDefinition
 import grails.transaction.Transactional
 import grails.util.Holders
+import org.apache.log4j.Logger
 import org.hibernate.classic.Session
 import org.springframework.http.HttpMethod
 
@@ -20,7 +21,7 @@ import org.springframework.http.HttpMethod
  */
 
 class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefinition {
-
+    private static Logger logger = Logger.getLogger(GeneralPageRoleMappingService.getClass().getName())
     /**
      * This will be injected by the spring only when making this service call from the GeneralPageRoleMappingController.
      */
@@ -38,11 +39,10 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         try {
             reset()
             initialized = true
-        }
-        catch (RuntimeException e) {
-            log.warn("Exception initializing; this is ok if it's at startup and due " +
+        } catch (Exception e) {
+            logger.error("Exception initializing; this is ok if it's at startup and due " +
                     "to GORM not being initialized yet since the first web request will " +
-                    "re-initialize. Error message is: {}", e.getMessage())
+                    "re-initialize. Error message is: { " + e.getMessage() + " }", e)
         }
     }
 
@@ -59,8 +59,8 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
             compileAndStoreMapping(iu)
         }
 
-        if (log.isTraceEnabled()) {
-            log.trace("configs: {}", getConfigAttributeMap())
+        if (logger.isTraceEnabled()) {
+            logger.trace("configs: {}", getConfigAttributeMap())
         }
     }
 
@@ -100,7 +100,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * @param secondMap Map
      * @return Map
      */
-    private Map mergeMap(Map firstMap, Map secondMap) {
+    protected Map mergeMap(Map firstMap, Map secondMap) {
         def resultMap = [:]
         resultMap.putAll(firstMap)
         resultMap.putAll(secondMap)
@@ -122,7 +122,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * @param role TWTVROLE_CODE value from database.
      * @return String prepared role as a string.
      */
-    private static def pushValuesToPrepareSelfServiceRoles(role) {
+    protected String pushValuesToPrepareSelfServiceRoles(String role) {
         if (role != 'IS_AUTHENTICATED_ANONYMOUSLY') {
             return "ROLE_${"SELFSERVICE-$role".toUpperCase()}_${"BAN_DEFAULT_M".toUpperCase()}".toString()
         }
@@ -211,7 +211,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
                 }
             }
         } catch (e) {
-            log.warn("Exception in get list of GeneralPageRoleMapping", e.getMessage())
+            logger.warn("Exception in get list of GeneralPageRoleMapping", e)
         } finally {
             session.close()
         }

@@ -20,6 +20,8 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
     def conn
     Integer pidm
     final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
+    private def appName
+    private def appId
 
     @Before
     public void setUp() {
@@ -27,7 +29,9 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         super.setUp()
         conn = dataSource.getSsbConnection()
         sql = new Sql(conn)
-        pidm =  getPidmBySpridenId("HOSH00001")
+        pidm = getPidmBySpridenId("HOSH00001")
+        appName = Holders.grailsApplication.metadata['app.name']
+        appId = 'TESTAPP'
     }
 
 
@@ -57,7 +61,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
         def id = configUserPreference.id
         configUserPreference.delete()
-        assertNull configUserPreference.get( id )
+        assertNull configUserPreference.get(id)
     }
 
 
@@ -69,7 +73,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 0L, configUserPreference.version
 
         def list = ConfigUserPreference.fetchAll()
-        assert (list.size() >=1 )
+        assert (list.size() >= 1)
         assert (list.getAt(0).configValue == 'TEST_VALUE')
 
         //Update
@@ -90,10 +94,10 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
         List list = ConfigUserPreference.fetchByPidm(pidm)
         assertEquals 1, list.size()
-        list.each(){ it ->
-            assertEquals  pidm, it.pidm
+        list.each() { it ->
+            assertEquals pidm, it.pidm
         }
-     }
+    }
 
 
     @Test
@@ -124,7 +128,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
             byte[] bytes = out.toByteArray()
             ConfigUserPreference configUserPreferenceCopy
             new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
-                configUserPreferenceCopy = (ConfigUserPreference)is.readObject()
+                configUserPreferenceCopy = (ConfigUserPreference) is.readObject()
                 is.close()
             }
             assertEquals configUserPreferenceCopy, newConfigUserPreference
@@ -142,7 +146,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull newConfigUserPreference.id
         assertEquals 0L, newConfigUserPreference.version
 
-        List <ConfigUserPreference> configUserPreferences = ConfigUserPreference.fetchAll()
+        List<ConfigUserPreference> configUserPreferences = ConfigUserPreference.fetchAll()
         assertFalse configUserPreferences.isEmpty()
         configUserPreferences.each { configUserPreference ->
             String configUserPreferenceToString = configUserPreference.toString()
@@ -159,7 +163,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull newConfigUserPreference.id
         assertEquals 0L, newConfigUserPreference.version
 
-        List <ConfigUserPreference> configUserPreferences = ConfigUserPreference.fetchAll()
+        List<ConfigUserPreference> configUserPreferences = ConfigUserPreference.fetchAll()
         assertFalse configUserPreferences.isEmpty()
         configUserPreferences.each { configUserPreference ->
             Integer configUserPreferenceHashCode = configUserPreference.hashCode()
@@ -190,7 +194,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
      */
     private ConfigUserPreference getConfigUserPreference() {
         ConfigUserPreference configUserPreference = new ConfigUserPreference(
-                pidm:  pidm,
+                pidm: pidm,
                 configValue: 'TEST_VALUE'
         )
         return configUserPreference
@@ -202,7 +206,8 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
      */
     private ConfigApplication getConfigApplication() {
         ConfigApplication configApplication = new ConfigApplication(
-                appName: APP_NAME
+                appName: appName,
+                appId: appId
         )
         return configApplication
     }

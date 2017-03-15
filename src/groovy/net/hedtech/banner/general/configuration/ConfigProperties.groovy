@@ -130,12 +130,12 @@ public class ConfigProperties implements Serializable {
      * Named query to fetch data from this domain based on App Id.
      * @return List
      */
-    public static List fetchByAppId(Long appId) {
+    public static List fetchByAppId(String appId) {
         List configProperties = []
         if (appId){
             configProperties = ConfigProperties.withSession { session ->
                 configProperties = session.getNamedQuery('ConfigProperties.fetchByAppId')
-                        .setLong('appId', appId).list()
+                        .setString('appId', appId).list()
             }
         }
         return configProperties
