@@ -444,7 +444,7 @@ class SupplementalDataSSBService {
                       govsdav_LOV_ATTR_OVRD,
                       govsdav_LOV_CODE_TITLE,
                       govsdav_LOV_DESC_TITLE
-               FROM govsdavt x
+               FROM govsdav x
                    WHERE govsdav_table_name = :tableName
                    AND govsdav_disc_type = 'S' ORDER BY govsdav_attr_order
                """
