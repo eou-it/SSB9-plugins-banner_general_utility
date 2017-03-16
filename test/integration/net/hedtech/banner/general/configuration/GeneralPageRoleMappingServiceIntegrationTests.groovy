@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.plugin.springsecurity.InterceptedUrl
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -34,39 +35,52 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
 
     @Test
     public void testInitialize() {
-        saveDomains()
+        try {
+            saveDomains()
 
-        def properties = new Properties()
-        properties.put('grails.plugin.springsecurity.interceptUrlMap', getInterceptedURLMap())
-        def configSlurper = new ConfigSlurper()
-        Holders.config.merge(configSlurper.parse(properties))
+            def properties = new Properties()
+            properties.put('grails.plugin.springsecurity.interceptUrlMap', getInterceptedURLMap())
+            def configSlurper = new ConfigSlurper()
+            Holders.config.merge(configSlurper.parse(properties))
 
-        generalPageRoleMappingService.initialize()
-        assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
+            generalPageRoleMappingService.initialize()
+            assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
 
-        def list = generalPageRoleMappingService.fetchListOfInterceptURLMap()
-        assertTrue list.size() >= 0
+            def list = generalPageRoleMappingService.pageRoleMappingListFromDBAndConfig()
+            assertTrue list.size() >= 0
 
-        Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
+            def compiledData = generalPageRoleMappingService.fetchCompiledValue()
+            def foundData = []
+            list.each { InterceptedUrl iu ->
+                foundData << compiledData.find { InterceptedUrl url ->
+                    url?.pattern == iu?.pattern?.toLowerCase()
+                }
+            }
+            assertEquals foundData.size(), list.size()
+        } finally {
+            Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
+        }
     }
 
     @Test
     public void testInitializeWithoutSessionFactory() {
         def oldSessionFactory = generalPageRoleMappingService.sessionFactory
-        generalPageRoleMappingService.sessionFactory = null
+        try {
+            generalPageRoleMappingService.sessionFactory = null
 
-        saveDomains()
+            saveDomains()
 
-        def properties = new Properties()
-        properties.put('grails.plugin.springsecurity.interceptUrlMap', getInterceptedURLMap())
-        def configSlurper = new ConfigSlurper()
-        Holders.config.merge(configSlurper.parse(properties))
+            def properties = new Properties()
+            properties.put('grails.plugin.springsecurity.interceptUrlMap', getInterceptedURLMap())
+            def configSlurper = new ConfigSlurper()
+            Holders.config.merge(configSlurper.parse(properties))
 
-        generalPageRoleMappingService.initialize()
-        assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
-
-        generalPageRoleMappingService.sessionFactory = oldSessionFactory
-        Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
+            generalPageRoleMappingService.initialize()
+            assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
+        } finally {
+            generalPageRoleMappingService.sessionFactory = oldSessionFactory
+            Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
+        }
     }
 
     @Test

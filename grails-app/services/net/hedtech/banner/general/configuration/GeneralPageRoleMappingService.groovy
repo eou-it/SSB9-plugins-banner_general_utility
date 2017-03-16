@@ -19,7 +19,6 @@ import org.springframework.http.HttpMethod
  * If the grails.plugin.springsecurity.securityConfigType = SecurityConfigType.InterceptUrlMap in the Cofig.groovy then this
  * service will get injected by the spring from BannerGeneralUtilityGrailsPlugin.groovy.
  */
-
 class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefinition {
     private static Logger logger = Logger.getLogger(GeneralPageRoleMappingService.getClass().getName())
     /**
@@ -40,9 +39,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
             reset()
             initialized = true
         } catch (Exception e) {
-            logger.error("Exception initializing; this is ok if it's at startup and due " +
-                    "to GORM not being initialized yet since the first web request will " +
-                    "re-initialize. Error message is: { " + e.getMessage() + " }", e)
+            logger.error("Exception initializing; Error message is: { " + e.getMessage() + " }", e)
         }
     }
 
@@ -67,7 +64,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
     /**
      * The service method to get the intercept url from DB and Config.groovy to assign the values to compiled map.
      */
-    private List<InterceptedUrl> pageRoleMappingListFromDBAndConfig() {
+    protected List<InterceptedUrl> pageRoleMappingListFromDBAndConfig() {
         List<InterceptedUrl> data = new ArrayList<InterceptedUrl>()
         def map = getList()
         LinkedHashMap<String, List<String>> interceptedUrlMapFromDB = new LinkedHashMap<String, List<String>>()
@@ -134,10 +131,15 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * @return Session     Classic hibernate session.
      */
     protected Session getHibernateSession() {
-        def dataSource = Holders.grailsApplication.mainContext.getBean('dataSource')
-        def ctx = Holders.grailsApplication.mainContext
-        def hibernateSessionFactory = (!sessionFactory ? ctx.sessionFactory : sessionFactory)
-        Session session = hibernateSessionFactory.openSession(dataSource.getSsbConnection())
+        Session session
+        try {
+            def dataSource = Holders.grailsApplication.mainContext.getBean('dataSource')
+            def ctx = Holders.grailsApplication.mainContext
+            def hibernateSessionFactory = (!sessionFactory ? ctx.sessionFactory : sessionFactory)
+            session = hibernateSessionFactory.openSession(dataSource.getSsbConnection())
+        } catch (e) {
+            logger.error('Exception creating Hibernate session;', e)
+        }
         session
     }
 
@@ -175,11 +177,9 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         def list
         def generalPageRoleMapping = new LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>>()
         try {
-            List appList = getAppIdByAppName(session)
-            if (appList) {
-                def appId
+            String appId = getAppIdByAppName(session)
+            if (appId) {
                 if (!sessionFactory) {
-                    appId = appList.get(0)
                     list = session.createQuery('''SELECT new GeneralPageRoleMapping(generalPageRoleMapping.pageName,
                                                         generalPageRoleMapping.roleCode,
                                                         generalPageRoleMapping.applicationName,
@@ -191,7 +191,6 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
                                                   WHERE generalPageRoleMapping.applicationId = :appId''')
                             .setParameter('appId', appId).list()
                 } else {
-                    appId = appList.get(0)?.appId
                     list = GeneralPageRoleMapping.fetchByAppId(appId)
                 }
 
@@ -211,7 +210,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
                 }
             }
         } catch (e) {
-            logger.warn("Exception in get list of GeneralPageRoleMapping", e)
+            logger.error("Exception in get list of GeneralPageRoleMapping", e)
         } finally {
             session.close()
         }
@@ -223,16 +222,20 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * @param session Classic Hibernate session.
      * @return List    List for application id's.
      */
-    private List getAppIdByAppName(Session session) {
+    private String getAppIdByAppName(Session session) {
         final def APP_NAME = Holders.grailsApplication.metadata['app.name']
-        def appList
-        if (!sessionFactory) {
-            appList = session.createQuery('''SELECT capp.appId FROM ConfigApplication capp
-                                             WHERE capp.appName = :appName''').setString('appName', APP_NAME).list()
-        } else {
-            appList = ConfigApplication.fetchByAppName(APP_NAME)
+        String appId
+        try {
+            if (!sessionFactory) {
+                appId = session.createQuery('''SELECT capp.appId FROM ConfigApplication capp
+                                                         WHERE capp.appName = :appName''').setString('appName', APP_NAME).uniqueResult()
+            } else {
+                appId = ConfigApplication.fetchByAppName(APP_NAME)?.appId
+            }
+        } catch (e) {
+            logger.error("Exception in get Application Id", e)
         }
-        appList
+        appId
     }
 
 }
