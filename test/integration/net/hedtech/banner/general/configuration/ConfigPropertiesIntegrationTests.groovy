@@ -141,6 +141,16 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         assertTrue list.size() == 0
     }
 
+    @Test
+    void testFetchByInValidNullAppId() {
+        ConfigProperties configProperties = createNewConfigPropertiesWithoutAppId()
+
+        assertNotNull configProperties.id
+
+        def list = ConfigProperties.fetchByAppId(null)
+        assertTrue list.size() >= 1
+    }
+
 
     @Test
     void testFetchByNull() {
@@ -158,11 +168,14 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
         configApplication = configApplication.refresh()
-        assertNotNull configApplication.id
-        assertEquals 0L, configApplication.version
 
         ConfigProperties configProperties = getConfigProperties()
         configProperties.setConfigApplication(configApplication)
+        configProperties.save(failOnError: true, flush: true)
+    }
+
+    private ConfigProperties createNewConfigPropertiesWithoutAppId() {
+        ConfigProperties configProperties = getConfigProperties()
         configProperties.save(failOnError: true, flush: true)
     }
 

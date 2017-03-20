@@ -12,9 +12,12 @@ import javax.persistence.*
 @Entity
 @Table(name = 'GUROCFG')
 @NamedQueries(value = [
-              @NamedQuery(name = 'ConfigProperties.fetchByAppId',
-                          query = '''FROM ConfigProperties cp
-                                     WHERE cp.configApplication = :appId ''')
+        @NamedQuery(name = 'ConfigProperties.fetchByAppId',
+                query = '''FROM ConfigProperties cp
+                                     WHERE cp.configApplication = :appId'''),
+        @NamedQuery(name = 'ConfigProperties.fetchByNullAppId',
+                query = '''FROM ConfigProperties cp
+                                             WHERE cp.configApplication IS NULL''')
 ])
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 1L
@@ -64,7 +67,6 @@ public class ConfigProperties implements Serializable {
     @Version
     @Column(name = 'GUROCFG_VERSION')
     Long version
-
 
 
     static constraints = {
@@ -132,10 +134,14 @@ public class ConfigProperties implements Serializable {
      */
     public static List fetchByAppId(String appId) {
         List configProperties = []
-        if (appId){
+        if (appId) {
             configProperties = ConfigProperties.withSession { session ->
                 configProperties = session.getNamedQuery('ConfigProperties.fetchByAppId')
                         .setString('appId', appId).list()
+            }
+        } else {
+            configProperties = ConfigProperties.withSession { session ->
+                configProperties = session.getNamedQuery('ConfigProperties.fetchByNullAppId').list()
             }
         }
         return configProperties

@@ -5,9 +5,8 @@
 package net.hedtech.banner.general.configuration
 
 import grails.util.Holders
-import net.hedtech.banner.security.FormContext
-import net.hedtech.banner.testing.BaseIntegrationTestCase
 import grails.util.Holders as CH
+import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -46,6 +45,13 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         assertTrue CH.config.get(CONFIG_NAME) == CONFIG_VALUE
     }
 
+    @Test
+    public void testSetConfigFromDBWithNoAppId() {
+        createNewConfigPropsWithNoAppId()
+        configPropertiesService.setConfigFromDb()
+        assertTrue CH.config.get(CONFIG_NAME) == CONFIG_VALUE
+    }
+
     /**
      * Saving the ConfigProperties
      * @return
@@ -68,6 +74,28 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         configPropertiesBoolean.configName = CONFIG_NAME + '-boolean'
         configPropertiesBoolean.setConfigApplication(configApplication)
         configProps.add(configPropertiesBoolean)
+
+        ConfigProperties configPropertiesInteger = getConfigProperties()
+        configPropertiesInteger.configType = 'integer'
+        configPropertiesInteger.configName = CONFIG_NAME + '-integer'
+        configPropertiesInteger.configValue = 10
+        configPropertiesInteger.setConfigApplication(configApplication)
+        configProps.add(configPropertiesInteger)
+        configPropertiesService.create(configProps)
+    }
+
+    private void createNewConfigPropsWithNoAppId() {
+        def configProps = []
+        ConfigProperties configPropertiesBoolean = getConfigProperties()
+        configPropertiesBoolean.configType = 'boolean'
+        configPropertiesBoolean.configName = CONFIG_NAME + '-boolean'
+        configProps.add(configPropertiesBoolean)
+
+        ConfigProperties configPropertiesInteger = getConfigProperties()
+        configPropertiesInteger.configType = 'integer'
+        configPropertiesInteger.configName = CONFIG_NAME + '-integer'
+        configPropertiesInteger.configValue = 12
+        configProps.add(configPropertiesInteger)
         configPropertiesService.create(configProps)
     }
 
