@@ -7,6 +7,7 @@ package net.hedtech.banner.about
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.core.context.SecurityContextHolder
+import net.hedtech.banner.i18n.MessageHelper
 
 class AboutService {
 
@@ -43,10 +44,17 @@ class AboutService {
     }
 
     private String getApplicationName(){
-        if(resourceProperties){
-            formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
-        } else {
-            grailsApplication.metadata['app.name']
+        String aboutApplicationName = MessageHelper.message("about.application.name")
+        if(!aboutApplicationName.equalsIgnoreCase("about.application.name"))
+        {
+            aboutApplicationName
+        }
+        else {
+            if(resourceProperties){
+                formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
+            } else {
+                grailsApplication.metadata['app.name']
+            }
         }
     }
     private void loadResourcePropertiesFile() {
