@@ -5,27 +5,25 @@
 package net.hedtech.banner.supplemental
 
 import grails.util.Holders
+import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
-
-import org.apache.log4j.Logger
-
-import java.text.SimpleDateFormat
-import java.text.ParseException
 import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
-import org.springframework.context.ApplicationContext
+import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import net.hedtech.banner.supplemental.SupplementalPropertyDiscriminatorContent
-import net.hedtech.banner.supplemental.SupplementalPropertyValue
-import org.hibernate.persister.entity.SingleTableEntityPersister
 import org.hibernate.MappingException
-import groovy.sql.GroovyRowResult
+import org.hibernate.persister.entity.SingleTableEntityPersister
+import org.springframework.context.ApplicationContext
+
+import java.text.ParseException
+import java.text.SimpleDateFormat
 
 /**
- * DAO for supplemental data. This strategy works against the
+ * DAO for supplemental data to support Banner SS applications.
+ * This strategy works against the
  * GOVSDAV view for both reading and writing supplemental data.
  */
-class SupplementalDataService {
+class SupplementalDataSSBService {
 
     def dataSource               // injected by Spring
     def sessionFactory           // injected by Spring
@@ -33,26 +31,22 @@ class SupplementalDataService {
     private static String DEFAULT_DATE_FORMAT = "dd-MMM-yyyy"
 
     private final Logger log = Logger.getLogger(getClass())
-    private static final Logger staticLogger = Logger.getLogger(SupplementalDataService.class)
-    def public i = 0
+    private static final Logger staticLogger = Logger.getLogger(SupplementalDataSSBService.class)
 
-
-
+    /**
+     * Saves SDE Extensions.
+     */
     public def saveSdeFromUiRequest(tableName, extension) {
 
         def batch = [create: [], destroy: [], update: []]
 
-        // SDE Process --> move to services
-        def sdeModel= loadSupplementalDataForTable(tableName, extension.id)
+        def sdeModel = loadSupplementalDataForTable(tableName, extension.id)
 
-        //println "SDE-MODEL: " + sdeModel
-
-        extension.extensions.each{
-            if (it.datatype.equals("DATE")){
+        extension.extensions.each {
+            if (it.datatype.equals("DATE")) {
                 SimpleDateFormat sdf = new SimpleDateFormat(DEFAULT_DATE_FORMAT)
                 if (it.value) {
-                    Date date ;
-                    //SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                    Date date;
                     SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
                     date = formatter.parse(it.value);
 
@@ -61,8 +55,8 @@ class SupplementalDataService {
 
                     sdeModel."${it.name.toUpperCase()}"."1".value = s
                 }
-            }else {
-                def val =  ("${it.value}".trim().toString() == "null") ? "" : "${it.value}".trim().toString()
+            } else {
+                def val = ("${it.value}".trim().toString() == "null") ? "" : "${it.value}".trim().toString()
                 sdeModel."${it.name.toUpperCase()}"."1".value = val
             }
         }
@@ -74,10 +68,8 @@ class SupplementalDataService {
 
     /**
      * Returns the conditions if SDE is enabled for that UI component.
-     * @param block id from UI Block Component
+     * @param tableName table name with SDE on
      */
-
-
     public boolean hasSdeForTable(tableName) {
 
         def sdeFound = false
@@ -92,7 +84,6 @@ class SupplementalDataService {
                 sdeFound = "Y".equals(sde)
             }
             return sdeFound
-            //return false
         } catch (e) {
             log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
             throw e
@@ -101,6 +92,10 @@ class SupplementalDataService {
         }
     }
 
+    /**
+     * Returns the conditions if SDE data is available for the model.
+     * @param id the surrogate id on a table
+     */
     public boolean hasSde(id) {
 
         def sdeFound = false
@@ -128,7 +123,6 @@ class SupplementalDataService {
                 sdeFound = "Y".equals(sde)
             }
             return sdeFound
-            //return false
         } catch (e) {
             log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
             throw e
@@ -147,10 +141,7 @@ class SupplementalDataService {
 
         def id = model.id
 
-
-
         def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(model.getClass())?.tableName.toUpperCase())
-
 
         if (tableName == null)
             return false
@@ -172,16 +163,20 @@ class SupplementalDataService {
               ${Sql.VARCHAR} := l_ex;
 
         END ;
-            """) {sdeData ->
+            """) { sdeData ->
             sdeDataFound = sdeData
         }
         return "Y".equals(sdeDataFound)
     }
 
+    /**
+     * Returns the model extension
+     * @param tableName the table name associated with SDE
+     * @param id the surrogate id on a table
+     */
+    public def getModelExtension(tableName, id) {
 
-    public def getModelExtension(tableName,id) {
-
-        def sdeModel = loadSupplementalDataForTable(tableName,id)
+        def sdeModel = loadSupplementalDataForTable(tableName, id)
 
         //SDE Process
         def attributeName
@@ -205,9 +200,6 @@ class SupplementalDataService {
                 if (value && paramMap.dataType.equals('DATE')) {
                     SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
                     Date date = formatter.parse(value);
-
-                    //SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
-                    //String s = formatter1.format(date);
                     extension."value" = date
                 } else {
                     extension."value" = value
@@ -222,95 +214,101 @@ class SupplementalDataService {
         return l
     }
 
+    /**
+     * Returns the model extension
+     * @param tableName the table name associated with SDE
+     * @param id the surrogate id on a table
+     * @param model the domain model
+     */
+    public def getModelExtensionData(tableName, id, model) {
 
-    public def loadSupplementalDataForTable(tableName,id) {
-        try {
-            def sql = new Sql(sessionFactory.getCurrentSession().connection())
+        if (!hasSdeForTable(tableName)) return model
 
-            def attributeName
+        def sdeModel = loadSupplementalDataForTable(tableName, id)
 
-            //println "Tablename: "  + tableName
-            //println "Id: " + id
+        //SDE Process
+        def attributeName
+        def value
+        def l = []
 
-            sql.call("""
-	  declare
-	      l_pkey 	GORSDAV.GORSDAV_PK_PARENTTAB%TYPE;
-	      l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${tableName},${id});
-	   begin
-	       l_pkey := gp_goksdif.f_get_pk(${tableName},l_rowid);
-	       gp_goksdif.p_set_current_pk(l_pkey);
-	   end;
-           """
-            )
+        sdeModel.each {
+            def z = it.key.toLowerCase()
+            def map = it.value
+            attributeName = it.key
 
+            map.each {
+                def extension = [:]
+                def paramMap = it.value
+                value = paramMap.value
 
-            /*
-            def resultSetAttributesList = sessionFactory.getCurrentSession().createSQLQuery(
-                    """SELECT DISTINCT govsdav_attr_name as attrName ,  govsdav_attr_order as attrOrder
-	         FROM govsdav WHERE govsdav_table_name= :tableName and govsdav_disc_type = 'S' ORDER BY 2
-	""").setString("tableName", tableName).list()
-             */
+                extension."name" = z
+                extension."prompt" = paramMap.prompt
+                extension."attrInfo" = paramMap.attrInfo
 
-            def supplementalProperties = [:]
-            //resultSetAttributesList.each() {
-            //    loadSupplementalProperty(it[0], supplementalProperties, tableName)
-            //}
+                if (value && paramMap.dataType.equals('DATE')) {
+                    SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
+                    Date date = formatter.parse(value);
+                    extension."value" = date
+                } else {
+                    extension."value" = value
+                }
 
-            loadSupplementalPropertyQuick(supplementalProperties, tableName)
+                extension."datatype" = paramMap.dataType
 
-            supplementalProperties
-        } catch (e) {
-            //log.error "Failed to load SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
-            throw e
-        }
-    }
-
-    public def loadSupplementalDataForModel(model) {
-        log.trace "In load: ${model}"
-
-        try {
-            def sql = new Sql(sessionFactory.getCurrentSession().connection())
-            def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(model.getClass()).tableName.toUpperCase())
-            def attributeName
-            def id = model.id
-
-            sql.call("""
-	  declare
-	      l_pkey 	GORSDAV.GORSDAV_PK_PARENTTAB%TYPE;
-	      l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${tableName},${id});
-	   begin
-	       gp_goksdif.p_insert_disc(${tableName});
-	       l_pkey := gp_goksdif.f_get_pk(${tableName},l_rowid);
-	       gp_goksdif.p_set_current_pk(l_pkey);
-	   end;
-           """
-            )
-
-            def resultSetAttributesList = sessionFactory.getCurrentSession().createSQLQuery(
-                    """SELECT DISTINCT govsdav_attr_name as attrName ,  govsdav_attr_order as attrOrder
-	         FROM govsdav WHERE govsdav_table_name= :tableName  ORDER BY 2
-	""").setString("tableName", tableName).list()
-
-            def supplementalProperties = [:]
-            resultSetAttributesList.each() {
-                loadSupplementalProperty(it[0], supplementalProperties, tableName)
+                l << extension
             }
+        }
+
+        if (model.metaClass) {
+            model.metaClass.extensions = l
+        } else {
+            model.extensions = l
+        }
+    }
+
+    /**
+     * Returns the SDE metadata
+     * @param tableName the table name associated with SDE
+     * @param id the surrogate id on a table
+     */
+    public def loadSupplementalDataForTable(tableName, id) {
+        try {
+            def sql = new Sql(sessionFactory.getCurrentSession().connection())
+
+            sql.call("""
+	  declare
+	      l_pkey 	GORSDAV.GORSDAV_PK_PARENTTAB%TYPE;
+	      l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${tableName},${id});
+	   begin
+	       l_pkey := gp_goksdif.f_get_pk(${tableName},l_rowid);
+	       gp_goksdif.p_set_current_pk(l_pkey);
+	   end;
+           """
+            )
+
+            def supplementalProperties = [:]
+
+            loadSupplementalPropertyTable(supplementalProperties, tableName)
 
             supplementalProperties
         } catch (e) {
-            log.error "Failed to load SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
+            log.error "Failed to load SDE for the entity. Exception: $e "
             throw e
         }
     }
 
-    public def  persistSupplementalDataForTable(tableName,tid,prop) {
-
-        //log.trace "In persist: ${model}"
+    /**
+     * Persists the SDE metadata
+     * @param tableName the table name associated with SDE
+     * @param tid the surrogate id on a table
+     * @param prop the SDE properties
+     */
+    public def persistSupplementalDataForTable(tableName, tid, prop) {
         def sql
 
         try {
             sql = new Sql(sessionFactory.getCurrentSession().connection())
-            //def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(model.getClass()).tableName.toUpperCase())
+
             def sdeTableName = 'GORSDAV'
 
             def id
@@ -332,7 +330,7 @@ class SupplementalDataService {
                     log.debug "VALUE: " + it.value
 
                     //store the attributes with discriminators
-                    if  (paramMap.discMethod == "I") {
+                    if (paramMap.discMethod == "I") {
                         discList << attributeName
                     }
 
@@ -359,15 +357,6 @@ class SupplementalDataService {
                         value = value.substring(1)
                     }
 
-                    /*
-                    println "Value: " + value
-                    println "tableName: "  + tableName
-                    println "attributeName: " + attributeName
-                    println "disc: " + disc
-                    println  "parentTab: " + parentTab
-                    println "dataType: " + dataType
-                    */
-
                     sql.call("""
 	                       DECLARE
 
@@ -392,7 +381,7 @@ class SupplementalDataService {
 
 	                END ;
                   """
-                    ) {msg ->
+                    ) { msg ->
                         if (msg != "Y")
                             throw new ApplicationException(tableName, msg)
                     }
@@ -412,10 +401,9 @@ class SupplementalDataService {
 
             }
 
-
             //refresh order of discriminators
 
-            discList.unique().each{
+            discList.unique().each {
                 sql.executeUpdate("""
                                                    update GORSDAV
                                                         set GORSDAV_DISC = rownum
@@ -433,241 +421,8 @@ class SupplementalDataService {
 
     }
 
-    /**
-     * Returns the supplied model after persisting it's supplemental data.
-     * @param model the model that has supplemental data to persist
-     * @return def the model fully populated with supplemental data re-loaded from the database
-     */
-    public def persistSupplementalDataFor(model, prop) {
-        log.trace "In persist: ${model}"
-        def sql
 
-        try {
-            sql = new Sql(sessionFactory.getCurrentSession().connection())
-            def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(model.getClass()).tableName.toUpperCase())
-            def sdeTableName = 'GORSDAV'
-
-            def id
-            def attributeName
-            String disc
-            def parentTab
-            def dataType
-            def value
-            def discList = []
-
-            prop.each {
-
-                log.debug "KEY: ${it.key} - VALUE: ${it.value}"
-                def map = it.value
-                attributeName = it.key
-
-                map.each {
-                    def paramMap = it.value
-                    log.debug "VALUE: " + it.value
-
-                    //store the attributes with discriminators
-                    if  (paramMap.discMethod == "I") {
-                        discList << attributeName
-                    }
-
-                    id = paramMap.id
-                    value = paramMap.value
-                    disc = paramMap.disc
-                    parentTab = paramMap.pkParentTab
-
-                    parentTab = parentTab ?: getPk(tableName, model.id)
-                    dataType = paramMap.dataType
-
-                    value = value ?: ""
-                    disc = disc ?: "1"
-
-                    if (value) {
-                        validateDataType(dataType, value)
-                    }
-
-                    if (log.isDebugEnabled()) debug(id, tableName, attributeName, disc, parentTab, dataType, value)
-
-                    // Validation Call
-
-                    if (value && value.getAt(0) == "0" && value.getAt(1) == ".") {  // Decimal
-                        value = value.substring(1)
-                    }
-
-                    sql.call("""
-	                       DECLARE
-
-	                        lv_msg varchar2(2000);
-	                        p_value_as_char_out varchar2(2000);
-
-	                        BEGIN
-
-	                        p_value_as_char_out := ${value};
-
-	                        lv_msg := gp_goksdif.f_validate_value(
-	                            p_table_name => ${tableName},
-	                            p_attr_name => ${attributeName},
-	                            p_disc => ${disc},
-	                            p_pk_parenttab => ${parentTab},
-	                            p_attr_data_type => ${dataType},
-	                            p_form_or_process => 'BANNER',
-	                            p_value_as_char => p_value_as_char_out
-	                        );
-
-	                         ${Sql.VARCHAR} := lv_msg;
-
-	                END ;
-                  """
-                    ) {msg ->
-                        if (msg != "Y")
-                            throw new ApplicationException(model, msg)
-                    }
-
-                    // End Validation
-
-                    sql.call("""declare
-					                  l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${sdeTableName},${id});
-					              begin
-					                  gp_goksdif.p_set_attribute( ${tableName}, ${attributeName}, ${disc},
-							                                      ${parentTab}, l_rowid, ${dataType}, ${value} );
-					              end;
-	                           """)
-
-
-                }
-
-            }
-
-
-            //refresh order of discriminators
-
-            discList.unique().each{
-                sql.executeUpdate("""
-                                                   update GORSDAV
-                                                        set GORSDAV_DISC = rownum
-                                                        where  GORSDAV_TABLE_NAME = ${tableName}
-                                                        and GORSDAV_PK_PARENTTAB = ${parentTab}
-                                                        and GORSDAV_ATTR_NAME = ${it}
-                                                """)
-            }
-
-
-        } catch (e) {
-            log.error "Failed to save SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
-            throw e
-        }
-    }
-
-    // Loads the identified attribute into the supplied supplementalProperties map
-
-    private def loadSupplementalProperty(String attributeName, Map supplementalProperties, String tableName) {
-        def session = sessionFactory.getCurrentSession()
-
-        def resultSet = session.createSQLQuery(
-                """  SELECT govsdav_attr_name,
-                      govsdav_attr_reqd_ind,
-                      DECODE(govsdav_attr_data_type,'DATE', TO_CHAR(x.govsdav_value.accessDATE(),'DD-MON-RRRR'),govsdav_value_as_char),
-                      govsdav_disc,
-                      govsdav_pk_parenttab,
-                      govsdav_surrogate_id,
-                      govsdav_attr_data_type,
-                      REPLACE( govsdav_attr_prompt_disp, '%DISC%',govsdav_disc ),
-                      govsdav_disc_type,
-                      govsdav_disc_validation,
-                      govsdav_attr_data_len,
-                      govsdav_attr_data_scale,
-                      govsdav_attr_info,
-                      govsdav_attr_order,
-                      govsdav_disc_method,
-                      govsdav_GJAPDEF_VALIDATION,
-                      govsdav_LOV_FORM,
-                      govsdav_LOV_TABLE_OVRD,
-                      govsdav_LOV_ATTR_OVRD,
-                      govsdav_LOV_CODE_TITLE,
-                      govsdav_LOV_DESC_TITLE
-               FROM govsdav x
-                   WHERE govsdav_table_name = :tableName
-                   AND govsdav_attr_name = :attributeName
-               """
-        ).setString("tableName", tableName).
-                setString("attributeName", attributeName).list()
-
-        if (!supplementalProperties."${attributeName}") supplementalProperties."${attributeName}" = [:]
-        resultSet.each() {
-
-            if (!it[9]?.isInteger())
-                it[9] = '1'
-
-            String lovValidation = it[15]
-            String lovForm = it[16]
-            String lovTable = (lovForm == 'GTQSDLV') ? 'GTVSDLV' : lovForm
-
-            def columnNames = []
-
-            /**
-             * TODO need to move this logic into SupplementalDataService's resetSDE method
-             */
-            if (lovValidation == 'LOV_VALIDATION') {
-                log.debug("Querying for $lovForm for Table Metadata")
-                Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
-                String query = "select * from " + lovTable
-                sql.query(query) { rs ->
-                    def meta = rs.metaData
-                    if (meta.columnCount <= 0) return
-
-                    log.debug("LOV Table column names ....")
-                    for (i in 0..<meta.columnCount) {
-                        log.debug "${i}: ${meta.getColumnLabel(i + 1)}".padRight(20)
-                        columnNames << meta.getColumnLabel(i + 1)
-                        log.debug "\n"
-                    }
-                    log.debug '-' * 40
-                }
-
-                log.debug("Querying on SDE Lookup Table executed")
-                sql.connection.close()
-            }
-
-            SupplementalPropertyDiscriminatorContent discProp =
-                    new SupplementalPropertyDiscriminatorContent(required: it[1],
-                            value: it[2],
-                            disc: (it[3] != null ? it[3] : 1),
-                            pkParentTab: it[4],
-                            id: it[5],
-                            dataType: it[6],
-                            prompt: it[7],
-                            discType: it[8],
-                            validation: it[9] != null ? it[9].toInteger() : 1,
-                            dataLength: it[10],
-                            dataScale: it[11],
-                            attrInfo: it[12],
-                            attrOrder: it[13],
-                            discMethod: it[14],
-                            lovValidation: lovValidation,
-                            lovProperties: [
-                                    lovForm: lovForm,
-                                    lovTableOverride: it[17],
-                                    lovAttributeOverride: it[18],
-                                    lovCodeTitle: it[19],
-                                    lovDescTitle: it[20],
-                                    columnNames: columnNames
-                            ]
-                    )
-
-            if (discProp.lovValidation && !(discProp.lovProperties?.lovForm)) {
-                log.error "LOV_FORM is NOT mentioned for LOV $attributeName in the table GORSDAM"
-            }
-
-            SupplementalPropertyValue propValue = new SupplementalPropertyValue([(discProp.disc): discProp])
-            supplementalProperties."${attributeName}" << propValue
-        }
-    }
-
-
-
-
-    //Performance POC
-    private def loadSupplementalPropertyQuick( Map supplementalProperties, String tableName) {
-        println i++
+    private def loadSupplementalPropertyTable(Map supplementalProperties, String tableName) {
 
         def session = sessionFactory.getCurrentSession()
 
@@ -706,9 +461,8 @@ class SupplementalDataService {
 
             if (!supplementalProperties."${attributeName}") supplementalProperties."${attributeName}" = [:]
 
-
-            if (!it[9]?.isInteger())
-                it[9] = '1'
+            // if (!it[9]?.isInteger())
+            it[9] = '1'
 
             String lovValidation = it[15]
             String lovForm = it[16]
@@ -716,31 +470,6 @@ class SupplementalDataService {
 
             def columnNames = []
 
-            /**
-             * TODO need to move this logic into SupplementalDataService's resetSDE method
-             */
-            /*
-            if (lovValidation == 'LOV_VALIDATION') {
-                log.debug("Querying for $lovForm for Table Metadata")
-                Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
-                String query = "select * from " + lovTable
-                sql.query(query) { rs ->
-                    def meta = rs.metaData
-                    if (meta.columnCount <= 0) return
-
-                    log.debug("LOV Table column names ....")
-                    for (i in 0..<meta.columnCount) {
-                        log.debug "${i}: ${meta.getColumnLabel(i + 1)}".padRight(20)
-                        columnNames << meta.getColumnLabel(i + 1)
-                        log.debug "\n"
-                    }
-                    log.debug '-' * 40
-                }
-
-                log.debug("Querying on SDE Lookup Table executed")
-                sql.connection.close()
-            }
-            */
             SupplementalPropertyDiscriminatorContent discProp =
                     new SupplementalPropertyDiscriminatorContent(required: it[1],
                             value: it[2],
@@ -758,12 +487,12 @@ class SupplementalDataService {
                             discMethod: it[14],
                             lovValidation: lovValidation,
                             lovProperties: [
-                                    lovForm: lovForm,
-                                    lovTableOverride: it[17],
+                                    lovForm             : lovForm,
+                                    lovTableOverride    : it[17],
                                     lovAttributeOverride: it[18],
-                                    lovCodeTitle: it[19],
-                                    lovDescTitle: it[20],
-                                    columnNames: columnNames
+                                    lovCodeTitle        : it[19],
+                                    lovDescTitle        : it[20],
+                                    columnNames         : columnNames
                             ]
                     )
 
@@ -811,11 +540,10 @@ class SupplementalDataService {
             String underlyingTableName = SupplementalDataUtils.getTableName(y.getTableName().toUpperCase())
 
             if (tableName == underlyingTableName) {
-                return  y.getName()
+                return y.getName()
             }
         }
     }
-
 
     /**
      * Find LOV for a specific lov code and return it in a
@@ -823,22 +551,22 @@ class SupplementalDataService {
      *
      * @param lovCode
      * @param additionalParams - carries the LOV Table info.
-     * @return  - generic lookup domain object
+     * @return - generic lookup domain object
      */
-    def static findByLov (String lovCode, additionalParams= [:]) {
+    def static findByLov(String lovCode, additionalParams = [:]) {
         def lookupDomainList = []
 
         if (additionalParams) {
-            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV') ? 'GTVSDLV' : additionalParams.lovForm
             String query = "SELECT * FROM $lovTable"
             query += " WHERE ${lovTable}_CODE='$lovCode'"
 
             if (lovTable == 'GTVSDLV') {
-                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                if (additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
                     query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    staticLogger.error("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
@@ -849,31 +577,31 @@ class SupplementalDataService {
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            staticLogger.debug("Querying on SDE Lookup Table executed")
             sql.connection.close()
         }
-        (lookupDomainList == [])?null:lookupDomainList[0]
+        (lookupDomainList == []) ? null : lookupDomainList[0]
     }
 
     /**
      * Find all LOV objects belong to a validation table.
      *
      * @param additionalParams - info on LOV table
-     * @return  - list of generic lookup domain objects
+     * @return - list of generic lookup domain objects
      */
-    def static findAllLovs (additionalParams = [:]) {
+    def static findAllLovs(additionalParams = [:]) {
         def lookupDomainList = []
 
         if (additionalParams) {
-            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV') ? 'GTVSDLV' : additionalParams.lovForm
             String query = "SELECT * FROM $lovTable"
 
             if (lovTable == 'GTVSDLV') {
-                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                if (additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
                     query += " where GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    staticLogger.error("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
@@ -884,11 +612,11 @@ class SupplementalDataService {
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            staticLogger.debug("Querying on SDE Lookup Table executed")
             sql.connection.close()
         }
 
-        return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
+        return (lookupDomainList == []) ? ([:]) : ([list: lookupDomainList, totalCount: lookupDomainList.size()])
     }
 
     /**
@@ -898,11 +626,11 @@ class SupplementalDataService {
      * @param additionalParams
      * @return - list of generic lookup domain objects
      */
-    def static findAllLovs (filter, additionalParams) {
+    def static findAllLovs(filter, additionalParams) {
         def lookupDomainList = []
 
         if (additionalParams) {
-            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV') ? 'GTVSDLV' : additionalParams.lovForm
             String query = "SELECT * FROM $lovTable"
             query += " WHERE (upper(${lovTable}_CODE) like upper('%${filter}%')"
             if (additionalParams.descNotAvailable) {
@@ -913,11 +641,11 @@ class SupplementalDataService {
             query += ")"
 
             if (lovTable == 'GTVSDLV') {
-                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                if (additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
                     query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    staticLogger.error("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
@@ -928,10 +656,10 @@ class SupplementalDataService {
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            staticLogger.debug("Querying on SDE Lookup Table executed")
             sql.connection.close()
         }
-        return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
+        return (lookupDomainList == []) ? ([:]) : ([list: lookupDomainList, totalCount: lookupDomainList.size()])
     }
 
 
@@ -953,21 +681,21 @@ class SupplementalDataService {
      * @param tableColumnNames
      * @return
      */
-    def getDomainPropertyNames (Class domainClass, tableColumnNames) {
+    def getDomainPropertyNames(Class domainClass, tableColumnNames) {
         def columnMappings = [:]
 
         def metadata = Holders.getGrailsApplication().getMainContext().sessionFactory.getClassMetadata(domainClass)
         metadata.getPropertyNames().eachWithIndex { propertyName, i ->
             try {
                 columnMappings[propertyName] = metadata.getPropertyColumnNames(i)[0]
-            } catch (MappingException e){
-                log.error "MappingException occured for finding getDomainPropertyNames", e
+            } catch (MappingException e) {
+                // no mapping for this property; so need to skip it.
             }
         }
 
-        columnMappings?.findAll{ String prop, col ->  !prop.startsWith("_")}.keySet()    // returns keys which are prop names.
+        columnMappings?.findAll { String prop, col -> !prop.startsWith("_") }.keySet()
+        // returns keys which are prop names.
     }
-
 
     // ---------------------------- Helper Methods -----------------------------------
 
@@ -989,7 +717,7 @@ class SupplementalDataService {
                 sdf.parse(dateStr)
                 return true
             } catch (ParseException e) {
-                log.error "ParseException occured for method isValidDateFormats ", e
+                // Ignore because its not the right format.
             }
         }
         return false
@@ -1014,8 +742,7 @@ class SupplementalDataService {
     private def validateDataType(dataType, String value) {
         if (dataType.equals("NUMBER") && !isNumeric(value)) {
             throw new RuntimeException("Invalid Number")
-        }
-        else if (dataType.equals("DATE") && value && !isDateValid(value)) {
+        } else if (dataType.equals("DATE") && value && !isDateValid(value)) {
             throw new RuntimeException("Invalid Date")
         }
     }
@@ -1046,6 +773,4 @@ class SupplementalDataService {
          ){key ->
          log.info "ROWID:" +	key}**************************************************************   */
     }
-
-
 }
