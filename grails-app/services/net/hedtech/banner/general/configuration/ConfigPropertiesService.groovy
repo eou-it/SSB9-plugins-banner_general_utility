@@ -49,12 +49,15 @@ class ConfigPropertiesService extends ServiceBase {
             Properties property = new Properties()
             def key = it?.configName
             def value = it?.configValue
-            if ('boolean' == it.configType)
-                value = value.toBoolean()
-            else if ('integer' == it.configType)
-                value = value.toInteger()
-            property.put(key, value)
-            CH.config.merge(configSlurper.parse(property))
+            if (value) {
+                if ('boolean' == it.configType)
+                    value = value?.toBoolean()
+                else if ('integer' == it.configType)
+                    value = value?.toInteger()
+
+                property.put(key, value)
+                CH.config.merge(configSlurper.parse(property))
+            }
         }
         LOGGER.info('Setting config from DB')
     }
