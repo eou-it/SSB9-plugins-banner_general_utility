@@ -47,8 +47,8 @@ class ConfigPropertiesService extends ServiceBase {
     private void mergeConfigProperties(ArrayList configProp) {
         configProp?.each {
             Properties property = new Properties()
-            def key = it.configName
-            def value = it.configValue
+            def key = it?.configName
+            def value = it?.configValue
             if ('boolean' == it.configType)
                 value = value.toBoolean()
             else if ('integer' == it.configType)
@@ -56,6 +56,6 @@ class ConfigPropertiesService extends ServiceBase {
             property.put(key, value)
             CH.config.merge(configSlurper.parse(property))
         }
-        LOGGER.info('Setting conig from DB')
+        LOGGER.info('Setting config from DB')
     }
 }
