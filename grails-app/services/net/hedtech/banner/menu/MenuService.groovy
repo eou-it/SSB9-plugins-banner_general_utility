@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.menu
 
@@ -297,7 +297,7 @@ class MenuService {
             mnu.captionProperty = mnuPrf
 
             // SDE Process
-            supplementalDataSSBService.getModelExtensionData('GUBOBJS', it.id, mnu)
+            //supplementalDataSSBService.getModelExtensionData('GUBOBJS', it.id, mnu)
             // End  SDE Process
 
             dataMap.add( mnu )
