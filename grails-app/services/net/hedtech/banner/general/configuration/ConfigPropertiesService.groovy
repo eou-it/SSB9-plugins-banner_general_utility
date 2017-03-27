@@ -29,15 +29,16 @@ class ConfigPropertiesService extends ServiceBase {
         def appId = configApp?.appId
         ArrayList configProp
 
-        // Merge the application related configurations
+        // Merge the application related configurations and global configurations
         if (appId) {
-            configProp = ConfigProperties.fetchByAppId(appId)
+            configProp = ConfigProperties.fetchByAppIdOrNullAppId(appId)
+            mergeConfigProperties(configProp)
+        } else {
+            // merge the global configurations
+            configProp = ConfigProperties.fetchByAppId(null)
             mergeConfigProperties(configProp)
         }
 
-        // merge the global configurations
-        configProp = ConfigProperties.fetchByAppId(null)
-        mergeConfigProperties(configProp)
     }
 
     /**
@@ -49,15 +50,16 @@ class ConfigPropertiesService extends ServiceBase {
             Properties property = new Properties()
             def key = it?.configName
             def value = it?.configValue
-            if (value) {
-                if ('boolean' == it.configType)
-                    value = value?.toBoolean()
-                else if ('integer' == it.configType)
-                    value = value?.toInteger()
 
-                property.put(key, value)
-                CH.config.merge(configSlurper.parse(property))
-            }
+            if ('boolean' == it.configType)
+                value = value ? value?.toBoolean() : false
+            else if ('integer' == it.configType)
+                value = value ? value?.toInteger() : 0
+            else if ('string' == it.configType)
+                value = value ? value?.toString() : ''
+
+            property.put(key, value)
+            CH.config.merge(configSlurper.parse(property))
         }
         LOGGER.info('Setting config from DB')
     }

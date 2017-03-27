@@ -13,11 +13,12 @@ import javax.persistence.*
 @Table(name = 'GUROCFG')
 @NamedQueries(value = [
         @NamedQuery(name = 'ConfigProperties.fetchByAppId',
-                query = '''FROM ConfigProperties cp
-                                     WHERE cp.configApplication = :appId'''),
+                query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId'''),
         @NamedQuery(name = 'ConfigProperties.fetchByNullAppId',
-                query = '''FROM ConfigProperties cp
-                                             WHERE cp.configApplication IS NULL''')
+                query = '''FROM ConfigProperties cp WHERE cp.configApplication IS NULL'''),
+        @NamedQuery(name = 'ConfigProperties.fetchByAppIdOrNullAppId',
+                query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId
+                           or cp.configApplication IS NULL''')
 ])
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 1L
@@ -145,5 +146,13 @@ public class ConfigProperties implements Serializable {
             }
         }
         return configProperties
+    }
+
+    public static List fetchByAppIdOrNullAppId(String appId) {
+        List configProperties = []
+        configProperties = ConfigProperties.withSession { session ->
+            configProperties = session.getNamedQuery('ConfigProperties.fetchByAppIdOrNullAppId')
+                    .setString('appId', appId).list()
+        }
     }
 }
