@@ -83,10 +83,16 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         Map interceptedUrlMapFromConfig = ReflectionUtils.getConfigProperty("interceptUrlMap")
         Map mergedData = mergeMap(interceptedUrlMapFromConfig, interceptedUrlMapFromDB)
 
+        if (!Holders.config.grails.plugin.springsecurity.interceptUrlMap) {
+            Holders.config.grails.plugin.springsecurity.interceptUrlMap = []
+        }
+
         // Prepare List of interceptedUrlMap from the Merged data.
         mergedData.each { k, v ->
             HttpMethod method = null
-            data.add(new InterceptedUrl(k, super.split(v?.join(',')), method))
+            InterceptedUrl iu = new InterceptedUrl(k, super.split(v?.join(',')), method)
+            Holders.config.grails.plugin.springsecurity.interceptUrlMap?.put(k, super.split(v?.join(',')))
+            data.add(iu)
         }
         data
     }
