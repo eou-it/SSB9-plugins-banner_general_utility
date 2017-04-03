@@ -49,7 +49,10 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     public void testSetConfigFromDBWithNoAppId() {
         createNewConfigPropsWithNoAppId()
         configPropertiesService.setConfigFromDb()
-        assertTrue CH.config.get(CONFIG_NAME) == CONFIG_VALUE
+
+        assertTrue CH.config.get(CONFIG_NAME) == ''
+        assertTrue CH.config.get(CONFIG_NAME + '-boolean') == true
+        assertTrue CH.config.get(CONFIG_NAME + '-integer') == 12
     }
 
     /**
@@ -67,28 +70,91 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
         ConfigProperties configProperties = getConfigProperties()
         configProperties.setConfigApplication(configApplication)
+        configProperties.setConfigValue(CONFIG_VALUE)
         configProps.add(configProperties)
 
         ConfigProperties configPropertiesBoolean = getConfigProperties()
         configPropertiesBoolean.configType = 'boolean'
         configPropertiesBoolean.configName = CONFIG_NAME + '-boolean'
+        configPropertiesBoolean.configValue = 'true'
         configPropertiesBoolean.setConfigApplication(configApplication)
         configProps.add(configPropertiesBoolean)
 
         ConfigProperties configPropertiesInteger = getConfigProperties()
         configPropertiesInteger.configType = 'integer'
         configPropertiesInteger.configName = CONFIG_NAME + '-integer'
-        configPropertiesInteger.configValue = 10
+        configPropertiesInteger.configValue = '10'
         configPropertiesInteger.setConfigApplication(configApplication)
         configProps.add(configPropertiesInteger)
+
         configPropertiesService.create(configProps)
+    }
+
+    @Test
+    public void testEmptyStringValue() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplicationService.create(configApplication)
+
+        ConfigProperties configPropertiesNullValueString = getConfigProperties()
+        configPropertiesNullValueString.setConfigApplication(configApplication)
+        configPropertiesNullValueString.configValue = ''
+
+        ConfigProperties configProp = configPropertiesService.create(configPropertiesNullValueString)
+        configProp.refresh()
+        assertNull(configProp.configValue)
+
+        configPropertiesService.setConfigFromDb()
+        assertTrue CH.config.get(CONFIG_NAME) == ''
+    }
+
+    @Test
+    public void testEmptyBooleanValue() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplicationService.create(configApplication)
+
+        ConfigProperties configPropertiesBooleanNullValue = getConfigProperties()
+        configPropertiesBooleanNullValue.configType = 'boolean'
+        configPropertiesBooleanNullValue.configName = CONFIG_NAME + '-boolean-null'
+        configPropertiesBooleanNullValue.configValue = ''
+        configPropertiesBooleanNullValue.setConfigApplication(configApplication)
+
+        ConfigProperties configProp = configPropertiesService.create(configPropertiesBooleanNullValue)
+        configProp.refresh()
+        assert configProp.configValue == null
+
+        configPropertiesService.setConfigFromDb()
+        assertTrue CH.config.get(CONFIG_NAME + '-boolean-null') == false
+    }
+
+    @Test
+    public void testEmptyIntegerValue() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplicationService.create(configApplication)
+
+        ConfigProperties configPropertiesIntegerNullValue = getConfigProperties()
+        configPropertiesIntegerNullValue.configType = 'integer'
+        configPropertiesIntegerNullValue.configName = CONFIG_NAME + '-integer-null'
+        configPropertiesIntegerNullValue.configValue = ''
+        configPropertiesIntegerNullValue.setConfigApplication(configApplication)
+
+        ConfigProperties configProp = configPropertiesService.create(configPropertiesIntegerNullValue)
+        configProp.refresh()
+        assert configProp.configValue == null
+
+        configPropertiesService.setConfigFromDb()
+        assertTrue CH.config.get(CONFIG_NAME + '-integer-null') == 0
     }
 
     private void createNewConfigPropsWithNoAppId() {
         def configProps = []
+        ConfigProperties configPropertiesString = getConfigProperties()
+        configPropertiesString.configValue = ''
+        configProps.add(configPropertiesString)
+
         ConfigProperties configPropertiesBoolean = getConfigProperties()
         configPropertiesBoolean.configType = 'boolean'
         configPropertiesBoolean.configName = CONFIG_NAME + '-boolean'
+        configPropertiesBoolean.configValue = 'true'
         configProps.add(configPropertiesBoolean)
 
         ConfigProperties configPropertiesInteger = getConfigProperties()
@@ -106,8 +172,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private ConfigProperties getConfigProperties() {
         ConfigProperties configProperties = new ConfigProperties(
                 configName: CONFIG_NAME,
-                configType: 'String',
-                configValue: CONFIG_VALUE,
+                configType: 'string',
+                //configValue: CONFIG_VALUE,
                 lastModified: new Date()
         )
         return configProperties

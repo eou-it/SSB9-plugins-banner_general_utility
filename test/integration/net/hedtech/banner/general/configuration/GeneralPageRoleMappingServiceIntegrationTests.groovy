@@ -43,8 +43,12 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
             def configSlurper = new ConfigSlurper()
             Holders.config.merge(configSlurper.parse(properties))
 
+            Holders.config.grails.plugin.springsecurity.interceptUrlMap = null
+
             generalPageRoleMappingService.initialize()
             assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
+            assertTrue (generalPageRoleMappingService.fetchCompiledValue()?.size()
+                            == Holders.config.grails.plugin.springsecurity.interceptUrlMap?.size())
 
             def list = generalPageRoleMappingService.pageRoleMappingListFromDBAndConfig()
             assertTrue list.size() >= 0
@@ -77,6 +81,8 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
 
             generalPageRoleMappingService.initialize()
             assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
+            assertTrue (generalPageRoleMappingService.fetchCompiledValue()?.size()
+                            == Holders.config.grails.plugin.springsecurity.interceptUrlMap?.size())
         } finally {
             generalPageRoleMappingService.sessionFactory = oldSessionFactory
             Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')

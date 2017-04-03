@@ -163,10 +163,21 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         assertTrue list.size() >= 0
 
         list = ConfigProperties.fetchByAppId(configProperties.configApplication.appId)
-        def confAppId = list.find { ConfigProperties configProp -> configProp.configApplication.appId == appId}
-        assertEquals(confAppId.configApplication.appId, appId)
+        list.each { ConfigProperties configProp ->
+            assertEquals(configProp.configApplication.appId, appId)
+        }
     }
 
+    @Test
+    void testFetchByAppIdOrNullAppId() {
+        ConfigProperties configProperties = createNewConfigProperties()
+
+        def list = ConfigProperties.fetchByAppIdOrNullAppId(configProperties.configApplication.appId)
+        list.each { ConfigProperties configProp ->
+            assertTrue((configProp.configApplication?.appId == appId)
+                            || (configProp.configApplication == null))
+        }
+    }
 
     private ConfigProperties createNewConfigProperties() {
         ConfigApplication configApplication = getConfigApplication()
