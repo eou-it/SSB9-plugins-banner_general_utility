@@ -1,0 +1,27 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="ehcache.xsd" updateCheck="true"
+         monitoring="autodetect" dynamicConfig="true">
+    <diskStore path="java.io.tmpdir/bannerxe/configuration"/>
+    <defaultCache
+            statistics="true"
+            maxElementsInMemory="10000"
+            eternal="false"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            overflowToDisk="true"
+            diskPersistent="true"
+            diskExpiryThreadIntervalSeconds="1200"/>
+
+    <cache name="configPropertiesCache"
+           maxElementsInMemory="10000"
+           statistics="true"
+           eternal="false"
+           timeToIdleSeconds="120"
+           timeToLiveSeconds="120"
+           overflowToDisk="false"
+           diskPersistent="false"
+           memoryStoreEvictionPolicy="LRU"
+           diskExpiryThreadIntervalSeconds="1200">
+        <cacheEventListenerFactory class="net.hedtech.banner.general.configuration.ConfigCacheEventListenerFactory"/>
+    </cache>
+</ehcache>

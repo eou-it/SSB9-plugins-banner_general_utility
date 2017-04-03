@@ -3,12 +3,16 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import org.hibernate.annotations.CacheConcurrencyStrategy
+
 import javax.persistence.*
 
 /**
  * The persistent class for the GUROCFG database table.
  *
  */
+@Cacheable(true)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "configPropertiesCache")
 @Entity
 @Table(name = 'GUROCFG')
 @NamedQueries(value = [
@@ -22,6 +26,7 @@ import javax.persistence.*
 ])
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 1L
+    static final String CONFIG_CACHE_REGION_NAME = "configPropertiesCache"
 
     @Id
     @SequenceGenerator(name = 'GUROCFG_SEQ_GENERATOR', sequenceName = 'GUROCFG_SURROGATE_ID_SEQUENCE')
@@ -138,11 +143,11 @@ public class ConfigProperties implements Serializable {
         if (appId) {
             configProperties = ConfigProperties.withSession { session ->
                 configProperties = session.getNamedQuery('ConfigProperties.fetchByAppId')
-                        .setString('appId', appId).list()
+                        .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
             }
         } else {
             configProperties = ConfigProperties.withSession { session ->
-                configProperties = session.getNamedQuery('ConfigProperties.fetchByNullAppId').list()
+                configProperties = session.getNamedQuery('ConfigProperties.fetchByNullAppId').setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
             }
         }
         return configProperties
@@ -152,7 +157,7 @@ public class ConfigProperties implements Serializable {
         List configProperties = []
         configProperties = ConfigProperties.withSession { session ->
             configProperties = session.getNamedQuery('ConfigProperties.fetchByAppIdOrNullAppId')
-                    .setString('appId', appId).list()
+                    .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME)list()
         }
     }
 }
