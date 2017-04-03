@@ -69,7 +69,7 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     }
     @Test
     public void testGetDbInstanceName() {
-        assertNotNull(aboutService.getDbInstanceName())
+        assertNull(aboutService.getDbInstanceName())
     }
 
 
