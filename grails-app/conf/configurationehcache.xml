@@ -22,6 +22,5 @@
            diskPersistent="false"
            memoryStoreEvictionPolicy="LRU"
            diskExpiryThreadIntervalSeconds="1200">
-        <cacheEventListenerFactory class="net.hedtech.banner.general.configuration.ConfigCacheEventListenerFactory"/>
     </cache>
 </ehcache>
