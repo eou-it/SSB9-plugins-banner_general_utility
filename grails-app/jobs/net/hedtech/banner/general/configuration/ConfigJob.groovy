@@ -12,8 +12,8 @@ class ConfigJob {
     def generalPageRoleMappingService
 
     private static final LOGGER = Logger.getLogger(ConfigJob.class.name)
-    static def interval = CH.config.configJobInterval
-    static def delay = 60000
+    static def delay = CH.config.configJob?.delay instanceof Integer? CH.config.configJob?.delay : 60000
+    static def interval = CH.config.configJob?.interval instanceof Integer? CH.config.configJob?.interval : 900000
 
     static triggers = {
         simple startDelay: delay, repeatInterval: interval// execute job once in 15 minutes
