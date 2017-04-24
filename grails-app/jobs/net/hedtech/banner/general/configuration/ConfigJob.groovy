@@ -4,6 +4,7 @@
 package net.hedtech.banner.general.configuration
 
 import org.apache.log4j.Logger
+import grails.util.Holders as CH
 
 class ConfigJob {
 
@@ -11,7 +12,7 @@ class ConfigJob {
     def generalPageRoleMappingService
 
     private static final LOGGER = Logger.getLogger(ConfigJob.class.name)
-    static def interval = 60000
+    static def interval = CH.config.configJobInterval
     static def delay = 60000
 
     static triggers = {
