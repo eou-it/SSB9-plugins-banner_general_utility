@@ -14,7 +14,6 @@ class AboutService {
     def grailsApplication
     def pluginManager
     def sessionFactory
-    def menuService
     def resourceProperties
     def messageSource
 
@@ -134,10 +133,6 @@ class AboutService {
 
     private String getCopyrightLegalNotice() {
         getMessage("net.hedtech.banner.login.copyright2")
-    }
-
-    private String getDbInstanceName() {
-        menuService.getInstitutionDBInstanceName()
     }
 
     private String getUserName() {
