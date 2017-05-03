@@ -66,9 +66,9 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      */
     protected List<InterceptedUrl> pageRoleMappingListFromDBAndConfig() {
         List<InterceptedUrl> data = new ArrayList<InterceptedUrl>()
-        def map = getList()
+        def pageRoleMappingList = getPageRoleMappingList()
         LinkedHashMap<String, List<String>> interceptedUrlMapFromDB = new LinkedHashMap<String, List<String>>()
-        map.each { String key, ArrayList<GeneralPageRoleMapping> grmList ->
+        pageRoleMappingList.each { String key, ArrayList<GeneralPageRoleMapping> grmList ->
             def roleList = []
             def grmListFinal = []
             grmList.each { GeneralPageRoleMapping grm ->
@@ -154,7 +154,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * @return list
      */
     @Transactional(readOnly = true)
-    private def getList() {
+    private def getPageRoleMappingList() {
         fetchGeneralPageRoleMappingByAppId(getHibernateSession())
     }
 
@@ -164,7 +164,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * @return
      */
     public def fetchListOfInterceptURLMap() {
-        return getList()
+        return getPageRoleMappingList()
     }
 
     /**

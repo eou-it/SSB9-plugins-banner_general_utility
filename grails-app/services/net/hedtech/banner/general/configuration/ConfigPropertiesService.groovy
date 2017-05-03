@@ -46,6 +46,7 @@ class ConfigPropertiesService extends ServiceBase {
      * @param configProp Data type is ArrayList, this list will hold the config properties.
      */
     private void mergeConfigProperties(ArrayList configProp) {
+        LOGGER.info('Config fetched from DB' + configProp)
         configProp?.each {
             Properties property = new Properties()
             def key = it?.configName
