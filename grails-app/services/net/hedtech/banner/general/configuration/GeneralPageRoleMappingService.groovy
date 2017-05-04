@@ -217,8 +217,6 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
             }
         } catch (e) {
             logger.error("Exception in get list of GeneralPageRoleMapping", e)
-        } finally {
-            session.close()
         }
         generalPageRoleMapping
     }
