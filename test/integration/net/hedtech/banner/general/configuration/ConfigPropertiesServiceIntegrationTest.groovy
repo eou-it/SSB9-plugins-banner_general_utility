@@ -27,7 +27,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private static final String CONFIG_VALUE = 'TEST_VALUE'
     private static final String GLOBAL = 'GLOBAL'
     private static final String TESTAPP = 'TESTAPP'
-    private static String ACTUALAPPNAME =''
+    private static String ACTUALAPPNAME = ''
+
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
@@ -36,6 +37,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         Holders.grailsApplication.metadata['app.name'] = TESTAPP
         appName = Holders.grailsApplication.metadata['app.name']
         appId = TESTAPP
+        mergeSeedDataKeysIntoConfigForTest()
     }
 
     @After
@@ -106,7 +108,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
     @Test
     public void testEmptyStringValue() {
-       ConfigApplication configApplication = getConfigApplication()
+        ConfigApplication configApplication = getConfigApplication()
         configApplication = configApplicationService.create(configApplication)
         configApplication.refresh()
         ConfigProperties configPropertiesNullValueString = getConfigProperties()
@@ -159,15 +161,55 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         assertTrue CH.config.get(CONFIG_NAME + '-integer-null') == 0
     }
 
+    @Test
+    public void testSeedDataToDBFromConfig() {
+        ConfigApplication configApp = getConfigApplication()
+        configApp.appName = grailsApplication.metadata['app.name']
+        configApplicationService.create(configApp)
+
+
+        configPropertiesService.seedDataToDBFromConfig()
+
+        def list = ConfigProperties.findAll()
+        assertFalse(list.isEmpty())
+
+        def seedDataKeys = getSeedDataKeysForTest()
+        seedDataKeys.each { v ->
+            if (v instanceof List) {
+                v.each { vKey ->
+                    list.each { key ->
+                        if (key == vKey) {
+                            def keyValue = CH.config.flatten()."$key.configName"
+                            def vKeyValue = CH.config.flatten()."$vKey"
+                            assertTrue(keyValue == vKeyValue)
+                        }
+                    }
+                }
+            } else if (v instanceof Map) {
+                v.each { x, y ->
+                    list.each { map ->
+                        def vMap = [:]
+                        vMap.put(x, y)
+                        if (map == vMap) {
+                            map.each { a, b ->
+                                assertTrue(b == vMap.getAt(a))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     private void createNewGlobalConfigProps() {
-        ConfigApplication configApplication  = ConfigApplication.fetchByAppName(GLOBAL)
+        ConfigApplication configApplication = ConfigApplication.fetchByAppName(GLOBAL)
         assertNotNull configApplication?.id
         configApplication.refresh()
         def configProps = []
 
         ConfigProperties configProperties = getConfigProperties()
-        configProperties.configName= "testing"
+        configProperties.configName = "testing"
         configProperties.configType = 'string'
         configProperties.setConfigValue("GLOBAL")
         configProperties.setConfigApplication(configApplication)
@@ -176,7 +218,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
     }
 
-    private createNewAppSpecificConfigProps(){
+    private createNewAppSpecificConfigProps() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication = configApplicationService.create(configApplication)
         configApplication.refresh()
@@ -190,7 +232,6 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
         configPropertiesService.create(configProps)
     }
-
 
     /**
      * Mocking ConfigProperties domain.
@@ -228,7 +269,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         return configApplication
     }
 
-    private setSurrogateIdForGlobal(id){
+    private setSurrogateIdForGlobal(id) {
         Sql sql
         try {
             sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -236,6 +277,24 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         } finally {
             sql?.close() // note that the test will close the connection, since it's our current session's connection
         }
+    }
+
+    private def mergeSeedDataKeysIntoConfigForTest() {
+        ConfigSlurper configSlurper = new ConfigSlurper()
+        Properties property = new Properties()
+
+        property.put('ssconfig.app.seeddata.keys', getSeedDataKeysForTest())
+        property.put('ssconfig.seedData.test.key1', 'test1')
+        property.put('ssconfig.seedData.test.key2', 'test2')
+        CH.config.merge(configSlurper.parse(property))
+    }
+
+    private def getSeedDataKeysForTest() {
+        return [
+                ['banner.applicationName': 'Sandbox'],
+                ['ssconfig.seedData.test.key1', 'ssconfig.seedData.test.key2'],
+                ['banner.applicationName1': 'SandboxTest']
+        ]
     }
 
 }

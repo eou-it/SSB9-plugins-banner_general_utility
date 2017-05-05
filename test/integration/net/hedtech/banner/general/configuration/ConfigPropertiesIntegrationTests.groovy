@@ -142,33 +142,6 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    void testFetchByInValidNullAppId() {
-        ConfigProperties configProperties = createNewConfigPropertiesWithoutAppId()
-
-        assertNotNull configProperties.id
-
-        def list = ConfigProperties.fetchByAppId(null)
-        assertTrue list.size() >= 1
-    }
-
-
-    @Test
-    void testFetchByNull() {
-        ConfigProperties configProperties = createNewConfigProperties()
-
-        assertNotNull configProperties.id
-
-        String appID = null
-        def list = ConfigProperties.fetchByAppId(appID)
-        assertTrue list.size() >= 0
-
-        list = ConfigProperties.fetchByAppId(configProperties.configApplication.appId)
-        list.each { ConfigProperties configProp ->
-            assertEquals(configProp.configApplication.appId, appId)
-        }
-    }
-
-    @Test
     void testFetchByAppIdOrNullAppId() {
         ConfigProperties configProperties = createNewConfigProperties()
 

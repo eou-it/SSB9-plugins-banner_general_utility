@@ -62,4 +62,48 @@ class ConfigPropertiesService extends ServiceBase {
         }
         LOGGER.info('Setting config from DB')
     }
+
+    public void seedDataToDBFromConfig() {
+        String appName = grailsApplication.metadata['app.name']
+        ConfigApplication configApp = ConfigApplication.fetchByAppName(appName)
+        def appId = configApp?.appId
+        ArrayList configPropName = []
+        ConfigProperties.fetchByAppId(appId).each { ConfigProperties cp ->
+            configPropName << cp.configName
+        }
+
+        def seedDataKey = CH.config.ssconfig.app.seeddata.keys
+
+        def dataToSeed = []
+
+        seedDataKey.each { obj ->
+            if (obj instanceof List) {
+                obj.each { keyName ->
+                    if (!configPropName.contains(keyName)) {
+                        ConfigProperties cp = new ConfigProperties()
+                        cp.setConfigName(keyName)
+
+                        def value = CH.config.flatten()."$keyName"
+                        cp.setConfigValue(value)
+                        cp.setConfigApplication(configApp)
+                        cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
+                        dataToSeed << cp
+                    }
+                }
+            } else if (obj instanceof Map) {
+                obj.each { k, v ->
+                    if (!configPropName.contains(v)) {
+                        ConfigProperties cp = new ConfigProperties()
+                        cp.setConfigName(k)
+                        cp.setConfigValue(v)
+                        cp.setConfigApplication(configApp)
+                        cp.setConfigType(v?.getClass()?.simpleName?.toLowerCase())
+                        dataToSeed << cp
+                    }
+                }
+            }
+        }
+
+        create(dataToSeed)
+    }
 }
