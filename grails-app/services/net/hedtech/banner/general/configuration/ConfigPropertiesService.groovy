@@ -16,7 +16,7 @@ class ConfigPropertiesService extends ServiceBase {
     static transactional = false
 
     private static final LOGGER = Logger.getLogger(ConfigPropertiesService.getClass().getName())
-
+    private static final String GLOBAL = "GLOBAL"
     def grailsApplication
     ConfigSlurper configSlurper = new ConfigSlurper()
 
@@ -28,14 +28,12 @@ class ConfigPropertiesService extends ServiceBase {
         ConfigApplication configApp = ConfigApplication.fetchByAppName(appName)
         def appId = configApp?.appId
         ArrayList configProp
-
+        // merge the global configurations
+        configProp = ConfigProperties.fetchByAppId(GLOBAL)
+        mergeConfigProperties(configProp)
         // Merge the application related configurations and global configurations
         if (appId) {
             configProp = ConfigProperties.fetchByAppIdOrNullAppId(appId)
-            mergeConfigProperties(configProp)
-        } else {
-            // merge the global configurations
-            configProp = ConfigProperties.fetchByAppId(null)
             mergeConfigProperties(configProp)
         }
 

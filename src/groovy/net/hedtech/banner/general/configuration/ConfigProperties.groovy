@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import org.apache.log4j.Logger
 import org.hibernate.annotations.CacheConcurrencyStrategy
 
 import javax.persistence.*
@@ -27,7 +28,7 @@ import javax.persistence.*
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 1L
     static final String CONFIG_CACHE_REGION_NAME = "configPropertiesCache"
-
+    private static Logger logger = Logger.getLogger(ConfigProperties.getClass().getName())
     @Id
     @SequenceGenerator(name = 'GUROCFG_SEQ_GENERATOR', sequenceName = 'GUROCFG_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GUROCFG_SEQ_GENERATOR')
@@ -140,15 +141,20 @@ public class ConfigProperties implements Serializable {
      */
     public static List fetchByAppId(String appId) {
         List configProperties = []
-        if (appId) {
-            configProperties = ConfigProperties.withSession { session ->
-                configProperties = session.getNamedQuery('ConfigProperties.fetchByAppId')
-                        .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
+        try{
+            if (appId) {
+                configProperties = ConfigProperties.withSession { session ->
+                    configProperties = session.getNamedQuery('ConfigProperties.fetchByAppId')
+                            .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
+                }
+            } else {
+                configProperties = ConfigProperties.withSession { session ->
+                    configProperties = session.getNamedQuery('ConfigProperties.fetchByNullAppId').setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
+                }
             }
-        } else {
-            configProperties = ConfigProperties.withSession { session ->
-                configProperties = session.getNamedQuery('ConfigProperties.fetchByNullAppId').setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
-            }
+        } catch (Exception ex) {
+            //Catch exception here
+            logger.error("Exception in fetchByAppId Self Service Config Table doesn't exist")
         }
         return configProperties
     }

@@ -3,6 +3,9 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import org.apache.log4j.Logger
+import org.hibernate.exception.SQLGrammarException
+
 import javax.persistence.*
 
 /**
@@ -21,6 +24,7 @@ import javax.persistence.*
 public class ConfigApplication implements Serializable {
 
     private static final long serialVersionUID = 1000L
+    private static Logger logger = Logger.getLogger(ConfigApplication.getClass().getName())
 
     /*
     * Surrogate ID for GUBAPPL
@@ -131,12 +135,18 @@ public class ConfigApplication implements Serializable {
      * Named query to fetch data from this domain based on valid Appname.
      * @return List
      */
-    public static def fetchByAppName(String appName) {
+    public static ConfigApplication fetchByAppName(String appName) {
         def configApplication
-        if(appName){
-            configApplication = ConfigApplication.withSession { session ->
-                configApplication = session.getNamedQuery('ConfigApplication.fetchByAppName').setString('appName', appName).uniqueResult()
+        try {
+            if (appName) {
+                configApplication = ConfigApplication.withSession { session ->
+                    configApplication = session.getNamedQuery('ConfigApplication.fetchByAppName').setString('appName', appName).uniqueResult()
+                }
             }
+        } catch (Exception ex) {
+            //catching exception
+            logger.error("Exception in fetchByAppName Self Service Config Table doesn't exist" + ex)
+
         }
         return configApplication
     }
