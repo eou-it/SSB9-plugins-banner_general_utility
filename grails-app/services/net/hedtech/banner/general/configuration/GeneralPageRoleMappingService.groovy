@@ -47,7 +47,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * Overriden method will get all the IntercetedUrlMap from the Config.groovy and DB.
      */
     @Override
-    public synchronized void reset() {
+    public void reset() {
         resetConfigs()
 
         List<InterceptedUrl> data = pageRoleMappingListFromDBAndConfig()
@@ -56,9 +56,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
             compileAndStoreMapping(iu)
         }
 
-        if (logger.isTraceEnabled()) {
-            logger.trace("configs: {}", getConfigAttributeMap())
-        }
+        logger.debug("configs: $data")
     }
 
     /**
@@ -155,7 +153,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      */
     @Transactional(readOnly = true)
     private def getPageRoleMappingList() {
-        fetchGeneralPageRoleMappingByAppId(getHibernateSession())
+        fetchGeneralPageRoleMappingByAppId()
     }
 
     /**
@@ -179,14 +177,17 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * The private method and this common method will be called with Hibernate Session passed as a param.
      * @param session
      */
-    private LinkedHashMap fetchGeneralPageRoleMappingByAppId(Session session) {
+    private LinkedHashMap fetchGeneralPageRoleMappingByAppId() {
         def list
         def generalPageRoleMapping = new LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>>()
         try {
-            String appId = getAppIdByAppName(session)
+            String appId = getAppIdByAppName()
             if (appId) {
                 if (!sessionFactory) {
-                    list = session.createQuery('''SELECT new GeneralPageRoleMapping(generalPageRoleMapping.pageName,
+                    Session session
+                    try {
+                        session = getHibernateSession()
+                        list = session.createQuery('''SELECT new GeneralPageRoleMapping(generalPageRoleMapping.pageName,
                                                         generalPageRoleMapping.roleCode,
                                                         generalPageRoleMapping.applicationName,
                                                         generalPageRoleMapping.displaySequence,
@@ -195,7 +196,15 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
                                                         generalPageRoleMapping.version)
                                                   FROM GeneralPageRoleMapping generalPageRoleMapping
                                                   WHERE generalPageRoleMapping.applicationId = :appId''')
-                            .setParameter('appId', appId).list()
+                                .setParameter('appId', appId).list()
+                    }
+                    catch (e) {
+                        logger.error('Exception while executing the query with new Hibernate session;', e)
+                    }
+                    finally {
+                        session.close()
+                    }
+
                 } else {
                     list = GeneralPageRoleMapping.fetchByAppId(appId)
                 }
@@ -226,13 +235,23 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
      * @param session Classic Hibernate session.
      * @return List    List for application id's.
      */
-    private String getAppIdByAppName(Session session) {
+    private String getAppIdByAppName() {
         final def APP_NAME = Holders.grailsApplication.metadata['app.name']
+        Session session
         String appId
         try {
             if (!sessionFactory) {
-                appId = session.createQuery('''SELECT capp.appId FROM ConfigApplication capp
+                try {
+                    session = getHibernateSession()
+                    appId = session.createQuery('''SELECT capp.appId FROM ConfigApplication capp
                                                          WHERE capp.appName = :appName''').setString('appName', APP_NAME).uniqueResult()
+                }
+                catch (e) {
+                    logger.error('Exception while executing the query with new Hibernate session;', e)
+                }
+                finally {
+                    session.close()
+                }
             } else {
                 appId = ConfigApplication.fetchByAppName(APP_NAME)?.appId
             }

@@ -13,8 +13,10 @@ class ConfigJob {
 
     private static final LOGGER = Logger.getLogger(ConfigJob.class.name)
     static def delay = CH.config.configJob?.delay instanceof Integer? CH.config.configJob?.delay : 60000
-    static def interval = CH.config.configJob?.interval instanceof Integer? CH.config.configJob?.interval : 900000
-    static def actualCount = CH.config.configJob?.actualCount instanceof Integer? CH.config.configJob?.actualCount > 0 ? CH.config.configJob?.actualCount -1 : CH.config.configJob?.actualCount : -1
+    static def interval = CH.config.configJob?.interval instanceof Integer? CH.config.configJob?.interval : 60000
+    static def actualCount = 2
+    def concurrent = false
+    //static def actualCount = CH.config.configJob?.actualCount instanceof Integer? CH.config.configJob?.actualCount > 0 ? CH.config.configJob?.actualCount -1 : CH.config.configJob?.actualCount : -1
 
     static triggers = {
         simple startDelay: delay, repeatInterval: interval, repeatCount : actualCount // execute job once in 15 minutes
