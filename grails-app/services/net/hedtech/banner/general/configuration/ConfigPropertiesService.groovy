@@ -92,12 +92,13 @@ class ConfigPropertiesService extends ServiceBase {
                 }
             } else if (obj instanceof Map) {
                 obj.each { k, v ->
-                    if (!configPropName.contains(v)) {
+                    if (!configPropName.contains(k)) {
                         ConfigProperties cp = new ConfigProperties()
                         cp.setConfigName(k)
                         cp.setConfigValue(v)
                         cp.setConfigApplication(configApp)
                         cp.setConfigType(v?.getClass()?.simpleName?.toLowerCase())
+                        cp.setLastModified(new Date())
                         dataToSeed << cp
                     }
                 }

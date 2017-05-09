@@ -27,6 +27,7 @@ class BannerGeneralUtilityBootStrap {
             servletContext.setAttribute("dbInstanceName", dbInstanceName)
         }
 
+        configPropertiesService.seedDataToDBFromConfig()
         configPropertiesService.setConfigFromDb()
     }
 
