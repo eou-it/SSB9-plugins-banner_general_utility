@@ -1,3 +1,6 @@
+/*******************************************************************************
+ Copyright 2013-2017 Ellucian Company L.P. and its affiliates.
+ ****************************************************************************** */
 class BannerGeneralUtilityGrailsPlugin {
     String version = "9.22.1"
 
