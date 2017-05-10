@@ -87,6 +87,7 @@ class ConfigPropertiesService extends ServiceBase {
                         cp.setConfigValue(value)
                         cp.setConfigApplication(configApp)
                         cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
+                        cp.setLastModified(new Date())
                         dataToSeed << cp
                     }
                 }
