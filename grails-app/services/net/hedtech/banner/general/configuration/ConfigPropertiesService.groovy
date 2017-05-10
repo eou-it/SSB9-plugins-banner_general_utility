@@ -73,7 +73,7 @@ class ConfigPropertiesService extends ServiceBase {
         }
 
         def seedDataKey = CH.config.ssconfig.app.seeddata.keys
-
+        LOGGER.debug(seedDataKey)
         def dataToSeed = []
 
         seedDataKey.each { obj ->
