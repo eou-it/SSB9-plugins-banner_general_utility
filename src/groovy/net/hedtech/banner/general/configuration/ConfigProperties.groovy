@@ -19,16 +19,15 @@ import javax.persistence.*
 @NamedQueries(value = [
         @NamedQuery(name = 'ConfigProperties.fetchByAppId',
                 query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId'''),
-        @NamedQuery(name = 'ConfigProperties.fetchByNullAppId',
-                query = '''FROM ConfigProperties cp WHERE cp.configApplication IS NULL'''),
-        @NamedQuery(name = 'ConfigProperties.fetchByAppIdOrNullAppId',
+        @NamedQuery(name = 'ConfigProperties.fetchSimpleConfigByAppId',
                 query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId
-                           or cp.configApplication IS NULL''')
+                           and cp.configType in ('boolean','string','integer')''')
 ])
 public class ConfigProperties implements Serializable {
-    private static final long serialVersionUID = 1L
+    private static final long serialVersionUID = 10009L
     static final String CONFIG_CACHE_REGION_NAME = "configPropertiesCache"
     private static Logger logger = Logger.getLogger(ConfigProperties.getClass().getName())
+
     @Id
     @SequenceGenerator(name = 'GUROCFG_SEQ_GENERATOR', sequenceName = 'GUROCFG_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GUROCFG_SEQ_GENERATOR')
@@ -159,11 +158,11 @@ public class ConfigProperties implements Serializable {
         return configProperties
     }
 
-    public static List fetchByAppIdOrNullAppId(String appId) {
+    public static List fetchSimpleConfigByAppId(String appId) {
         List configProperties = []
         configProperties = ConfigProperties.withSession { session ->
-            configProperties = session.getNamedQuery('ConfigProperties.fetchByAppIdOrNullAppId')
-                    .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME)list()
+            configProperties = session.getNamedQuery('ConfigProperties.fetchSimpleConfigByAppId')
+                    .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
         }
     }
 }

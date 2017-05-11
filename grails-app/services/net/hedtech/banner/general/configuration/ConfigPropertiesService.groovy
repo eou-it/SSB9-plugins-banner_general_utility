@@ -15,25 +15,24 @@ import org.apache.log4j.Logger
 class ConfigPropertiesService extends ServiceBase {
     static transactional = false
 
-    private static final LOGGER = Logger.getLogger(ConfigPropertiesService.getClass().getName())
+    private static final LOGGER = Logger.getLogger(ConfigPropertiesService.class.name)
     private static final String GLOBAL = "GLOBAL"
     def grailsApplication
     ConfigSlurper configSlurper = new ConfigSlurper()
+
 
     /**
      * This method will be get called in bootstrap to load all the config properties from the DB.
      */
     public void setConfigFromDb() {
-        String appName = grailsApplication.metadata['app.name']
-        ConfigApplication configApp = ConfigApplication.fetchByAppName(appName)
-        def appId = configApp?.appId
-        ArrayList configProp
+        String appId = grailsApplication.metadata['app.appId']
+        LOGGER.info('Fetching config from DB for appId = ${appId}')
         // merge the global configurations
-        configProp = ConfigProperties.fetchByAppId(GLOBAL)
+        ArrayList configProp = ConfigProperties.fetchSimpleConfigByAppId(GLOBAL)
         mergeConfigProperties(configProp)
         // Merge the application related configurations and global configurations
         if (appId) {
-            configProp = ConfigProperties.fetchByAppIdOrNullAppId(appId)
+            configProp = ConfigProperties.fetchSimpleConfigByAppId(appId)
             mergeConfigProperties(configProp)
         }
 
@@ -63,9 +62,16 @@ class ConfigPropertiesService extends ServiceBase {
         LOGGER.info('Setting config from DB')
     }
 
+
     public void seedDataToDBFromConfig() {
         String appName = grailsApplication.metadata['app.name']
         ConfigApplication configApp = ConfigApplication.fetchByAppName(appName)
+        if(configApp == null){
+            ConfigApplication newConfigApp = new ConfigApplication()
+            newConfigApp.setAppId(grailsApplication.metadata['app.appId'])
+            newConfigApp.setAppName(appName)
+            configApp = create(newConfigApp)
+        }
         def appId = configApp?.appId
         ArrayList configPropName = []
         ConfigProperties.fetchByAppId(appId).each { ConfigProperties cp ->
@@ -84,7 +90,7 @@ class ConfigPropertiesService extends ServiceBase {
                         cp.setConfigName(keyName)
 
                         def value = CH.config.flatten()."$keyName"
-                        cp.setConfigValue(value)
+                        cp.setConfigValue(value.toString())
                         cp.setConfigApplication(configApp)
                         cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
                         cp.setLastModified(new Date())
@@ -96,7 +102,7 @@ class ConfigPropertiesService extends ServiceBase {
                     if (!configPropName.contains(k)) {
                         ConfigProperties cp = new ConfigProperties()
                         cp.setConfigName(k)
-                        cp.setConfigValue(v)
+                        cp.setConfigValue(v.toString())
                         cp.setConfigApplication(configApp)
                         cp.setConfigType(v?.getClass()?.simpleName?.toLowerCase())
                         cp.setLastModified(new Date())

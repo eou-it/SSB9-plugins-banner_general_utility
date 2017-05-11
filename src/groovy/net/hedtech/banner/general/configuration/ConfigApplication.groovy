@@ -24,7 +24,7 @@ import javax.persistence.*
 public class ConfigApplication implements Serializable {
 
     private static final long serialVersionUID = 1000L
-    private static Logger logger = Logger.getLogger(ConfigApplication.getClass().getName())
+    private static Logger logger = Logger.getLogger(ConfigApplication.class.name)
 
     /*
     * Surrogate ID for GUBAPPL

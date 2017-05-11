@@ -15,7 +15,7 @@ import net.hedtech.banner.utility.GeneralMenu
 
 class BannerGeneralUtilityBootStrap {
 
-    def log = Logger.getLogger(this.getClass())
+    def log = Logger.getLogger(BannerGeneralUtilityBootStrap.class.name)
 
     def menuService
     def configPropertiesService
@@ -23,7 +23,7 @@ class BannerGeneralUtilityBootStrap {
     def init = { servletContext ->
 
         if(GeneralMenu.isEnabled()){
-            def dbInstanceName = menuService.getInstitutionDBInstanceName();
+            def dbInstanceName = menuService.getInstitutionDBInstanceName()
             servletContext.setAttribute("dbInstanceName", dbInstanceName)
         }
 

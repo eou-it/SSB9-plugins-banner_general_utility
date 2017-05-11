@@ -142,13 +142,12 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    void testFetchByAppIdOrNullAppId() {
+    void testFetchSimpleConfigByAppId() {
         ConfigProperties configProperties = createNewConfigProperties()
 
-        def list = ConfigProperties.fetchByAppIdOrNullAppId(configProperties.configApplication.appId)
+        def list = ConfigProperties.fetchSimpleConfigByAppId(configProperties.configApplication.appId)
         list.each { ConfigProperties configProp ->
-            assertTrue((configProp.configApplication?.appId == appId)
-                            || (configProp.configApplication == null))
+            assertTrue(configProp.configType?.appId == 'boolean' || configProp.configType == 'string' || configProp.configType == 'integer')
         }
     }
 
@@ -162,10 +161,6 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         configProperties.save(failOnError: true, flush: true)
     }
 
-    private ConfigProperties createNewConfigPropertiesWithoutAppId() {
-        ConfigProperties configProperties = getConfigProperties()
-        configProperties.save(failOnError: true, flush: true)
-    }
 
     /**
      * Mocking ConfigProperties domain.

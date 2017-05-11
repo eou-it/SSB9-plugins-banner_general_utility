@@ -20,7 +20,7 @@ import org.springframework.http.HttpMethod
  * service will get injected by the spring from BannerGeneralUtilityGrailsPlugin.groovy.
  */
 class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefinition {
-    private static Logger logger = Logger.getLogger(GeneralPageRoleMappingService.getClass().getName())
+    private static Logger logger = Logger.getLogger(GeneralPageRoleMappingService.class.name)
     /**
      * This will be injected by the spring only when making this service call from the GeneralPageRoleMappingController.
      */
@@ -181,7 +181,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         def list
         def generalPageRoleMapping = new LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>>()
         try {
-            String appId = getAppIdByAppName()
+            String appId = Holders.grailsApplication.metadata['app.appId']
             if (appId) {
                 if (!sessionFactory) {
                     Session session
@@ -230,35 +230,5 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         generalPageRoleMapping
     }
 
-    /**
-     * Method is used to get the applicationId by applicationName.
-     * @param session Classic Hibernate session.
-     * @return List    List for application id's.
-     */
-    private String getAppIdByAppName() {
-        final def APP_NAME = Holders.grailsApplication.metadata['app.name']
-        Session session
-        String appId
-        try {
-            if (!sessionFactory) {
-                try {
-                    session = getHibernateSession()
-                    appId = session.createQuery('''SELECT capp.appId FROM ConfigApplication capp
-                                                         WHERE capp.appName = :appName''').setString('appName', APP_NAME).uniqueResult()
-                }
-                catch (e) {
-                    logger.error('Exception while executing the query with new Hibernate session;', e)
-                }
-                finally {
-                    session.close()
-                }
-            } else {
-                appId = ConfigApplication.fetchByAppName(APP_NAME)?.appId
-            }
-        } catch (e) {
-            logger.error("Exception in get Application Id", e)
-        }
-        appId
-    }
 
 }
