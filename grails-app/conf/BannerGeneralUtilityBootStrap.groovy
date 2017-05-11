@@ -1,10 +1,8 @@
 /*******************************************************************************
  Copyright 2017 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
-
-import org.apache.log4j.Logger
 import net.hedtech.banner.utility.GeneralMenu
-
+import org.apache.log4j.Logger
 
 /**
  * Executes arbitrary code at bootstrap time.
@@ -22,12 +20,11 @@ class BannerGeneralUtilityBootStrap {
 
     def init = { servletContext ->
 
-        if(GeneralMenu.isEnabled()){
+        if (GeneralMenu.isEnabled()) {
             def dbInstanceName = menuService.getInstitutionDBInstanceName()
             servletContext.setAttribute("dbInstanceName", dbInstanceName)
         }
-
-        configPropertiesService.seedDataToDBFromConfig()
+        //configPropertiesService.seedDataToDBFromConfig()
         configPropertiesService.setConfigFromDb()
     }
 

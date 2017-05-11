@@ -5,6 +5,7 @@ package net.hedtech.banner.general.configuration
 
 import org.apache.log4j.Logger
 import org.hibernate.annotations.CacheConcurrencyStrategy
+import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 import javax.persistence.*
 
@@ -151,18 +152,27 @@ public class ConfigProperties implements Serializable {
                     configProperties = session.getNamedQuery('ConfigProperties.fetchByNullAppId').setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
                 }
             }
-        } catch (Exception ex) {
-            //Catch exception here
-            logger.error("Exception in fetchByAppId Self Service Config Table doesn't exist")
+        } catch (InvalidDataAccessResourceUsageException ex) {
+            //catching exception
+            logger.error("InvalidDataAccessResourceUsageException in fetchByAppId Self Service Config Table doesn't exist")
+
         }
         return configProperties
     }
 
     public static List fetchSimpleConfigByAppId(String appId) {
         List configProperties = []
-        configProperties = ConfigProperties.withSession { session ->
-            configProperties = session.getNamedQuery('ConfigProperties.fetchSimpleConfigByAppId')
-                    .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
+        try {
+            configProperties = ConfigProperties.withSession { session ->
+                configProperties = session.getNamedQuery('ConfigProperties.fetchSimpleConfigByAppId')
+                        .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
+            }
+        } catch (InvalidDataAccessResourceUsageException ex) {
+            //catching exception
+            logger.error("InvalidDataAccessResourceUsageException in fetchSimpleConfigByAppId Self Service Config Table doesn't exist")
+
+        }catch(MissingMethodException e){
+            logger.error("MissingMethodException in fetchSimpleConfigByAppId Self Service Config Table doesn't exist")
         }
     }
 }

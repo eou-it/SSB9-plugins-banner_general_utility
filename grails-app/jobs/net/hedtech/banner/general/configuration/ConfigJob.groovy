@@ -5,6 +5,7 @@ package net.hedtech.banner.general.configuration
 
 import org.apache.log4j.Logger
 import grails.util.Holders as CH
+import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 class ConfigJob {
 
@@ -29,8 +30,8 @@ class ConfigJob {
             try {
                 configPropertiesService.setConfigFromDb()
                 generalPageRoleMappingService.reset()
-            } catch (Exception ex) {
-                LOGGER.error("Exception in execute method of ConfigJob Self Service Config Table doesn't exist")
+            } catch (InvalidDataAccessResourceUsageException e) {
+                LOGGER.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
             }
             LOGGER.info("Configurations updated")
         }

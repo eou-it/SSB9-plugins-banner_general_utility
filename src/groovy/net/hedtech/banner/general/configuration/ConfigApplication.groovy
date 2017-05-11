@@ -5,6 +5,7 @@ package net.hedtech.banner.general.configuration
 
 import org.apache.log4j.Logger
 import org.hibernate.exception.SQLGrammarException
+import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 import javax.persistence.*
 
@@ -143,11 +144,13 @@ public class ConfigApplication implements Serializable {
                     configApplication = session.getNamedQuery('ConfigApplication.fetchByAppName').setString('appName', appName).uniqueResult()
                 }
             }
-        } catch (Exception ex) {
+        } catch (InvalidDataAccessResourceUsageException e) {
+            logger.error("InvalidDataAccessResourceUsageException in fetchByAppName Self Service Config Table doesn't exist" + e.class)
+        } /*catch (Exception ex) {
             //catching exception
-            logger.error("Exception in fetchByAppName Self Service Config Table doesn't exist" + ex)
+            logger.error("Exception in fetchByAppName Self Service Config Table doesn't exist" + ex.class)
 
-        }
+        }*/
         return configApplication
     }
 }
