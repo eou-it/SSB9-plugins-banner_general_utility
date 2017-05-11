@@ -25,6 +25,7 @@ there is no concept of an 'entity manager' within this project.
         <property name="hibernate.cache.use_structured_entries=">true</property>
         <mapping class="net.hedtech.banner.session.BannerUserSession"/>
         <mapping class="net.hedtech.banner.test.ZipTest"/>
+        <mapping class="net.hedtech.banner.general.ConfigurationData"/>
         <mapping class="net.hedtech.banner.general.configuration.ConfigApplication"/>
         <mapping class="net.hedtech.banner.general.configuration.ConfigControllerEndpointPage"/>
         <mapping class="net.hedtech.banner.general.configuration.ConfigInstance"/>
