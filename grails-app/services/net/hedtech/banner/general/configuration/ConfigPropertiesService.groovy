@@ -13,11 +13,12 @@ import org.apache.log4j.Logger
  * and will merge those props to Context Holder by the help of bootstrap.
  */
 class ConfigPropertiesService extends ServiceBase {
-    static transactional = false
+    static transactional = true
 
     private static final LOGGER = Logger.getLogger(ConfigPropertiesService.class.name)
     private static final String GLOBAL = "GLOBAL"
     def grailsApplication
+    def configApplicationService
     ConfigSlurper configSlurper = new ConfigSlurper()
 
 
@@ -70,7 +71,8 @@ class ConfigPropertiesService extends ServiceBase {
             ConfigApplication newConfigApp = new ConfigApplication()
             newConfigApp.setAppId(grailsApplication.metadata['app.appId'])
             newConfigApp.setAppName(appName)
-            configApp = create(newConfigApp)
+            newConfigApp.setLastModifiedBy('BANNER')
+            configApp = configApplicationService.create(newConfigApp)
         }
         def appId = configApp?.appId
         ArrayList configPropName = []
@@ -93,6 +95,7 @@ class ConfigPropertiesService extends ServiceBase {
                         cp.setConfigValue(value.toString())
                         cp.setConfigApplication(configApp)
                         cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
+                        cp.setLastModifiedBy('BANNER')
                         cp.setLastModified(new Date())
                         dataToSeed << cp
                     }
@@ -105,6 +108,7 @@ class ConfigPropertiesService extends ServiceBase {
                         cp.setConfigValue(v.toString())
                         cp.setConfigApplication(configApp)
                         cp.setConfigType(v?.getClass()?.simpleName?.toLowerCase())
+                        cp.setLastModifiedBy('BANNER')
                         cp.setLastModified(new Date())
                         dataToSeed << cp
                     }

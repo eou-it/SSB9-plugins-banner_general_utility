@@ -7,5 +7,5 @@ package net.hedtech.banner.general.configuration
 import net.hedtech.banner.service.ServiceBase
 
 class ConfigApplicationService extends ServiceBase {
-    static transactional = false
+    static transactional = true
 }

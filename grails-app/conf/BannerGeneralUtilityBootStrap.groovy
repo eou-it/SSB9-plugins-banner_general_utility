@@ -24,7 +24,7 @@ class BannerGeneralUtilityBootStrap {
             def dbInstanceName = menuService.getInstitutionDBInstanceName()
             servletContext.setAttribute("dbInstanceName", dbInstanceName)
         }
-        //configPropertiesService.seedDataToDBFromConfig()
+        configPropertiesService.seedDataToDBFromConfig()
         configPropertiesService.setConfigFromDb()
     }
 
