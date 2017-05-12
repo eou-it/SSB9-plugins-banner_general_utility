@@ -36,30 +36,34 @@ class TextManagerUtil {
             if (pos >= 0) {
                 String key = item.substring(0, pos).toLowerCase()
                 String val = item.substring(pos + 1)
-                dbValues << [key:val]
+                dbValues[key] = val
                 log.debug(key + "=" + val)
             }
         }
-        if (dbValues.logon == null) {
+        if (dbValues[logon] == null) {
             logError("No log on specified(lo=user/passwd@connect [tns or jdbc connection])")
         }
-        if (dbValues.sourceFile == null) {
+        if (dbValues[sourceFile] == null) {
             logError("No source file specified (sf=...)")
         }
-        if (dbValues.mo == null) {
-            dbValues << [mo:"s"]
-        } else if (dbValues.mo.equals("t")) {
-            if (dbValues.targetFile == null) {
+        if (dbValues[mo] == null) {
+            dbValues[mo]= "s"
+        } else if (dbValues[mo].equals("t")) {
+            if (dbValues[targetFile] == null) {
                 logError("No target file specified (tf=...)")
             }
-            if (dbValues.tl == null) {
+            if (dbValues[tl] == null) {
                 logError("No target language specified (tl=...)")
             }
-        } else if (dbValues.mo.equals("r")) {
-            if (dbValues.tl == null) {
+        } else if (dbValues[mo].equals("r")) {
+            if (dbValues[tl] == null) {
                 logError("No target language specified (tl=...)")
             }
         }
+    }
+
+    def getValue(key) {
+        dbValues[key]
     }
 
     static String smartQuotesReplace(String s) {
@@ -80,4 +84,6 @@ class TextManagerUtil {
         }
         return res.toString()
     }
+
+
 }

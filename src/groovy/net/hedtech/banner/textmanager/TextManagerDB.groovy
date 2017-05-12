@@ -91,10 +91,10 @@ class TextManagerDB {
         if (tmUtil != null) {
             setDBContext(tmUtil)
             defaultProp = new ObjectProperty()
-            if (TextManagerUtil.mo.equals("s")) {
-                defaultProp.lang_code = TextManagerUtil.sl
+            if (tmUtil.getValue(TextManagerUtil.mo).equals("s")) {
+                defaultProp.lang_code = tmUtil.getValue(TextManagerUtil.sl)
             } else {
-                defaultProp.lang_code = TextManagerUtil.tl
+                defaultProp.lang_code = tmUtil.getValue(TextManagerUtil.tl)
             }
         }
     }
@@ -120,20 +120,20 @@ class TextManagerDB {
         int SQLTrace = 0
         OracleCallableStatement stmt
         long timestamp = System.currentTimeMillis()
-        project_code   = TextManagerUtil.pc
-        lang_code_src  = TextManagerUtil.sl
-        lang_code_tgt  = TextManagerUtil.tl
+        project_code   = tmUtil.getValue(TextManagerUtil.pc)
+        lang_code_src  = tmUtil.getValue(TextManagerUtil.sl)
+        lang_code_tgt  = tmUtil.getValue(TextManagerUtil.tl)
         module_type = "J"
-        module_name = getModuleName(TextManagerUtil.sourceFile, TextManagerUtil.moduleName)
+        module_name = getModuleName(tmUtil.getValue(TextManagerUtil.sourceFile), tmUtil.getValue(TextManagerUtil.moduleName))
         //Reverse extract.
-        if (TextManagerUtil.mo.equals("r")) {
+        if (tmUtil.getValue(TextManagerUtil.mo).equals("r")) {
             def_status = 7 //set to Reverse extracted
         }
         try {
             stmt = (OracleCallableStatement) conn.prepareCall(
                     "Begin \n" +
                             "   if :1>0 then \n" +
-                            "         DBMS_SESSION.SET_SQL_TRACE(TRUE) \n" +
+                            "         DBMS_SESSION.SET_SQL_TRACE(TRUE); \n" +
                             "   end if; \n" +
                             "   GMKOBJI.P_SETCONTEXT( \n" +
                             "             :2,\n" +
@@ -141,7 +141,7 @@ class TextManagerDB {
                             "             :4,\n" +
                             "             :5,\n" +
                             "             :6,\n" +
-                            "             :7)\n" +
+                            "             :7);\n" +
                             "End;")
             stmt.setInt(1, SQLTrace)
             stmt.setString(2, project_code)
@@ -161,23 +161,23 @@ class TextManagerDB {
 
     void setModuleRecord(TextManagerUtil tmUtil) throws SQLException {
         OracleCallableStatement stmt
-        String data_source=TextManagerUtil.sourceFile
+        String data_source=tmUtil.getValue(TextManagerUtil.sourceFile)
         String lang_code=lang_code_src
         String mod_desc
 
-        switch ( TextManagerUtil.mo.charAt(0) ) {
+        switch ( tmUtil.getValue(TextManagerUtil.mo).toString().charAt(0) ) {
             case 's':
-                data_source=TextManagerUtil.sourceFile
+                data_source=tmUtil.getValue(TextManagerUtil.sourceFile)
                 lang_code=lang_code_src
                 mod_desc="Properties batch extract"
                 break
             case 'r':
-                data_source=TextManagerUtil.sourceFile
+                data_source=tmUtil.getValue(TextManagerUtil.sourceFile)
                 lang_code=lang_code_tgt
                 mod_desc="Properties batch reverse extract"
                 break
             default: //q and t both translate
-                data_source=TextManagerUtil.targetFile
+                data_source=tmUtil.getValue(TextManagerUtil.targetFile)
                 lang_code=lang_code_tgt
                 mod_desc="Properties batch translate"
         }
@@ -236,7 +236,7 @@ class TextManagerDB {
                                 "      pObject_prop  => :7,   \n" +
                                 "      pTransl_stat  => :8,   \n" +
                                 "      pProp_string  => :9    \n" +
-                                "   )\n" +
+                                "   );\n" +
                                 //"   commit\n"+
                                 "End;")
                 setStmt.registerOutParameter(1, OracleTypes.VARCHAR)
@@ -265,14 +265,14 @@ class TextManagerDB {
         try {
             stmt = (OracleCallableStatement) conn.prepareCall(
                     "Begin\n" +
-                            "update GMRSPRP set GMRSPRP_STAT_CODE=-5\n" +
-                            "where GMRSPRP_PROJECT=:1\n" +
-                            "  and GMRSPRP_LANG_CODE   =:2\n" +
-                            "  and GMRSPRP_MODULE_TYPE =:3\n" +
-                            "  and GMRSPRP_MODULE_NAME =:4\n" +
-                            "  and GMRSPRP_ACTIVITY_DATE<GMKOBJI.g_session_time\n" +
-                            ":5:=GMKOBJI.f_CleanUp(-5)\n" +
-                            "End;"
+                    "  update GMRSPRP set GMRSPRP_STAT_CODE=-5\n" +
+                    "  where GMRSPRP_PROJECT=:1\n" +
+                    "    and GMRSPRP_LANG_CODE   =:2\n" +
+                    "    and GMRSPRP_MODULE_TYPE =:3\n" +
+                    "    and GMRSPRP_MODULE_NAME =:4\n" +
+                    "    and GMRSPRP_ACTIVITY_DATE<GMKOBJI.g_session_time;\n" +
+                    "  :5:=GMKOBJI.f_CleanUp(-5);\n" +
+                    "End;"
             )
 
             stmt.setString(1, project_code)

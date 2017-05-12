@@ -208,7 +208,6 @@ class TextManagerService {
             msg = cacheMsg[key] ? cacheMsg[key][locale] : null
         } else {
             def tmLocale = locale?.toString().replace('_', '')
-            tmLocale = getAppropriateLocale(tmLocale)
             def tmProject = tranManProject()
             if (!tmEnabled) {
                 return null
@@ -257,11 +256,4 @@ class TextManagerService {
         msg
     }
 
-    String getAppropriateLocale(String locale) {
-        if (locale.contains("ar"))
-            return "arSA"
-        else if (locale.contains("es"))
-            return "esMX"
-        else return locale
-    }
 }
