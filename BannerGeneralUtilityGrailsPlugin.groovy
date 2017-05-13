@@ -58,7 +58,7 @@ class BannerGeneralUtilityGrailsPlugin {
          * which extends "RequestmapFilterInvocationDefinition", this service will fetch the InterceptUrlMap from the
          * DB and Config.groovy.
          */
-        if (securityConfigType == 'InterceptUrlMap') {
+        if (securityConfigType == 'Requestmap') {
             objectDefinitionSource(GeneralPageRoleMappingService) {
                 if (conf.rejectIfNoRule instanceof Boolean) {
                     rejectIfNoRule = conf.rejectIfNoRule

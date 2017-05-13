@@ -6,7 +6,7 @@ package net.hedtech.banner.general.configuration
 
 import grails.plugin.springsecurity.InterceptedUrl
 import grails.plugin.springsecurity.ReflectionUtils
-import grails.plugin.springsecurity.web.access.intercept.InterceptUrlMapFilterInvocationDefinition
+import grails.plugin.springsecurity.web.access.intercept.RequestmapFilterInvocationDefinition
 import grails.transaction.Transactional
 import grails.util.Holders
 import org.apache.log4j.Logger
@@ -19,12 +19,14 @@ import org.springframework.http.HttpMethod
  * If the grails.plugin.springsecurity.securityConfigType = SecurityConfigType.InterceptUrlMap in the Cofig.groovy then this
  * service will get injected by the spring from BannerGeneralUtilityGrailsPlugin.groovy.
  */
-class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefinition {
+class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition {
     private static Logger logger = Logger.getLogger(GeneralPageRoleMappingService.class.name)
-    /**
-     * This will be injected by the spring only when making this service call from the GeneralPageRoleMappingController.
-     */
+
     def sessionFactory
+
+    private static Map originalInterceptUrlMap
+
+    private String wildcardKey =  '/**'
 
     /**
      * Overriden because this method calls reset().
@@ -34,7 +36,6 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         if (initialized) {
             return
         }
-
         try {
             reset()
             initialized = true
@@ -78,11 +79,21 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
                 interceptedUrlMapFromDB.put(key, super.split(roleList?.join(',')))
             }
         }
-        Map interceptedUrlMapFromConfig = ReflectionUtils.getConfigProperty("interceptUrlMap")
+        Map interceptedUrlMapFromConfig
+
+        if(originalInterceptUrlMap == null) {
+            originalInterceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
+        }
+        interceptedUrlMapFromConfig = originalInterceptUrlMap
+
         Map mergedData = mergeMap(interceptedUrlMapFromConfig, interceptedUrlMapFromDB)
 
-        if (!Holders.config.grails.plugin.springsecurity.interceptUrlMap) {
-            Holders.config.grails.plugin.springsecurity.interceptUrlMap = []
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap = [:]
+
+        if(mergedData.get(wildcardKey)){
+            def wildcardValue = mergedData.get(wildcardKey)
+            mergedData.remove(wildcardKey)
+            mergedData <<  [(wildcardKey) : wildcardValue]
         }
 
         // Prepare List of interceptedUrlMap from the Merged data.
@@ -139,6 +150,7 @@ class GeneralPageRoleMappingService extends InterceptUrlMapFilterInvocationDefin
         try {
             def dataSource = Holders.grailsApplication.mainContext.getBean('dataSource')
             def ctx = Holders.grailsApplication.mainContext
+            sessionFactory = Holders.grailsApplication.getMainContext().sessionFactory
             def hibernateSessionFactory = (!sessionFactory ? ctx.sessionFactory : sessionFactory)
             session = hibernateSessionFactory.openSession(dataSource.getSsbConnection())
         } catch (e) {
