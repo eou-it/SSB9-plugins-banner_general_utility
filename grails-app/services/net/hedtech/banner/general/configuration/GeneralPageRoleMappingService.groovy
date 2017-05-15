@@ -26,7 +26,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
     private static Map originalInterceptUrlMap
 
-    private String wildcardKey =  '/**'
+    private String wildcardKey = '/**'
 
     /**
      * Overriden because this method calls reset().
@@ -81,7 +81,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         }
         Map interceptedUrlMapFromConfig
 
-        if(originalInterceptUrlMap == null) {
+        if (originalInterceptUrlMap == null) {
             originalInterceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
         }
         interceptedUrlMapFromConfig = originalInterceptUrlMap
@@ -90,10 +90,10 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
         Holders.config.grails.plugin.springsecurity.interceptUrlMap = [:]
 
-        if(mergedData.get(wildcardKey)){
+        if (mergedData.get(wildcardKey)) {
             def wildcardValue = mergedData.get(wildcardKey)
             mergedData.remove(wildcardKey)
-            mergedData <<  [(wildcardKey) : wildcardValue]
+            mergedData << [(wildcardKey): wildcardValue]
         }
 
         // Prepare List of interceptedUrlMap from the Merged data.
@@ -199,15 +199,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     Session session
                     try {
                         session = getHibernateSession()
-                        list = session.createQuery('''SELECT new GeneralPageRoleMapping(generalPageRoleMapping.pageName,
-                                                        generalPageRoleMapping.roleCode,
-                                                        generalPageRoleMapping.applicationName,
-                                                        generalPageRoleMapping.displaySequence,
-                                                        generalPageRoleMapping.pageId,
-                                                        generalPageRoleMapping.applicationId,
-                                                        generalPageRoleMapping.version)
-                                                  FROM GeneralPageRoleMapping generalPageRoleMapping
-                                                  WHERE generalPageRoleMapping.applicationId = :appId''')
+                        list = session.createQuery(GeneralPageRoleMapping.SELECT_GENERAL_PAGE_ROLE_MAPPING)
                                 .setParameter('appId', appId).list()
                     }
                     catch (e) {
@@ -216,7 +208,6 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     finally {
                         session.close()
                     }
-
                 } else {
                     list = GeneralPageRoleMapping.fetchByAppId(appId)
                 }

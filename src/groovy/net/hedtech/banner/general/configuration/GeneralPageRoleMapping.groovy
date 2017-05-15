@@ -16,8 +16,7 @@ import javax.persistence.*
 @NamedQueries([
         @NamedQuery(name = 'GeneralPageRoleMapping.fetchAll', query = '''FROM GeneralPageRoleMapping grm'''),
         @NamedQuery(name = 'GeneralPageRoleMapping.fetchByAppId',
-                query = '''FROM GeneralPageRoleMapping grm
-                                WHERE grm.applicationId = :appId''')
+                    query = GeneralPageRoleMapping.SELECT_GENERAL_PAGE_ROLE_MAPPING)
 ])
 public class GeneralPageRoleMapping implements Serializable {
     private static final long serialVersionUID = 3080855838641210753L;
@@ -49,7 +48,7 @@ public class GeneralPageRoleMapping implements Serializable {
     Long version;
 
     GeneralPageRoleMapping(String pageName, String roleCode, String applicationName,
-                      int displaySequence, long pageId, String applicationId, Long version) {
+                           int displaySequence, long pageId, String applicationId, Long version) {
         this.pageName = pageName
         this.roleCode = roleCode
         this.applicationName = applicationName
@@ -118,7 +117,7 @@ public class GeneralPageRoleMapping implements Serializable {
      */
     public static List fetchAll() {
         List generalReqMapList
-        generalReqMapList = ConfigApplication.withSession { Session session ->
+        generalReqMapList = GeneralPageRoleMapping.withSession { Session session ->
             generalReqMapList = session.getNamedQuery('GeneralPageRoleMapping.fetchAll').list()
         }
         return generalReqMapList
@@ -131,9 +130,15 @@ public class GeneralPageRoleMapping implements Serializable {
      */
     public static List fetchByAppId(appId) {
         List generalReqMapList
-        generalReqMapList = ConfigApplication.withSession { Session session ->
+        generalReqMapList = GeneralPageRoleMapping.withSession { Session session ->
             generalReqMapList = session.getNamedQuery('GeneralPageRoleMapping.fetchByAppId').setParameter('appId', appId).list()
         }
         return generalReqMapList
     }
+
+    public static final String SELECT_GENERAL_PAGE_ROLE_MAPPING = '''SELECT new GeneralPageRoleMapping(grm.pageName, grm.roleCode, grm.applicationName,
+                                                                          grm.displaySequence, grm.pageId, grm.applicationId, grm.version)
+                                                                     FROM GeneralPageRoleMapping grm
+                                                                     WHERE grm.applicationId = :appId'''
+
 }
