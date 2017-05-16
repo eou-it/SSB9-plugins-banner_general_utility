@@ -24,8 +24,6 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
     def sessionFactory
 
-    private static Map originalInterceptUrlMap
-
     private String wildcardKey = '/**'
 
     /**
@@ -69,35 +67,25 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         LinkedHashMap<String, List<String>> interceptedUrlMapFromDB = new LinkedHashMap<String, List<String>>()
         pageRoleMappingList.each { String key, ArrayList<GeneralPageRoleMapping> grmList ->
             def roleList = []
-            def grmListFinal = []
             grmList.each { GeneralPageRoleMapping grm ->
-                grmListFinal << grm
-                def roleCode = (grm.roleCode == 'WEBUSER' ? 'IS_AUTHENTICATED_ANONYMOUSLY' : grm.roleCode)
-                roleList << pushValuesToPrepareSelfServiceRoles(roleCode)
+                roleList << pushValuesToPrepareSelfServiceRoles(grm.roleCode)
             }
-            grmListFinal.each {
+            grmList.each {
                 interceptedUrlMapFromDB.put(key, super.split(roleList?.join(',')))
             }
         }
-        Map interceptedUrlMapFromConfig
-
-        if (originalInterceptUrlMap == null) {
-            originalInterceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
-        }
-        interceptedUrlMapFromConfig = originalInterceptUrlMap
-
-        Map mergedData = mergeMap(interceptedUrlMapFromConfig, interceptedUrlMapFromDB)
-
+        Map interceptedUrlMapFromConfig = ReflectionUtils.getConfigProperty("interceptUrlMap")
+        interceptedUrlMapFromConfig.putAll(interceptedUrlMapFromDB)
         Holders.config.grails.plugin.springsecurity.interceptUrlMap = [:]
 
-        if (mergedData.get(wildcardKey)) {
-            def wildcardValue = mergedData.get(wildcardKey)
-            mergedData.remove(wildcardKey)
-            mergedData << [(wildcardKey): wildcardValue]
+        if (interceptedUrlMapFromConfig.get(wildcardKey)) {
+            def wildcardValue = interceptedUrlMapFromConfig.get(wildcardKey)
+            interceptedUrlMapFromConfig.remove(wildcardKey)
+            interceptedUrlMapFromConfig << [(wildcardKey): wildcardValue]
         }
 
         // Prepare List of interceptedUrlMap from the Merged data.
-        mergedData.each { k, v ->
+        interceptedUrlMapFromConfig.each { k, v ->
             HttpMethod method = null
             InterceptedUrl iu = new InterceptedUrl(k, super.split(v?.join(',')), method)
             Holders.config.grails.plugin.springsecurity.interceptUrlMap?.put(k, super.split(v?.join(',')))

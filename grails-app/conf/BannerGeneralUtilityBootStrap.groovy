@@ -24,7 +24,9 @@ class BannerGeneralUtilityBootStrap {
             def dbInstanceName = menuService.getInstitutionDBInstanceName()
             servletContext.setAttribute("dbInstanceName", dbInstanceName)
         }
-        configPropertiesService.seedDataToDBFromConfig()
+        if(!grails.util.Environment.TEST?.toString().equalsIgnoreCase('TEST')){
+            configPropertiesService.seedDataToDBFromConfig()
+        }
         configPropertiesService.setConfigFromDb()
     }
 
