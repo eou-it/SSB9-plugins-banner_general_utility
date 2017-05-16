@@ -4,17 +4,19 @@
 
 package net.hedtech.banner.i18n
 
+import grails.transaction.Transactional
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.textmanager.TextManagerDB
 import net.hedtech.banner.textmanager.TextManagerUtil
-
-import javax.annotation.PostConstruct
 import java.sql.Timestamp
 
+@Transactional
 class TextManagerService {
 
-    static transactional = false //Transaction not managed by hibernate
+   // static transactional = false //Transaction not managed by hibernate
+
+    def sessionFactory
 
     def dataSource
 
@@ -23,21 +25,20 @@ class TextManagerService {
     // Save the chosen source language as root (as user cannot change translation)
     static final String PROJECT_CFG_KEY_APP = 'BAN_APP'
 
-    String connectionString
-
     private def tranManProjectCache
     private def cacheTime
     private Boolean tmEnabled = true
 
+
     
-    @PostConstruct
-    def init() {
-        String dbUrl = dataSource.underlyingSsbDataSource.url
-        String url = dbUrl.substring(dbUrl.lastIndexOf("@") + 1)
-        String username = dataSource.underlyingSsbDataSource.username
-        String password = dataSource.underlyingSsbDataSource.password
-        connectionString = "${username}/${password}@${url}"
-    }
+//    @PostConstruct
+//    def init() {
+//        String dbUrl = dataSource.underlyingSsbDataSource.url
+//        String url = dbUrl.substring(dbUrl.lastIndexOf("@") + 1)
+//        String username = dataSource.underlyingSsbDataSource.username
+//        String password = dataSource.underlyingSsbDataSource.password
+//        connectionString = "${username}/${password}@${url}"
+//    }
 
     private def tranManProject() {
         if (!tmEnabled) {
@@ -47,8 +48,9 @@ class TextManagerService {
             return tranManProjectCache
         }
 
-        TextManagerDB textManagerDB = new TextManagerDB(connectionString, null) // get a standard connection
-        Sql sql = new Sql(textManagerDB.conn)
+        //TextManagerDB textManagerDB = new TextManagerDB(connectionString, null) // get a standard connection
+        //Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        Sql sql = new Sql(dataSource)
         String appName = Holders.grailsApplication.metadata['app.name']
         String result = ""
         int matches = 0
@@ -69,7 +71,7 @@ class TextManagerService {
             log.error "Error initializing text manager $e"
             tmEnabled = false
         } finally {
-            textManagerDB.closeConnection()
+            sql?.close()
         }
         if (matches > 1) {
             log.warn "Multiple TranMan projects configured for application $appName. Please correct."
@@ -87,8 +89,8 @@ class TextManagerService {
             return
         }
         if (!tranManProject()) {
-            def textManagerDB = new TextManagerDB(connectionString, null) // get a standard connection
-            def sql = new Sql(textManagerDB.conn)
+            //def textManagerDB = new TextManagerDB(connectionString, null) // get a standard connection
+            Sql sql = new Sql(dataSource)
             def appName = Holders.grailsApplication.metadata['app.name']
             def curDate = new Date()
             try {
@@ -105,7 +107,7 @@ class TextManagerService {
                 cacheTime = null
                 log.info "Created TranMan project $projectCode"
             } finally {
-                textManagerDB.closeConnection()
+                sql?.close()
             }
         }
     }
@@ -117,8 +119,8 @@ class TextManagerService {
         }
         def project = tranManProject()
         if (project) {
-            def textManagerDB = new TextManagerDB(connectionString, null) // get a standard connection
-            def sql = new Sql(textManagerDB.conn)
+            //def textManagerDB = new TextManagerDB(connectionString, null) // get a standard connection
+            Sql sql = new Sql(dataSource)
             try {
                 def statement = """
                   begin
@@ -133,7 +135,7 @@ class TextManagerService {
                 cacheTime = null
                 log.info "Deleted TranMan project $project"
             } finally {
-                textManagerDB.closeConnection()
+                sql?.close()
             }
         }
     }
@@ -145,13 +147,12 @@ class TextManagerService {
         def project = tranManProject()
         if (project) {
             def textManagerUtil = new TextManagerUtil()
-            def textManagerDB
+            def textManagerDB = new TextManagerDB()
             int cnt = 0
             String sl = sourceLocale.replace('_', '')
             try {
                 String[] args = [
                         "pc=${project}", //Todo configure project in translation manager
-                        "lo=${connectionString}",
                         "mn=${name.toUpperCase()}",
                         "sl=$ROOT_LOCALE_TM",
                         locale == "$ROOT_LOCALE_APP" ? "sf=${name}.properties" : "sf=${name}_${locale}.properties",
@@ -160,7 +161,8 @@ class TextManagerService {
                 ]
 
                 textManagerUtil.parseArgs(args)
-                textManagerDB = new TextManagerDB(connectionString, textManagerUtil)
+                textManagerDB.setDBContext(textManagerUtil)
+                textManagerDB.setDefaultProp(textManagerUtil)
                 def defaultObjectProp = textManagerDB.getDefaultObjectProp()
                 final String sep = "."
                 int sepLoc
@@ -181,7 +183,7 @@ class TextManagerService {
                     cnt++
                 }
                 //Invalidate strings that are in db but not in property file
-                if (TextManagerUtil.mo.equals("s")) {
+                if (textManagerUtil.get.mo.equals("s")) {
                     textManagerDB.invalidateStrings()
                 }
                 textManagerDB.setModuleRecord(textManagerUtil)
@@ -216,8 +218,7 @@ class TextManagerService {
             def since = new Timestamp(localeLoaded[locale] ? localeLoaded[locale].getTime() : 0)
             // 0 is like beginning of time
             def params = [locale: tmLocale, pc: tmProject, now: new Timestamp(t0.getTime()), since: since]
-            def textManagerDB = new TextManagerDB(connectionString, null) // get a standard connection
-            Sql sql = new Sql(textManagerDB.conn)
+            Sql sql = new Sql(dataSource)
             sql.cacheStatements = false
             //Query fetching changed messages. Don't use message with status pending (11).
             //Can change to use mod_date > :since when changing :since to time in database timezone.
@@ -239,7 +240,7 @@ class TextManagerService {
                 log.error("Exception in findMessage for key=$key, locale=$locale \n$e")
             }
             finally {
-                sql.close()
+                sql?.close()
             }
             def t1 = new Date()
             if (rows.size()) {

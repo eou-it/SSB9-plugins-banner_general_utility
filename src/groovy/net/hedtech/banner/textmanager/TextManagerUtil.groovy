@@ -6,16 +6,16 @@ package net.hedtech.banner.textmanager
 import org.apache.log4j.Logger
 
 class TextManagerUtil {
-    private def dbValues = [:]
-    public static final String logon = "lo"
-    public static final String pc = "pc"
-    public static final String sl = "sl"
-    public static final String tl = "tl"
-    public static final String mo = "mo"
-    public static final String ba = "ba"
-    public static final String sourceFile = "sf"
-    public static final String moduleName = "mn"
-    public static final String targetFile = "tf"
+    public static dbValues = [:]
+//    public static final String logon = "lo"
+//    public static final String pc = "pc"
+//    public static final String sl = "sl"
+//    public static final String tl = "tl"
+//    public static final String mo = "mo"
+//    public static final String ba = "ba"
+//    public static final String sourceFile = "sf"
+//    public static final String moduleName = "mn"
+//    public static final String targetFile = "tf"
 
     private static final def log = Logger.getLogger(TextManagerUtil.class)
 
@@ -36,15 +36,9 @@ class TextManagerUtil {
             if (pos >= 0) {
                 String key = item.substring(0, pos).toLowerCase()
                 String val = item.substring(pos + 1)
-                dbValues << [key:val]
+                dbValues.put(key, val)
                 log.debug(key + "=" + val)
             }
-        }
-        if (dbValues.logon == null) {
-            logError("No log on specified(lo=user/passwd@connect [tns or jdbc connection])")
-        }
-        if (dbValues.sourceFile == null) {
-            logError("No source file specified (sf=...)")
         }
         if (dbValues.mo == null) {
             dbValues << [mo:"s"]

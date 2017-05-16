@@ -3,6 +3,7 @@
  ******************************************************************************/
 package net.hedtech.banner.textmanager
 
+import groovy.sql.Sql
 import oracle.jdbc.*
 import org.apache.log4j.Logger
 
@@ -12,11 +13,18 @@ import java.sql.SQLException
 import net.hedtech.banner.textmanager.TextManagerUtil
 
 class TextManagerDB {
+    def sessionFactory
+    def dataSource
+    ObjectProperty defaultProp
+    OracleCallableStatement setStmt
+    public Connection conn
+
     String project_code
     String lang_code_src
     String lang_code_tgt
     String module_type
     String module_name
+
     private static final def log = Logger.getLogger(TextManagerDB.class)
 
     static class ObjectProperty {
@@ -39,64 +47,44 @@ class TextManagerDB {
         }
     }
 
-    public Connection conn
-    ObjectProperty defaultProp
-    OracleCallableStatement setStmt
-
     public ObjectProperty getDefaultObjectProp() {
         return defaultProp
     }
 
     // Constructor
-    public TextManagerDB(String thinURL, TextManagerUtil tmUtil) throws SQLException {
-        String usr, passwd, host
-        int up_sep = thinURL.indexOf("/")
-        int at_sep = thinURL.indexOf("@")
-        usr = thinURL.substring(0, up_sep)
-        if (at_sep >= 0) {
-            passwd = thinURL.substring(up_sep + 1, at_sep)
-            host = thinURL.substring(at_sep)
-        } else {
-            passwd = thinURL.substring(up_sep + 1)
-            host = "@"
-        }
-        // now see if environment has an override for the host
-        String localThin = System.getenv().get("LOCAL_THIN")
-        if (localThin != null && !localThin.isEmpty()) {
-            if (localThin.charAt(0) != '@') {
-                localThin = "@" + localThin
-            }
-            host = "jdbc:oracle:thin:" + localThin
-        } else {
-            if (thinURL.indexOf(":") >= 0)
-                host = "jdbc:oracle:thin:" + host
-            else
-                host = "jdbc:oracle:oci8:" + host
-        }
+//    public TextManagerDB(TextManagerUtil tmUtil) throws SQLException {
+////        try {
+////            long timestamp = System.currentTimeMillis()
+////            DriverManager.registerDriver(new OracleDriver())
+////            conn = DriverManager.getConnection(host, usr, passwd)
+////            //host like "jdbc:oracle:thin:@localhost:1521:orcl"
+////            //or host like  "jdbc:oracle:oci8:@orcl"
+////            timestamp = System.currentTimeMillis() - timestamp
+////            log.info("Database connect done in " + timestamp + " ms. Host=" + host)
+////        } catch (SQLException e) {
+////            String msg = "Error making database connection\n" +
+////                    "  Use lo=user/passwd@alias (tnsnames) or lo=user/passwd@host:port:sid (thin)\n" +
+////                    "  Override connection with environment variable LOCAL_THIN=host:port:sid\n"
+////            log.error(msg, e)
+////        }
+//
+//        if (tmUtil != null) {
+//            setDBContext(tmUtil)
+//            defaultProp = new ObjectProperty()
+//            if (TextManagerUtil.mo.equals("s")) {
+//                defaultProp.lang_code = TextManagerUtil.sl
+//            } else {
+//                defaultProp.lang_code = TextManagerUtil.tl
+//            }
+//        }
+//    }
 
-        try {
-            long timestamp = System.currentTimeMillis()
-            DriverManager.registerDriver(new OracleDriver())
-            conn = DriverManager.getConnection(host, usr, passwd)
-            //host like "jdbc:oracle:thin:@localhost:1521:orcl"
-            //or host like  "jdbc:oracle:oci8:@orcl"
-            timestamp = System.currentTimeMillis() - timestamp
-            log.info("Database connect done in " + timestamp + " ms. Host=" + host)
-        } catch (SQLException e) {
-            String msg = "Error making database connection\n" +
-                    "  Use lo=user/passwd@alias (tnsnames) or lo=user/passwd@host:port:sid (thin)\n" +
-                    "  Override connection with environment variable LOCAL_THIN=host:port:sid\n"
-            log.error(msg, e)
-        }
-        if (tmUtil != null) {
-            setDBContext(tmUtil)
-            defaultProp = new ObjectProperty()
-            if (TextManagerUtil.mo.equals("s")) {
-                defaultProp.lang_code = TextManagerUtil.sl
-            } else {
-                defaultProp.lang_code = TextManagerUtil.tl
-            }
-        }
+    void setDefaultProp(tmUtil){
+        defaultProp = new ObjectProperty()
+        if(tmUtil.dbValues.mo.equals("s"))
+            defaultProp.lang_code = tmUtil.sl
+        else
+            defaultProp.lang_code = tmUtil.tl
     }
 
     String getModuleName(String fileName, String moduleName) {
@@ -120,37 +108,51 @@ class TextManagerDB {
         int SQLTrace = 0
         OracleCallableStatement stmt
         long timestamp = System.currentTimeMillis()
-        project_code   = TextManagerUtil.pc
-        lang_code_src  = TextManagerUtil.sl
-        lang_code_tgt  = TextManagerUtil.tl
+        project_code   = TextManagerUtil.dbValues.pc
+        lang_code_src  = TextManagerUtil.dbValues.sf
+        lang_code_tgt  = TextManagerUtil.dbValues.tl
         module_type = "J"
-        module_name = getModuleName(TextManagerUtil.sourceFile, TextManagerUtil.moduleName)
+        module_name = getModuleName(TextManagerUtil.dbValues.sf, TextManagerUtil.dbValues.mn)
         //Reverse extract.
-        if (TextManagerUtil.mo.equals("r")) {
+        if (TextManagerUtil.dbValues.mo.equals("r")) {
             def_status = 7 //set to Reverse extracted
         }
         try {
-            stmt = (OracleCallableStatement) conn.prepareCall(
-                    "Begin \n" +
-                            "   if :1>0 then \n" +
+            Sql sql = new Sql(dataSource)
+            sql.call("Begin \n" +
+                            "   if $SQLTrace>0 then \n" +
                             "         DBMS_SESSION.SET_SQL_TRACE(TRUE) \n" +
                             "   end if; \n" +
                             "   GMKOBJI.P_SETCONTEXT( \n" +
-                            "             :2,\n" +
-                            "             :3,\n" +
-                            "             :4,\n" +
-                            "             :5,\n" +
-                            "             :6,\n" +
-                            "             :7)\n" +
+                            "             $project_code,\n" +
+                            "             $lang_code_src,\n" +
+                            "             $lang_code_tgt,\n" +
+                            "             $module_type,\n" +
+                            "             $module_name,\n" +
+                            "             $def_status)\n" +
                             "End;")
-            stmt.setInt(1, SQLTrace)
-            stmt.setString(2, project_code)
-            stmt.setString(3, lang_code_src)
-            stmt.setString(4, lang_code_tgt)
-            stmt.setString(5, module_type)
-            stmt.setString(6, module_name)
-            stmt.setInt(7, def_status)
-            stmt.execute()
+//            conn = sessionFactory.getCurrentSession().connection()
+//            stmt = (OracleCallableStatement) conn.prepareCall(
+//                    "Begin \n" +
+//                            "   if :1>0 then \n" +
+//                            "         DBMS_SESSION.SET_SQL_TRACE(TRUE) \n" +
+//                            "   end if; \n" +
+//                            "   GMKOBJI.P_SETCONTEXT( \n" +
+//                            "             :2,\n" +
+//                            "             :3,\n" +
+//                            "             :4,\n" +
+//                            "             :5,\n" +
+//                            "             :6,\n" +
+//                            "             :7)\n" +
+//                            "End;")
+//            stmt.setInt(1, SQLTrace)
+//            stmt.setString(2, project_code)
+//            stmt.setString(3, lang_code_src)
+//            stmt.setString(4, lang_code_tgt)
+//            stmt.setString(5, module_type)
+//            stmt.setString(6, module_name)
+//            stmt.setInt(7, def_status)
+//            stmt.execute()
         } catch (SQLException e) {
             log.error("Error in SetDBContext", e)
         }
@@ -161,18 +163,18 @@ class TextManagerDB {
 
     void setModuleRecord(TextManagerUtil tmUtil) throws SQLException {
         OracleCallableStatement stmt
-        String data_source=TextManagerUtil.sourceFile
+        String data_source=TextManagerUtil.dbValues.sf
         String lang_code=lang_code_src
         String mod_desc
 
         switch ( TextManagerUtil.mo.charAt(0) ) {
             case 's':
-                data_source=TextManagerUtil.sourceFile
+                data_source=TextManagerUtil.dbValues.sf
                 lang_code=lang_code_src
                 mod_desc="Properties batch extract"
                 break
             case 'r':
-                data_source=TextManagerUtil.sourceFile
+                data_source=TextManagerUtil.dbValues.sf
                 lang_code=lang_code_tgt
                 mod_desc="Properties batch reverse extract"
                 break
@@ -182,6 +184,7 @@ class TextManagerDB {
                 mod_desc="Properties batch translate"
         }
         try{
+            conn = sessionFactory.getCurrentSession().connection()
             stmt=(OracleCallableStatement)conn.prepareCall(
                     "Declare \n"+
                             "   b1 GMRMDUL.GMRMDUL_PROJECT%type :=:1;\n"+
@@ -225,6 +228,7 @@ class TextManagerDB {
     void setPropString(ObjectProperty op) throws SQLException {
         try {
             if (setStmt == null) {
+                conn = sessionFactory.getCurrentSession().connection()
                 setStmt = (OracleCallableStatement) conn.prepareCall(
                         "Begin                    \n" +
                                 "   :1  := GMKOBJI.F_SETPROPSTRINGX(\n" +
@@ -263,6 +267,7 @@ class TextManagerDB {
         OracleCallableStatement stmt
         long timestamp = System.currentTimeMillis()
         try {
+            conn = sessionFactory.getCurrentSession().connection()
             stmt = (OracleCallableStatement) conn.prepareCall(
                     "Begin\n" +
                             "update GMRSPRP set GMRSPRP_STAT_CODE=-5\n" +
@@ -290,9 +295,9 @@ class TextManagerDB {
     }
 
     public void closeConnection() throws SQLException {
-        if (!conn.isClosed()) {
-            conn.commit()
-            conn.close()
+        if (!conn?.isClosed()) {
+            conn?.commit()
+            conn?.close()
         }
     }
 }
