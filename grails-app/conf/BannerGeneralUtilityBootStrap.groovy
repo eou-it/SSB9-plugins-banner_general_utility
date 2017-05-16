@@ -1,6 +1,8 @@
 /*******************************************************************************
  Copyright 2017 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
+
+import grails.util.Environment
 import net.hedtech.banner.utility.GeneralMenu
 import org.apache.log4j.Logger
 
@@ -24,7 +26,7 @@ class BannerGeneralUtilityBootStrap {
             def dbInstanceName = menuService.getInstitutionDBInstanceName()
             servletContext.setAttribute("dbInstanceName", dbInstanceName)
         }
-        if(!grails.util.Environment.TEST?.toString().equalsIgnoreCase('TEST')){
+        if(Environment.current != Environment.TEST){
             configPropertiesService.seedDataToDBFromConfig()
         }
         configPropertiesService.setConfigFromDb()
