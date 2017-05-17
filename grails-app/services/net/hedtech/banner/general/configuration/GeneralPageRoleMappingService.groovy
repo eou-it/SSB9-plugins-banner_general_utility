@@ -187,7 +187,15 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     Session session
                     try {
                         session = getHibernateSession()
-                        list = session.createQuery(GeneralPageRoleMapping.SELECT_GENERAL_PAGE_ROLE_MAPPING)
+                        list = session.createQuery('''SELECT new GeneralPageRoleMapping(generalPageRoleMapping.pageName,
+                                                                                generalPageRoleMapping.roleCode,
+                                                                                generalPageRoleMapping.applicationName,
+                                                                                generalPageRoleMapping.displaySequence,
+                                                                                generalPageRoleMapping.pageId,
+                                                                                generalPageRoleMapping.applicationId,
+                                                                                generalPageRoleMapping.version)
+                                                                          FROM GeneralPageRoleMapping generalPageRoleMapping
+                                                                          WHERE generalPageRoleMapping.applicationId = :appId''')
                                 .setParameter('appId', appId).list()
                     }
                     catch (e) {
