@@ -24,6 +24,8 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
     def sessionFactory
 
+    private static Map originalInterceptUrlMap
+
     private String wildcardKey = '/**'
 
     /**
@@ -74,7 +76,13 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                 interceptedUrlMapFromDB.put(key, super.split(roleList?.join(',')))
             }
         }
-        Map interceptedUrlMapFromConfig = ReflectionUtils.getConfigProperty("interceptUrlMap")
+        Map interceptedUrlMapFromConfig
+
+        if (originalInterceptUrlMap == null) {
+            originalInterceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
+        }
+        interceptedUrlMapFromConfig = originalInterceptUrlMap.clone()
+
         interceptedUrlMapFromConfig.putAll(interceptedUrlMapFromDB)
         Holders.config.grails.plugin.springsecurity.interceptUrlMap = [:]
 
