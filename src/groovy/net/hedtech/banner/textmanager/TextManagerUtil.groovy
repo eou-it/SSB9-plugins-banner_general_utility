@@ -7,17 +7,8 @@ import org.apache.log4j.Logger
 
 class TextManagerUtil {
     public static dbValues = [:]
-//    public static final String logon = "lo"
-//    public static final String pc = "pc"
-//    public static final String sl = "sl"
-//    public static final String tl = "tl"
-//    public static final String mo = "mo"
-//    public static final String ba = "ba"
-//    public static final String sourceFile = "sf"
-//    public static final String moduleName = "mn"
-//    public static final String targetFile = "tf"
 
-    private static final def log = Logger.getLogger(TextManagerUtil.class)
+    private static final def log = Logger.getLogger(TextManagerUtil.class.name)
 
     private void logError(String msg) {
         String message = msg + "\n" +
@@ -34,24 +25,24 @@ class TextManagerUtil {
         args.each{ item ->
             int pos = item.indexOf("=")
             if (pos >= 0) {
-                String key = item.substring(0, pos).toLowerCase()
+                String key = item.substring(0, pos)
                 String val = item.substring(pos + 1)
                 dbValues.put(key, val)
                 log.debug(key + "=" + val)
             }
         }
-        if (dbValues.mo == null) {
-            dbValues << [mo:"s"]
-        } else if (dbValues.mo.equals("t")) {
-            if (dbValues.targetFile == null) {
-                logError("No target file specified (tf=...)")
+        if (dbValues.srcIndicator == null) {
+            dbValues << [srcIndicator:"s"]
+        } else if (dbValues.srcIndicator.equals("t")) {
+            if (dbValues.tgtFile == null) {
+                logError("No target file specified (tgtFile=...)")
             }
-            if (dbValues.tl == null) {
-                logError("No target language specified (tl=...)")
+            if (dbValues.tgtLocale == null) {
+                logError("No target language specified (tgtLocale=...)")
             }
-        } else if (dbValues.mo.equals("r")) {
-            if (dbValues.tl == null) {
-                logError("No target language specified (tl=...)")
+        } else if (dbValues.srcIndicator.equals("r")) {
+            if (dbValues.tgtLocale == null) {
+                logError("No target language specified (tgtLocale=...)")
             }
         }
     }

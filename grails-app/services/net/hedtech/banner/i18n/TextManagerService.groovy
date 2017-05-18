@@ -11,16 +11,15 @@ import net.hedtech.banner.textmanager.TextManagerDB
 import net.hedtech.banner.textmanager.TextManagerUtil
 import java.sql.Timestamp
 
-@Transactional
 class TextManagerService {
 
-   // static transactional = false //Transaction not managed by hibernate
+    static transactional = false //Transaction not managed by hibernate
 
     def sessionFactory
 
     def dataSource
 
-    static final String ROOT_LOCALE_APP = 'en_US' // This will be the locale assumed for properties without locale
+    static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
     static final String ROOT_LOCALE_TM = 'root'
     // Save the chosen source language as root (as user cannot change translation)
     static final String PROJECT_CFG_KEY_APP = 'BAN_APP'
@@ -29,17 +28,6 @@ class TextManagerService {
     private def cacheTime
     private Boolean tmEnabled = true
 
-
-    
-//    @PostConstruct
-//    def init() {
-//        String dbUrl = dataSource.underlyingSsbDataSource.url
-//        String url = dbUrl.substring(dbUrl.lastIndexOf("@") + 1)
-//        String username = dataSource.underlyingSsbDataSource.username
-//        String password = dataSource.underlyingSsbDataSource.password
-//        connectionString = "${username}/${password}@${url}"
-//    }
-
     private def tranManProject() {
         if (!tmEnabled) {
             return
@@ -47,10 +35,7 @@ class TextManagerService {
         if (cacheTime && (new Date().getTime() - cacheTime.getTime()) < 5 * 60 * 1000) {
             return tranManProjectCache
         }
-
-        //TextManagerDB textManagerDB = new TextManagerDB(connectionString, null) // get a standard connection
-        //Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        Sql sql = new Sql(dataSource)
+        Sql sql = new Sql(dataSource.underlyingSsbDataSource)
         String appName = Holders.grailsApplication.metadata['app.name']
         String result = ""
         int matches = 0
@@ -89,10 +74,8 @@ class TextManagerService {
             return
         }
         if (!tranManProject()) {
-            //def textManagerDB = new TextManagerDB(connectionString, null) // get a standard connection
-            Sql sql = new Sql(dataSource)
+            Sql sql = new Sql(dataSource.underlyingSsbDataSource)
             def appName = Holders.grailsApplication.metadata['app.name']
-            def curDate = new Date()
             try {
                 def statement = """
                    insert into GMBPROJ (GMBPROJ_PROJECT, GMBPROJ_ACTIVITY_DATE, GMBPROJ_DESC, GMBPROJ_OWNER,GMBPROJ_USER_ID)
@@ -119,8 +102,7 @@ class TextManagerService {
         }
         def project = tranManProject()
         if (project) {
-            //def textManagerDB = new TextManagerDB(connectionString, null) // get a standard connection
-            Sql sql = new Sql(dataSource)
+            Sql sql = new Sql(dataSource.underlyingSsbDataSource)
             try {
                 def statement = """
                   begin
@@ -148,16 +130,16 @@ class TextManagerService {
         if (project) {
             def textManagerUtil = new TextManagerUtil()
             def textManagerDB = new TextManagerDB()
+            textManagerDB.dataSource = dataSource
             int cnt = 0
-            String sl = sourceLocale.replace('_', '')
             try {
                 String[] args = [
-                        "pc=${project}", //Todo configure project in translation manager
-                        "mn=${name.toUpperCase()}",
-                        "sl=$ROOT_LOCALE_TM",
-                        locale == "$ROOT_LOCALE_APP" ? "sf=${name}.properties" : "sf=${name}_${locale}.properties",
-                        locale == "$sourceLocale" ? 'mo=s' : 'mo=r',
-                        locale == "$sourceLocale" ? '' : "tl=${locale.replace('_', '')}"
+                        "projectCode=${project}", //Todo configure project in translation manager
+                        "moduleName=${name.toUpperCase()}",
+                        "srcLocale=$ROOT_LOCALE_TM",
+                        locale == "$ROOT_LOCALE_APP" ? "srcFile=${name}.properties" : "srcFile=${name}_${locale}.properties",
+                        locale == "$sourceLocale" ? 'srcIndicator=s' : 'srcIndicator=r',
+                        locale == "$sourceLocale" ? '' : "tgtLocale=${locale.replace('_', '')}"
                 ]
 
                 textManagerUtil.parseArgs(args)
@@ -183,13 +165,13 @@ class TextManagerService {
                     cnt++
                 }
                 //Invalidate strings that are in db but not in property file
-                if (textManagerUtil.get.mo.equals("s")) {
+                if (textManagerUtil.dbValues.srcIndicator.equals("s")) {
                     textManagerDB.invalidateStrings()
                 }
                 textManagerDB.setModuleRecord(textManagerUtil)
 
-            } finally {
-                textManagerDB?.closeConnection()
+            } catch (e){
+                log.error("Exception in saving properties")
             }
             return [error: null, count: cnt]
         }
@@ -218,7 +200,7 @@ class TextManagerService {
             def since = new Timestamp(localeLoaded[locale] ? localeLoaded[locale].getTime() : 0)
             // 0 is like beginning of time
             def params = [locale: tmLocale, pc: tmProject, now: new Timestamp(t0.getTime()), since: since]
-            Sql sql = new Sql(dataSource)
+            Sql sql = new Sql(dataSource.underlyingSsbDataSource)
             sql.cacheStatements = false
             //Query fetching changed messages. Don't use message with status pending (11).
             //Can change to use mod_date > :since when changing :since to time in database timezone.
