@@ -188,6 +188,7 @@ class TextManagerDB {
             stmt.setString(6,modDesc)
             stmt.setString(7,dataSrc)
             stmt.execute()
+            log.debug("setModuleRecord project: $project_code sourceName: $module_name langCode: $lang_code modDesc: $mod_desc dataSource: $data_source")
         } catch (SQLException e) {
             log.error("Error in setModuleRecord", e)
         }
@@ -222,7 +223,7 @@ class TextManagerDB {
             stmt.execute()
             op.statusX = stmt.getString(1)
             op.status = stmt.getInt(8)
-            log.debug("  " + op.statusX)
+            log.debug("  setPropString $op.statusX Text: $op.string")
         } catch (SQLException e) {
                 log.error("Error in setPropString string=", e)
         }
