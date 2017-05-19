@@ -2,11 +2,12 @@
  *  Copyright 2017 Ellucian Company L.P. and its affiliates.             *
  ******************************************************************************/
 
-package net.hedtech.banner.i18n
+package net.hedtech.banner.textmanager
 
 
 import grails.test.spock.IntegrationSpec
 import grails.util.Holders
+import net.hedtech.banner.textmanager.TextManagerService
 import org.junit.Test
 
 class TextManagerServiceIntegrationSpec extends IntegrationSpec {

@@ -2,27 +2,20 @@
  *  Copyright 2017 Ellucian Company L.P. and its affiliates.                  *
  ******************************************************************************/
 
-package net.hedtech.banner.i18n
+package net.hedtech.banner.textmanager
 
-import grails.transaction.Transactional
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.textmanager.TextManagerDB
 import net.hedtech.banner.textmanager.TextManagerUtil
-
-import java.sql.DriverManager
 import java.sql.Timestamp
 
 class TextManagerService {
-
-    static transactional = false //Transaction not managed by hibernate
-
-    def sessionFactory
-
     def dataSource
 
+    static transactional = false //Transaction not managed by hibernat
+
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
-    static final String ROOT_LOCALE_TM = 'root'
     // Save the chosen source language as root (as user cannot change translation)
     static final String PROJECT_CFG_KEY_APP = 'BAN_APP'
 

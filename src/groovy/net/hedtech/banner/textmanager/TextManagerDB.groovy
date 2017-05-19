@@ -5,7 +5,6 @@ package net.hedtech.banner.textmanager
 
 import oracle.jdbc.*
 import org.apache.log4j.Logger
-
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
@@ -125,8 +124,6 @@ class TextManagerDB {
             stmt.execute()
         } catch (SQLException e) {
             log.error("Error in SetDBContext", e)
-        } finally {
-            //conn?.close()
         }
         timestamp = System.currentTimeMillis() - timestamp
         log.debug("SetDBContext done in " + timestamp + " ms")
@@ -193,8 +190,6 @@ class TextManagerDB {
             stmt.execute()
         } catch (SQLException e) {
             log.error("Error in setModuleRecord", e)
-        } finally {
-            //conn?.close()
         }
     }
 
@@ -230,8 +225,6 @@ class TextManagerDB {
             log.debug("  " + op.statusX)
         } catch (SQLException e) {
                 log.error("Error in setPropString string=", e)
-        } finally {
-            //conn?.close()
         }
     }
 
@@ -261,8 +254,6 @@ class TextManagerDB {
             log.debug("Obsoleted " + stmt.getString(5) + " properties in " + timestamp + " ms")
         } catch (SQLException e) {
             log.error("Error in dbif.invalidateStrings", e)
-        } finally {
-            //conn?.close()
         }
     }
 }
