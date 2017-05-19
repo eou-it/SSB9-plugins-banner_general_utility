@@ -188,7 +188,7 @@ class TextManagerDB {
             stmt.setString(6,modDesc)
             stmt.setString(7,dataSrc)
             stmt.execute()
-            log.debug("setModuleRecord project: $project_code sourceName: $module_name langCode: $lang_code modDesc: $mod_desc dataSource: $data_source")
+            log.debug("setModuleRecord project: $projectCode, sourceName: $moduleName, langCode: $langCode, langCodeSrc: $langCodeSrc, modDesc: $modDesc, dataSource: $dataSrc")
         } catch (SQLException e) {
             log.error("Error in setModuleRecord", e)
         }

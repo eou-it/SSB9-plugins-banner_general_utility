@@ -168,7 +168,7 @@ class TextManagerService {
                 textManagerDB.setModuleRecord(textManagerUtil)
 
             } catch (e){
-                log.error("Exception in saving properties")
+                log.error("Exception in saving properties", e)
             }finally{
                 textManagerDB.closeConnection()
             }
