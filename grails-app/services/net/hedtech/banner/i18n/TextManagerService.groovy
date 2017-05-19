@@ -9,6 +9,8 @@ import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.textmanager.TextManagerDB
 import net.hedtech.banner.textmanager.TextManagerUtil
+
+import java.sql.DriverManager
 import java.sql.Timestamp
 
 class TextManagerService {
@@ -131,12 +133,14 @@ class TextManagerService {
             def textManagerUtil = new TextManagerUtil()
             def textManagerDB = new TextManagerDB()
             textManagerDB.dataSource = dataSource
+            textManagerDB.createConnection()
             int cnt = 0
+            String sl = sourceLocale.replace('_','')
             try {
                 String[] args = [
                         "projectCode=${project}", //Todo configure project in translation manager
                         "moduleName=${name.toUpperCase()}",
-                        "srcLocale=$ROOT_LOCALE_TM",
+                        "srcLocale=$sl",
                         locale == "$ROOT_LOCALE_APP" ? "srcFile=${name}.properties" : "srcFile=${name}_${locale}.properties",
                         locale == "$sourceLocale" ? 'srcIndicator=s' : 'srcIndicator=r',
                         locale == "$sourceLocale" ? '' : "tgtLocale=${locale.replace('_', '')}"
@@ -172,6 +176,8 @@ class TextManagerService {
 
             } catch (e){
                 log.error("Exception in saving properties")
+            }finally{
+                textManagerDB.closeConnection()
             }
             return [error: null, count: cnt]
         }

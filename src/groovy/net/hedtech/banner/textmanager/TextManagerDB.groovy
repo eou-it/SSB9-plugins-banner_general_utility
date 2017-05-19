@@ -7,6 +7,7 @@ import oracle.jdbc.*
 import org.apache.log4j.Logger
 
 import java.sql.Connection
+import java.sql.DriverManager
 import java.sql.SQLException
 import net.hedtech.banner.textmanager.TextManagerUtil
 
@@ -44,6 +45,19 @@ class TextManagerDB {
 
     public Connection conn
 
+    public createConnection (){
+        DriverManager.registerDriver(new OracleDriver())
+        conn = DriverManager.getConnection(dataSource.underlyingSsbDataSource.url,
+                dataSource.underlyingSsbDataSource.username, dataSource.underlyingSsbDataSource.password)
+    }
+
+    public void closeConnection() throws SQLException {
+        if ( !conn.isClosed()) {
+            conn.commit();
+            conn.close();
+        }
+    }
+
     public ObjectProperty getDefaultObjectProp() {
         return defaultProp
     }
@@ -80,7 +94,7 @@ class TextManagerDB {
         langCodeSrc  = TextManagerUtil.dbValues.srcLocale
         langCodeTgt  = TextManagerUtil.dbValues.tgtLocale
         moduleType = "J"
-        moduleName = getModuleName(TextManagerUtil.dbValues.srcFile, TextManagerUtil.dbValues.srcIndicator)
+        moduleName = getModuleName(TextManagerUtil.dbValues.srcFile, TextManagerUtil.dbValues.moduleName)
 
         //Reverse extract.
         if (TextManagerUtil.dbValues.srcIndicator.equals("r")) {
@@ -88,7 +102,6 @@ class TextManagerDB {
         }
         try {
             OracleCallableStatement stmt = null
-            conn = dataSource.getSsbConnection()
             stmt = conn.prepareCall(
                     "Begin \n" +
                             "   if :1>0 then \n" +
@@ -113,7 +126,7 @@ class TextManagerDB {
         } catch (SQLException e) {
             log.error("Error in SetDBContext", e)
         } finally {
-            conn?.close()
+            //conn?.close()
         }
         timestamp = System.currentTimeMillis() - timestamp
         log.debug("SetDBContext done in " + timestamp + " ms")
@@ -144,7 +157,6 @@ class TextManagerDB {
         }
         try{
             OracleCallableStatement stmt = null
-            conn = dataSource.getSsbConnection()
             stmt = conn.prepareCall(
                     "Declare \n"+
                             "   b1 GMRMDUL.GMRMDUL_PROJECT%type :=:1;\n"+
@@ -182,15 +194,13 @@ class TextManagerDB {
         } catch (SQLException e) {
             log.error("Error in setModuleRecord", e)
         } finally {
-            conn?.close()
+            //conn?.close()
         }
     }
 
     void setPropString(ObjectProperty op) throws SQLException {
-        println("here")
         try {
             OracleCallableStatement stmt = null
-            conn = dataSource.getSsbConnection()
             stmt = conn.prepareCall(
                     "Begin\n" +
                             "   :1  := GMKOBJI.F_SETPROPSTRINGX(\n" +
@@ -221,7 +231,7 @@ class TextManagerDB {
         } catch (SQLException e) {
                 log.error("Error in setPropString string=", e)
         } finally {
-            conn?.close()
+            //conn?.close()
         }
     }
 
@@ -229,7 +239,6 @@ class TextManagerDB {
         long timestamp = System.currentTimeMillis()
         try {
             OracleCallableStatement stmt = null
-            conn = dataSource.getSsbConnection()
             stmt = conn.prepareCall(
                     "Begin\n" +
                             "  update GMRSPRP set GMRSPRP_STAT_CODE=-5\n" +
@@ -253,7 +262,7 @@ class TextManagerDB {
         } catch (SQLException e) {
             log.error("Error in dbif.invalidateStrings", e)
         } finally {
-            conn?.close()
+            //conn?.close()
         }
     }
 }
