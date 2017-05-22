@@ -7,6 +7,7 @@ package net.hedtech.banner.general.configuration
 import grails.util.Holders as CH
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
+import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 /**
  * The service is used to fetch all the global/app based config properties from DB
@@ -27,14 +28,18 @@ class ConfigPropertiesService extends ServiceBase {
      */
     public void setConfigFromDb() {
         String appId = grailsApplication.metadata['app.appId']
-        LOGGER.info('Fetching config from DB for appId = ${appId}')
-        // merge the global configurations
-        ArrayList configProp = ConfigProperties.fetchSimpleConfigByAppId(GLOBAL)
-        mergeConfigProperties(configProp)
-        // Merge the application related configurations and global configurations
-        if (appId) {
-            configProp = ConfigProperties.fetchSimpleConfigByAppId(appId)
+        LOGGER.info("Fetching config from DB for appId = ${appId}")
+        try {
+            ArrayList configProp = ConfigProperties.fetchSimpleConfigByAppId(GLOBAL)
             mergeConfigProperties(configProp)
+            // Merge the application related configurations and global configurations
+            if (appId) {
+                configProp = ConfigProperties.fetchSimpleConfigByAppId(appId)
+                mergeConfigProperties(configProp)
+            }
+        }
+        catch (InvalidDataAccessResourceUsageException ex) {
+            log.error("Exception occured  while fetching ConfigProperties from DB, Self Service Config Table doesn't exist")
         }
 
     }
@@ -66,56 +71,62 @@ class ConfigPropertiesService extends ServiceBase {
 
     public void seedDataToDBFromConfig() {
         String appName = grailsApplication.metadata['app.name']
-        ConfigApplication configApp = ConfigApplication.fetchByAppName(appName)
-        if(configApp == null){
-            ConfigApplication newConfigApp = new ConfigApplication()
-            newConfigApp.setAppId(grailsApplication.metadata['app.appId'])
-            newConfigApp.setAppName(appName)
-            newConfigApp.setLastModifiedBy('BANNER')
-            configApp = configApplicationService.create(newConfigApp)
-        }
-        def appId = configApp?.appId
-        ArrayList configPropName = []
-        ConfigProperties.fetchByAppId(appId).each { ConfigProperties cp ->
-            configPropName << cp.configName
-        }
+        String appId = grailsApplication.metadata['app.appId']
+        ConfigApplication configApp = ConfigApplication.fetchByAppId(appId)
+        try {
+            if (configApp == null) {
+                ConfigApplication newConfigApp = new ConfigApplication()
+                newConfigApp.setAppId(appId)
+                newConfigApp.setAppName(appName)
+                newConfigApp.setLastModifiedBy('BANNER')
+                configApp = configApplicationService.create(newConfigApp)
+            }
 
-        def seedDataKey = CH.config.ssconfig.app.seeddata.keys
-        LOGGER.debug(seedDataKey)
-        def dataToSeed = []
+            ArrayList configPropName = []
+            ConfigProperties.fetchByAppId(appId).each { ConfigProperties cp ->
+                configPropName << cp.configName
+            }
 
-        seedDataKey.each { obj ->
-            if (obj instanceof List) {
-                obj.each { keyName ->
-                    if (!configPropName.contains(keyName)) {
-                        ConfigProperties cp = new ConfigProperties()
-                        cp.setConfigName(keyName)
+            def seedDataKey = CH.config.ssconfig.app.seeddata.keys
+            LOGGER.debug("seeddata defined in config is :" + seedDataKey)
+            def dataToSeed = []
 
-                        def value = CH.config.flatten()."$keyName"
-                        cp.setConfigValue(value.toString())
-                        cp.setConfigApplication(configApp)
-                        cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
-                        cp.setLastModifiedBy('BANNER')
-                        cp.setLastModified(new Date())
-                        dataToSeed << cp
+            seedDataKey.each { obj ->
+                if (obj instanceof List) {
+                    obj.each { keyName ->
+                        if (!configPropName.contains(keyName)) {
+                            ConfigProperties cp = new ConfigProperties()
+                            cp.setConfigName(keyName)
+
+                            def value = CH.config.flatten()."$keyName"
+                            cp.setConfigValue(value.toString())
+                            cp.setConfigApplication(configApp)
+                            cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
+                            cp.setLastModifiedBy('BANNER')
+                            cp.setLastModified(new Date())
+                            dataToSeed << cp
+                        }
                     }
-                }
-            } else if (obj instanceof Map) {
-                obj.each { k, v ->
-                    if (!configPropName.contains(k)) {
-                        ConfigProperties cp = new ConfigProperties()
-                        cp.setConfigName(k)
-                        cp.setConfigValue(v.toString())
-                        cp.setConfigApplication(configApp)
-                        cp.setConfigType(v?.getClass()?.simpleName?.toLowerCase())
-                        cp.setLastModifiedBy('BANNER')
-                        cp.setLastModified(new Date())
-                        dataToSeed << cp
+                } else if (obj instanceof Map) {
+                    obj.each { k, v ->
+                        if (!configPropName.contains(k)) {
+                            ConfigProperties cp = new ConfigProperties()
+                            cp.setConfigName(k)
+                            cp.setConfigValue(v.toString())
+                            cp.setConfigApplication(configApp)
+                            cp.setConfigType(v?.getClass()?.simpleName?.toLowerCase())
+                            cp.setLastModifiedBy('BANNER')
+                            cp.setLastModified(new Date())
+                            dataToSeed << cp
+                        }
                     }
                 }
             }
+            create(dataToSeed)
         }
+        catch (InvalidDataAccessResourceUsageException ex) {
+            LOGGER.error("Exception occured while running seedDataToDBFromConfig method, Self Service Config Table doesn't exist")
 
-        create(dataToSeed)
+        }
     }
 }

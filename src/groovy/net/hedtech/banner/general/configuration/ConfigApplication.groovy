@@ -17,15 +17,15 @@ import javax.persistence.*
 @Table(name = 'GUBAPPL')
 @NamedQueries(value = [
         @NamedQuery(name = "ConfigApplication.fetchByAppName",
-                    query = """ FROM ConfigApplication capp
-                                WHERE capp.appName = :appName """)
+                    query = """ FROM ConfigApplication capp WHERE capp.appName = :appName """),
+        @NamedQuery(name = "ConfigApplication.fetchByAppId",
+                query = """ FROM ConfigApplication capp WHERE capp.appId = :appId """)
 ])
 
 
 public class ConfigApplication implements Serializable {
 
     private static final long serialVersionUID = 1000L
-    private static Logger logger = Logger.getLogger(ConfigApplication.class.name)
 
     /*
     * Surrogate ID for GUBAPPL
@@ -132,25 +132,25 @@ public class ConfigApplication implements Serializable {
         dataOrigin(nullable: true, maxSize: 30)
     }
 
-    /**
-     * Named query to fetch data from this domain based on valid Appname.
-     * @return List
-     */
-    public static ConfigApplication fetchByAppName(String appName) {
-        def configApplication
-        try {
-            if (appName) {
-                configApplication = ConfigApplication.withSession { session ->
-                    configApplication = session.getNamedQuery('ConfigApplication.fetchByAppName').setString('appName', appName).uniqueResult()
-                }
-            }
-        } catch (InvalidDataAccessResourceUsageException e) {
-            logger.error("InvalidDataAccessResourceUsageException in fetchByAppName Self Service Config Table doesn't exist" + e.class)
-        } /*catch (Exception ex) {
-            //catching exception
-            logger.error("Exception in fetchByAppName Self Service Config Table doesn't exist" + ex.class)
 
-        }*/
+    public static ConfigApplication fetchByAppName(String appName) {
+        ConfigApplication configApplication
+        if (appName) {
+            configApplication = ConfigApplication.withSession { session ->
+                configApplication = session.getNamedQuery('ConfigApplication.fetchByAppName').setString('appName', appName).uniqueResult()
+            }
+        }
+        return configApplication
+    }
+
+
+    public static ConfigApplication fetchByAppId(String appId) {
+        ConfigApplication configApplication
+        if (appId) {
+            configApplication = ConfigApplication.withSession { session ->
+                configApplication = session.getNamedQuery('ConfigApplication.fetchByAppId').setString('appId', appId).uniqueResult()
+            }
+        }
         return configApplication
     }
 }

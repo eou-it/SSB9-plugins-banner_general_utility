@@ -203,17 +203,18 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                                                                                 generalPageRoleMapping.applicationId,
                                                                                 generalPageRoleMapping.version)
                                                                           FROM GeneralPageRoleMapping generalPageRoleMapping
-                                                                          WHERE generalPageRoleMapping.applicationId = :appId''')
+                                                                          WHERE generalPageRoleMapping.applicationId = :appId
+                                                                          AND generalPageRoleMapping.statusIndicator = "Y" ''')
                                 .setParameter('appId', appId).list()
                     }
                     catch (e) {
                         logger.error('Exception while executing the query with new Hibernate session;', e)
                     }
                     finally {
-                        session.close()
+                        session?.close()
                     }
                 } else {
-                    list = GeneralPageRoleMapping.fetchByAppId(appId)
+                    list = GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator(appId, "Y")
                 }
 
                 def urlSet = new LinkedHashSet<String>()

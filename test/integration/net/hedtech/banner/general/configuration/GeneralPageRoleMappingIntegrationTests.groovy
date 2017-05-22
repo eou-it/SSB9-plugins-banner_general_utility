@@ -9,13 +9,12 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
-/**
- * Integration test cases for domain GeneralPageRoleMapping.
- */
+
 class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
 
-    private def appName
-    private def appId
+    private String appName
+    private String appId
+
 
     @Before
     public void setUp() {
@@ -24,6 +23,7 @@ class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
         appName = Holders.grailsApplication.metadata['app.name']
         appId = 'TESTAPP'
     }
+
 
     @After
     public void tearDown() {
@@ -48,7 +48,7 @@ class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
     public void testFetchByAppId() {
         def configApplication = saveDomains()
 
-        def list = GeneralPageRoleMapping.fetchByAppId(configApplication.appId)
+        def list = GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator(configApplication.appId, "Y")
         assert list.size() >= 1
 
         list.each { requestMap ->
@@ -224,7 +224,6 @@ class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
      */
     private ConfigRolePageMapping getConfigRolePageMapping() {
         ConfigRolePageMapping configRolePageMapping = new ConfigRolePageMapping(
-                pageId: 1,
                 roleCode: 'TEST_ROLE'
         )
         return configRolePageMapping

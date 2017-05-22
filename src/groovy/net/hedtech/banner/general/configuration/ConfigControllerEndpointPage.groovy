@@ -52,7 +52,7 @@ public class ConfigControllerEndpointPage implements Serializable {
 
     @Type(type = "yes_no")
     @Column(name = 'GURCTLEP_STATUS_INDICATOR')
-    Boolean enableIndicator = true
+    Boolean statusIndicator = true
 
 
    /**
@@ -88,13 +88,13 @@ public class ConfigControllerEndpointPage implements Serializable {
 
         ConfigControllerEndpointPage gurctlep = (ConfigControllerEndpointPage) o
 
+        if (id != gurctlep.id) return false
         if (lastModified != gurctlep.lastModified) return false
         if (configApplication != gurctlep.configApplication) return false
         if (dataOrigin != gurctlep.dataOrigin) return false
         if (description != gurctlep.description) return false
         if (displaySequence != gurctlep.displaySequence) return false
-        if (enableIndicator != gurctlep.enableIndicator) return false
-        if (id != gurctlep.id) return false
+        if (statusIndicator != gurctlep.statusIndicator) return false
         if (pageId != gurctlep.pageId) return false
         if (pageName != gurctlep.pageName) return false
         if (lastModifiedBy != gurctlep.lastModifiedBy) return false
@@ -111,7 +111,7 @@ public class ConfigControllerEndpointPage implements Serializable {
         result = 31 * result + (dataOrigin != null ? dataOrigin.hashCode() : 0)
         result = 31 * result + (description != null ? description.hashCode() : 0)
         result = 31 * result + (displaySequence != null ? displaySequence.hashCode() : 0)
-        result = 31 * result + (enableIndicator != null ? enableIndicator.hashCode() : 0)
+        result = 31 * result + (statusIndicator != null ? statusIndicator.hashCode() : 0)
         result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
         result = 31 * result + (pageName != null ? pageName.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
@@ -130,7 +130,7 @@ public class ConfigControllerEndpointPage implements Serializable {
                 dataOrigin='$dataOrigin',
                 description='$description',
                 displaySequence=$displaySequence,
-                enableIndicator='$enableIndicator',
+                statusIndicator='$statusIndicator',
                 configApplication=$configApplication,
                 pageName='$pageName',
                 userId='$lastModifiedBy',
@@ -144,7 +144,7 @@ public class ConfigControllerEndpointPage implements Serializable {
         pageId(nullable: true, maxSize: 256)
         pageName(nullable: true, maxSize: 256)
         configApplication(nullable: false)
-        enableIndicator( nullable: false, maxSize:1)
+        statusIndicator( nullable: false, maxSize:1)
         displaySequence(nullable: true)
         description(nullable: true)
         lastModified(nullable: true)

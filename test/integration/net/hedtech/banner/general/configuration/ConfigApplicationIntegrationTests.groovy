@@ -14,15 +14,15 @@ import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureExcep
 
 class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase {
 
-    private def appName
-    private def appId
+    private String appName
+    private String appId
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        appName = Holders.grailsApplication.metadata['app.name']
-        appId = 'TESTAPP'
+        appName = "TESTAPPNAME"
+        appId = 'TESTAPPID'
     }
 
     @After
@@ -125,7 +125,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull configApplication.id
 
         ConfigApplication configApp = ConfigApplication.fetchByAppName(appName)
-        assertNotNull configApplication
+        assertNotNull configApp
 
         assertTrue configApp.appName == appName
     }
@@ -139,6 +139,31 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase {
 
         String appName = "Invalid"
         def configApp = ConfigApplication.fetchByAppName(appName)
+        assertNull(configApp)
+    }
+
+
+    @Test
+    void testFetchByValidAppId() {
+        ConfigApplication configApplication = newConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        assertNotNull configApplication.id
+
+        ConfigApplication configApp = ConfigApplication.fetchByAppId(appId)
+        assertNotNull configApp
+
+        assertTrue configApp.appName == appName
+    }
+
+
+    @Test
+    void testFetchByInValidAppId() {
+        ConfigApplication configApplication = newConfigApplication()
+        configApplication = configApplication.save(failOnError: true, flush: true)
+        assertNotNull configApplication.id
+
+        String appId = "XXXXXXXXXXX"
+        ConfigApplication configApp = ConfigApplication.fetchByAppId(appId)
         assertNull(configApp)
     }
 

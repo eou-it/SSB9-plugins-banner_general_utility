@@ -4,6 +4,7 @@
 package net.hedtech.banner.general.configuration
 
 import org.hibernate.Session
+import org.hibernate.annotations.Type
 
 import javax.persistence.*
 
@@ -15,9 +16,10 @@ import javax.persistence.*
 @Table(name = 'GVQ_PAGE_ROLE_MAPPING')
 @NamedQueries([
         @NamedQuery(name = 'GeneralPageRoleMapping.fetchAll', query = '''FROM GeneralPageRoleMapping grm'''),
-        @NamedQuery(name = 'GeneralPageRoleMapping.fetchByAppId',
+        @NamedQuery(name = 'GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator',
                 query = '''FROM GeneralPageRoleMapping grm
-                                WHERE grm.applicationId = :appId''')
+                                WHERE grm.applicationId = :appId
+                                and grm.statusIndicator = :statusIndicator''')
 ])
 public class GeneralPageRoleMapping implements Serializable {
     private static final long serialVersionUID = 3080855838641210753L;
@@ -26,27 +28,39 @@ public class GeneralPageRoleMapping implements Serializable {
     @Column(name = 'SURROGATE_ID')
     long id
 
+
     @Column(name = 'APPLICATION_ID')
-    String applicationId;
+    String applicationId
+
 
     @Column(name = 'PAGE_ID')
-    long pageId;
+    long pageId
+
 
     @Column(name = 'APPLICATION_NAME')
-    String applicationName;
+    String applicationName
+
+
+    @Type(type = "yes_no")
+    @Column(name = 'STATUS_INDICATOR')
+    Boolean statusIndicator
+
 
     @Column(name = 'DISPLAY_SEQUENCE')
-    int displaySequence;
+    int displaySequence
+
 
     @Column(name = 'PAGE_NAME')
-    String pageName;
+    String pageName
+
 
     @Column(name = 'ROLE_CODE')
-    String roleCode;
+    String roleCode
+
 
     @Version
     @Column(name = 'VERSION')
-    Long version;
+    Long version
 
     GeneralPageRoleMapping(String pageName, String roleCode, String applicationName,
                       int displaySequence, long pageId, String applicationId, Long version) {
@@ -61,9 +75,6 @@ public class GeneralPageRoleMapping implements Serializable {
 
     GeneralPageRoleMapping() {}
 
-    static mapping = {
-        cache true
-    }
 
     boolean equals(o) {
         if (this.is(o)) return true
@@ -74,6 +85,7 @@ public class GeneralPageRoleMapping implements Serializable {
         if (id != that.id) return false
         if (applicationId != that.applicationId) return false
         if (applicationName != that.applicationName) return false
+        if (statusIndicator != that.statusIndicator) return false
         if (displaySequence != that.displaySequence) return false
         if (pageId != that.pageId) return false
         if (pageName != that.pageName) return false
@@ -83,11 +95,13 @@ public class GeneralPageRoleMapping implements Serializable {
         return true
     }
 
+
     int hashCode() {
         int result
         result = (id != null ? id.hashCode() : 0)
         result = (applicationId != null ? applicationId.hashCode() : 0)
         result = 31 * result + (applicationName != null ? applicationName.hashCode() : 0)
+        result = 31 * result + (statusIndicator != null ? statusIndicator.hashCode() : 0)
         result = 31 * result + (displaySequence != null ? displaySequence.hashCode() : 0)
         result = 31 * result + (pageId != null ? pageId.hashCode() : 0)
         result = 31 * result + (pageName != null ? pageName.hashCode() : 0)
@@ -104,6 +118,7 @@ public class GeneralPageRoleMapping implements Serializable {
                     id=$id,
                     applicationId=$applicationId,
                     applicationName='$applicationName',
+                    statusIndicator='$statusIndicator',
                     displaySequence=$displaySequence,
                     pageId='$pageId',
                     pageName='$pageName',
@@ -112,10 +127,7 @@ public class GeneralPageRoleMapping implements Serializable {
                 }"""
     }
 
-    /**
-     * Named query to fetch all data from this domain without any criteria.
-     * @return List
-     */
+
     public static List fetchAll() {
         List generalReqMapList
         generalReqMapList = GeneralPageRoleMapping.withSession { Session session ->
@@ -124,15 +136,11 @@ public class GeneralPageRoleMapping implements Serializable {
         return generalReqMapList
     }
 
-    /**
-     * Named query to fetch the data with criteria app id.
-     * @param appId
-     * @return
-     */
-    public static List fetchByAppId(appId) {
+
+    public static List fetchByAppIdAndStatusIndicator(appId, statusIndicator = "Y") {
         List generalReqMapList
         generalReqMapList = GeneralPageRoleMapping.withSession { Session session ->
-            generalReqMapList = session.getNamedQuery('GeneralPageRoleMapping.fetchByAppId').setParameter('appId', appId).list()
+            generalReqMapList = session.getNamedQuery('GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator').setParameter('appId', appId).setParameter('statusIndicator', statusIndicator).list()
         }
         return generalReqMapList
     }

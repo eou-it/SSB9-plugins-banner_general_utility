@@ -9,9 +9,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
-/**
- * ConfigControllerEndpointPageIntegrationTests are used to test the ConfigControllerEndpointPage domain.
- */
+
 class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCase {
 
     private def appName
@@ -25,6 +23,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         appName = Holders.grailsApplication.metadata['app.name']
         appId = 'TESTAPP'
     }
+
 
     @After
     public void tearDown() {
@@ -57,7 +56,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
 
         assertNotNull endpointPage.id
         assertEquals 0L, endpointPage.version
-        assertEquals true, endpointPage.enableIndicator
+        assertEquals true, endpointPage.statusIndicator
         assertNotNull endpointPage.pageId
     }
 
@@ -117,19 +116,19 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         def endPointPage1 = list.find { p -> p.dataOrigin == 'Banner' }
         assertTrue endPointPage1.dataOrigin == 'Banner'
 
-        def endPointPage2 = list.find { p -> p.enableIndicator == true }
-        assertTrue endPointPage2.enableIndicator
+        def endPointPage2 = list.find { p -> p.statusIndicator == true }
+        assertTrue endPointPage2.statusIndicator
 
         //Update and findAll
-        endpointPage.setEnableIndicator(false)
+        endpointPage.setStatusIndicator(false)
         endpointPage = endpointPage.save(failOnError: true, flush: true)
         assertEquals 1L, endpointPage.version
 
         list = endpointPage.fetchAll()
         assertTrue list.size >= 1
 
-        endPointPage2 = list.find { p -> p.enableIndicator == false }
-        assertFalse endPointPage2.enableIndicator
+        endPointPage2 = list.find { p -> p.statusIndicator == false }
+        assertFalse endPointPage2.statusIndicator
 
         //Delete and findAll
         def id = endpointPage.id
@@ -251,7 +250,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage(
                 description: 'TEST',
                 displaySequence: 1,
-                enableIndicator: true,
+                statusIndicator: true,
                 pageName: 'TEST PAGE'
         )
         return configControllerEndpointPage

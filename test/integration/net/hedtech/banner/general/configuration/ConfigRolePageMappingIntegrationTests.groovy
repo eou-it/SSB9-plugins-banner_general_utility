@@ -164,7 +164,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
         ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage(
                 description: 'TEST',
                 displaySequence: 1,
-                enableIndicator: true,
+                statusIndicator: true,
                 pageId: 1,
                 pageName: 'TEST PAGE'
         )

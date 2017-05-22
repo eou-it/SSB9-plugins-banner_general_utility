@@ -26,6 +26,7 @@ import javax.persistence.*
 ])
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 10009L
+
     static final String CONFIG_CACHE_REGION_NAME = "configPropertiesCache"
     private static Logger logger = Logger.getLogger(ConfigProperties.getClass().getName())
 
@@ -141,38 +142,23 @@ public class ConfigProperties implements Serializable {
      */
     public static List fetchByAppId(String appId) {
         List configProperties = []
-        try{
-            if (appId) {
-                configProperties = ConfigProperties.withSession { session ->
-                    configProperties = session.getNamedQuery('ConfigProperties.fetchByAppId')
-                            .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
-                }
-            } else {
-                configProperties = ConfigProperties.withSession { session ->
-                    configProperties = session.getNamedQuery('ConfigProperties.fetchByNullAppId').setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
-                }
+        if (appId) {
+            configProperties = ConfigProperties.withSession { session ->
+                configProperties = session.getNamedQuery('ConfigProperties.fetchByAppId')
+                        .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
             }
-        } catch (InvalidDataAccessResourceUsageException ex) {
-            //catching exception
-            logger.error("InvalidDataAccessResourceUsageException in fetchByAppId Self Service Config Table doesn't exist")
-
         }
         return configProperties
     }
 
+
     public static List fetchSimpleConfigByAppId(String appId) {
         List configProperties = []
-        try {
-            configProperties = ConfigProperties.withSession { session ->
-                configProperties = session.getNamedQuery('ConfigProperties.fetchSimpleConfigByAppId')
-                        .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
-            }
-        } catch (InvalidDataAccessResourceUsageException ex) {
-            //catching exception
-            logger.error("InvalidDataAccessResourceUsageException in fetchSimpleConfigByAppId Self Service Config Table doesn't exist")
 
-        }catch(MissingMethodException e){
-            logger.error("MissingMethodException in fetchSimpleConfigByAppId Self Service Config Table doesn't exist")
+        configProperties = ConfigProperties.withSession { session ->
+            configProperties = session.getNamedQuery('ConfigProperties.fetchSimpleConfigByAppId')
+                    .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
         }
+        return configProperties
     }
 }
