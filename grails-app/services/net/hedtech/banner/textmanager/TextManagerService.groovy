@@ -13,7 +13,7 @@ class TextManagerService {
 
     static transactional = false //Transaction not managed by hibernate
 
-    private final static Logger log = Logger.getLogger(TextManagerService.class)
+    private final static Logger log = Logger.getLogger(TextManagerService.class.name)
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
     // Save the chosen source language as root (as user cannot change translation)
     static final String PROJECT_CFG_KEY_APP = 'BAN_APP'
@@ -129,7 +129,6 @@ class TextManagerService {
             textManagerDB.dataSource = dataSource
             textManagerDB.createConnection()
             int cnt = 0
-            String sl = sourceLocale.replace('_','')
             try {
                 String[] args = [
                         "projectCode=${project}", //Todo configure project in translation manager
