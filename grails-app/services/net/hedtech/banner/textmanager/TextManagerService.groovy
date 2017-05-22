@@ -17,6 +17,7 @@ class TextManagerService {
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
     // Save the chosen source language as root (as user cannot change translation)
     static final String PROJECT_CFG_KEY_APP = 'BAN_APP'
+    final def ROOT_LOCALE_TM   = 'root'
 
     private def tranManProjectCache
     private def cacheTime
@@ -133,7 +134,7 @@ class TextManagerService {
                 String[] args = [
                         "projectCode=${project}", //Todo configure project in translation manager
                         "moduleName=${name.toUpperCase()}",
-                        "srcLocale=$sl",
+                        "srcLocale=$ROOT_LOCALE_TM",
                         locale == "$ROOT_LOCALE_APP" ? "srcFile=${name}.properties" : "srcFile=${name}_${locale}.properties",
                         locale == "$sourceLocale" ? 'srcIndicator=s' : 'srcIndicator=r',
                         locale == "$sourceLocale" ? '' : "tgtLocale=${locale.replace('_', '')}"
