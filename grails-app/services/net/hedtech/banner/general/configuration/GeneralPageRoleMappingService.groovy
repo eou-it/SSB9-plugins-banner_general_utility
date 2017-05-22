@@ -70,7 +70,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         pageRoleMappingList.each { String key, ArrayList<GeneralPageRoleMapping> grmList ->
             def roleList = []
             grmList.each { GeneralPageRoleMapping grm ->
-                roleList << pushValuesToPrepareSelfServiceRoles(grm.roleCode)
+                roleList << grm.roleCode
             }
             grmList.each {
                 interceptedUrlMapFromDB.put(key, super.split(roleList?.join(',')))
@@ -103,41 +103,6 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
     }
 
     /**
-     * Method is used to merging two maps.
-     * @param firstMap Map
-     * @param secondMap Map
-     * @return Map
-     */
-    protected Map mergeMap(Map firstMap, Map secondMap) {
-        def resultMap = [:]
-        resultMap.putAll(firstMap)
-        resultMap.putAll(secondMap)
-
-        resultMap.each { key, value ->
-            if (firstMap[key] && secondMap[key]) {
-                resultMap[key] = firstMap[key] + secondMap[key]
-            }
-            if (resultMap[key] instanceof List) {
-                resultMap[key].unique { x, y -> x <=> y }
-            }
-        }
-
-        return resultMap
-    }
-
-    /**
-     * Method is used to prepare the values.
-     * @param role TWTVROLE_CODE value from database.
-     * @return String prepared role as a string.
-     */
-    protected String pushValuesToPrepareSelfServiceRoles(String role) {
-        if (role != 'IS_AUTHENTICATED_ANONYMOUSLY') {
-            return "ROLE_${"SELFSERVICE-$role".toUpperCase()}_${"BAN_DEFAULT_M".toUpperCase()}".toString()
-        }
-        return role
-    }
-
-    /**
      * Method is used to get the Hibernate session from the main context by the help of datasource.
      * @return Session     Classic hibernate session.
      */
@@ -162,15 +127,6 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
     @Transactional(readOnly = true)
     private def getPageRoleMappingList() {
         fetchGeneralPageRoleMappingByAppId()
-    }
-
-    /**
-     * This method can be called from the controller to get merged InterceptedUrlMap
-     * from DB and Config.groovy.
-     * @return
-     */
-    public def fetchListOfInterceptURLMap() {
-        return getPageRoleMappingList()
     }
 
     /**

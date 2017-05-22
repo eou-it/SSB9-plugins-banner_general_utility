@@ -89,20 +89,6 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
         }
     }
 
-    @Test
-    public void testMergeMap() {
-        def map = getInterceptedURLMap()
-        def merged = generalPageRoleMappingService.mergeMap(map, map)
-        assertEquals map, merged
-
-        map = [:]
-        merged = generalPageRoleMappingService.mergeMap(map, map)
-        assertTrue merged.isEmpty()
-
-        String value = generalPageRoleMappingService.pushValuesToPrepareSelfServiceRoles('STUDENT')
-        assertEquals value, 'ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M'
-    }
-
     private ConfigApplication saveDomains() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)

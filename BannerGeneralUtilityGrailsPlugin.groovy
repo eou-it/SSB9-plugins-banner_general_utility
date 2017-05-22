@@ -54,8 +54,8 @@ class BannerGeneralUtilityGrailsPlugin {
         // TODO Implement runtime spring config (optional)
 
         /**
-         * If the securityConfigType = 'InterceptUrlMap' then the "GeneralPageRoleMappingService" will be get injected
-         * which extends "RequestmapFilterInvocationDefinition", this service will fetch the InterceptUrlMap from the
+         * If the securityConfigType = 'Requestmap' then the "GeneralPageRoleMappingService" will be get injected
+         * which extends "RequestmapFilterInvocationDefinition", this service will fetch the Requestmap from the
          * DB and Config.groovy.
          */
         if (securityConfigType == 'Requestmap') {
