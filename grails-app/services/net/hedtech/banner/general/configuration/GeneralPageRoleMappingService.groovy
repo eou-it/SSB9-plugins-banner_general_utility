@@ -160,7 +160,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                                                                                 generalPageRoleMapping.version)
                                                                           FROM GeneralPageRoleMapping generalPageRoleMapping
                                                                           WHERE generalPageRoleMapping.applicationId = :appId
-                                                                          AND generalPageRoleMapping.statusIndicator = "Y" ''')
+                                                                          AND generalPageRoleMapping.statusIndicator = true ''')
                                 .setParameter('appId', appId).list()
                     }
                     catch (e) {
@@ -170,7 +170,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                         session?.close()
                     }
                 } else {
-                    list = GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator(appId, "Y")
+                    list = GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator(appId, true)
                 }
 
                 def urlSet = new LinkedHashSet<String>()

@@ -136,7 +136,7 @@ public class GeneralPageRoleMapping implements Serializable {
     }
 
 
-    public static List fetchByAppIdAndStatusIndicator(appId, statusIndicator = "Y") {
+    public static List fetchByAppIdAndStatusIndicator(appId, statusIndicator = true) {
         List generalReqMapList
         generalReqMapList = GeneralPageRoleMapping.withSession { Session session ->
             generalReqMapList = session.getNamedQuery('GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator').setParameter('appId', appId).setParameter('statusIndicator', statusIndicator).list()
