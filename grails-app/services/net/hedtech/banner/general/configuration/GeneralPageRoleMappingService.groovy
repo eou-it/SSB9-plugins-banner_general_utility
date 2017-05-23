@@ -151,7 +151,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     Session session
                     try {
                         session = getHibernateSession()
-                        list = session.createQuery('''SELECT new GeneralPageRoleMapping(generalPageRoleMapping.pageName,
+                        list = session.createQuery('''SELECT new GeneralPageRoleMapping(generalPageRoleMapping.pageUrl,
                                                                                 generalPageRoleMapping.roleCode,
                                                                                 generalPageRoleMapping.applicationName,
                                                                                 generalPageRoleMapping.displaySequence,
@@ -175,17 +175,17 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
                 def urlSet = new LinkedHashSet<String>()
                 list.each { GeneralPageRoleMapping grm ->
-                    urlSet.add(grm.pageName)
+                    urlSet.add(grm.pageUrl)
                 }
 
-                urlSet.each { String pageName ->
+                urlSet.each { String pageUrl ->
                     def pageRoleMappingList = new ArrayList<GeneralPageRoleMapping>()
                     list.each { GeneralPageRoleMapping pageRoleMapping ->
-                        if (pageRoleMapping.pageName == pageName) {
+                        if (pageRoleMapping.pageUrl == pageUrl) {
                             pageRoleMappingList << pageRoleMapping
                         }
                     }
-                    generalPageRoleMapping.put(pageName, pageRoleMappingList)
+                    generalPageRoleMapping.put(pageUrl, pageRoleMappingList)
                 }
             }
         } catch (e) {
