@@ -69,8 +69,8 @@ public class ConfigRolePageMapping implements Serializable {
 
 
     static constraints = {
-        endpointPage(nullable: false)
-        roleCode(nullable: false, maxSize: 30)
+        endpointPage(nullable: false , maxSize: 60)
+        roleCode(nullable: false, maxSize: 256)
         configApplication(nullable: false)
         lastModified(nullable: true)
         dataOrigin(nullable:true, maxSize: 30)

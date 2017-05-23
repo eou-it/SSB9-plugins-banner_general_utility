@@ -34,7 +34,7 @@ public class GeneralPageRoleMapping implements Serializable {
 
 
     @Column(name = 'PAGE_ID')
-    long pageId
+    String pageId
 
 
     @Column(name = 'APPLICATION_NAME')
@@ -49,9 +49,8 @@ public class GeneralPageRoleMapping implements Serializable {
     @Column(name = 'DISPLAY_SEQUENCE')
     int displaySequence
 
-
-    @Column(name = 'PAGE_NAME')
-    String pageName
+    @Column(name = 'PAGE_URL')
+    String pageUrl
 
 
     @Column(name = 'ROLE_CODE')
@@ -62,9 +61,9 @@ public class GeneralPageRoleMapping implements Serializable {
     @Column(name = 'VERSION')
     Long version
 
-    GeneralPageRoleMapping(String pageName, String roleCode, String applicationName,
-                      int displaySequence, long pageId, String applicationId, Long version) {
-        this.pageName = pageName
+    GeneralPageRoleMapping(String pageUrl, String roleCode, String applicationName,
+                      int displaySequence, String pageId, String applicationId, Long version) {
+        this.pageUrl = pageUrl
         this.roleCode = roleCode
         this.applicationName = applicationName
         this.displaySequence = displaySequence
@@ -88,7 +87,7 @@ public class GeneralPageRoleMapping implements Serializable {
         if (statusIndicator != that.statusIndicator) return false
         if (displaySequence != that.displaySequence) return false
         if (pageId != that.pageId) return false
-        if (pageName != that.pageName) return false
+        if (pageUrl != that.pageUrl) return false
         if (roleCode != that.roleCode) return false
         if (version != that.version) return false
 
@@ -104,7 +103,7 @@ public class GeneralPageRoleMapping implements Serializable {
         result = 31 * result + (statusIndicator != null ? statusIndicator.hashCode() : 0)
         result = 31 * result + (displaySequence != null ? displaySequence.hashCode() : 0)
         result = 31 * result + (pageId != null ? pageId.hashCode() : 0)
-        result = 31 * result + (pageName != null ? pageName.hashCode() : 0)
+        result = 31 * result + (pageUrl != null ? pageUrl.hashCode() : 0)
         result = 31 * result + (roleCode != null ? roleCode.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
         return result
@@ -121,7 +120,7 @@ public class GeneralPageRoleMapping implements Serializable {
                     statusIndicator='$statusIndicator',
                     displaySequence=$displaySequence,
                     pageId='$pageId',
-                    pageName='$pageName',
+                    pageUrl='$pageUrl',
                     roleCode='$roleCode',
                     version=$version
                 }"""

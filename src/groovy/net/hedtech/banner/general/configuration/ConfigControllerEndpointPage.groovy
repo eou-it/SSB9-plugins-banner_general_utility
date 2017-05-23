@@ -65,8 +65,8 @@ public class ConfigControllerEndpointPage implements Serializable {
     ConfigApplication configApplication
 
 
-    @Column(name = 'GURCTLEP_PAGE_NAME')
-    String pageName
+    @Column(name = 'GURCTLEP_PAGE_URL')
+    String pageUrl
 
 
     @Column(name = 'GURCTLEP_USER_ID')
@@ -79,7 +79,7 @@ public class ConfigControllerEndpointPage implements Serializable {
 
 
     @Column(name = 'GURCTLEP_PAGE_ID')
-    Long pageId
+    String pageId
 
 
     boolean equals(o) {
@@ -96,7 +96,7 @@ public class ConfigControllerEndpointPage implements Serializable {
         if (displaySequence != gurctlep.displaySequence) return false
         if (statusIndicator != gurctlep.statusIndicator) return false
         if (pageId != gurctlep.pageId) return false
-        if (pageName != gurctlep.pageName) return false
+        if (pageUrl != gurctlep.pageUrl) return false
         if (lastModifiedBy != gurctlep.lastModifiedBy) return false
         if (version != gurctlep.version) return false
 
@@ -113,7 +113,7 @@ public class ConfigControllerEndpointPage implements Serializable {
         result = 31 * result + (displaySequence != null ? displaySequence.hashCode() : 0)
         result = 31 * result + (statusIndicator != null ? statusIndicator.hashCode() : 0)
         result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
-        result = 31 * result + (pageName != null ? pageName.hashCode() : 0)
+        result = 31 * result + (pageUrl != null ? pageUrl.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
         result = 31 * result + (pageId != null ? pageId.hashCode() : 0)
@@ -132,7 +132,7 @@ public class ConfigControllerEndpointPage implements Serializable {
                 displaySequence=$displaySequence,
                 statusIndicator='$statusIndicator',
                 configApplication=$configApplication,
-                pageName='$pageName',
+                pageUrl='$pageUrl',
                 userId='$lastModifiedBy',
                 version=$version,
                 pageId=$pageId
@@ -141,9 +141,9 @@ public class ConfigControllerEndpointPage implements Serializable {
 
 
     static constraints = {
-        pageId(nullable: true, maxSize: 256)
-        pageName(nullable: true, maxSize: 256)
-        configApplication(nullable: false)
+        pageId(nullable: false, maxSize: 60)
+        pageUrl(nullable: true, maxSize: 256)
+        configApplication(nullable: false, unique: true)
         statusIndicator( nullable: false, maxSize:1)
         displaySequence(nullable: true)
         description(nullable: true)
