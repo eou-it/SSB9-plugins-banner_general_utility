@@ -9,12 +9,15 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
-
+/**
+ * ConfigControllerEndpointPageIntegrationTests are used to test the ConfigControllerEndpointPage domain.
+ */
 class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCase {
 
     private def appName
     private def appId
     //private Session session
+    public static final String PAGE_ID = 'Test Integration'
 
     @Before
     public void setUp() {
@@ -23,7 +26,6 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         appName = Holders.grailsApplication.metadata['app.name']
         appId = 'TESTAPP'
     }
-
 
     @After
     public void tearDown() {
@@ -50,14 +52,14 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         assertEquals 0L, configApplication.version
 
         ConfigControllerEndpointPage endpointPage = new ConfigControllerEndpointPage()
+        endpointPage.setPageId(PAGE_ID)
         endpointPage.setConfigApplication(configApplication)
         endpointPage.save(failOnError: true, flush: true)
-        endpointPage = endpointPage.refresh()
 
         assertNotNull endpointPage.id
         assertEquals 0L, endpointPage.version
         assertEquals true, endpointPage.statusIndicator
-        assertNotNull endpointPage.pageId
+        assertEquals PAGE_ID, endpointPage.pageId
     }
 
 
@@ -66,7 +68,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
 
         assertNotNull endpointPage.id
-        assertNotNull endpointPage.pageId
+        assertEquals PAGE_ID, endpointPage.pageId
         assertEquals 0L, endpointPage.version
 
         def id = endpointPage.id
@@ -238,8 +240,9 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
 
         ConfigControllerEndpointPage endpointPage = getConfigControllerEndpointPage()
         endpointPage.setConfigApplication(configApplication)
+        /*endpointPage.setPageId(PAGE_ID)*/
         endpointPage = endpointPage.save(failOnError: true, flush: true)
-        return endpointPage.refresh()
+        return endpointPage
     }
 
     /**
@@ -250,8 +253,9 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage(
                 description: 'TEST',
                 displaySequence: 1,
-                statusIndicator: true,
-                pageName: 'TEST PAGE'
+                enableIndicator: true,
+                pageUrl: 'TEST PAGE',
+                pageId: PAGE_ID
         )
         return configControllerEndpointPage
     }

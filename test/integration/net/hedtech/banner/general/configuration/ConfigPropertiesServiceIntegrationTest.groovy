@@ -28,6 +28,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private static final String GLOBAL = 'GLOBAL'
     private static final String TESTAPP = 'TESTAPP'
     private static String ACTUALAPPNAME = ''
+    private static String ACTUALAPPID = ''
 
     @Before
     public void setUp() {
@@ -35,6 +36,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         super.setUp()
         ACTUALAPPNAME = Holders.grailsApplication.metadata['app.name']
         Holders.grailsApplication.metadata['app.name'] = TESTAPP
+        ACTUALAPPID = Holders.grailsApplication.metadata['app.appId']
+        Holders.grailsApplication.metadata['app.appId'] = TESTAPP
         appName = Holders.grailsApplication.metadata['app.name']
         appId = TESTAPP
         mergeSeedDataKeysIntoConfigForTest()
