@@ -14,6 +14,7 @@ grails.project.dependency.resolution = {
     log "error" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
 
     plugins {
+        compile ":quartz:1.0.2"
 		runtime ":webxml:1.4.1"
     }
 
