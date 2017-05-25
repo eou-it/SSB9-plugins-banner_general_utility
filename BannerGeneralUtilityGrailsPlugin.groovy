@@ -2,7 +2,8 @@
  Copyright 2013-2017 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 import grails.plugin.springsecurity.SpringSecurityUtils
-import net.hedtech.banner.general.configuration.GeneralPageRoleMappingServiceclass BannerGeneralUtilityGrailsPlugin {
+import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
+class BannerGeneralUtilityGrailsPlugin {
     String version = "9.22.1"
 
     // the version or versions of Grails the plugin is designed for
