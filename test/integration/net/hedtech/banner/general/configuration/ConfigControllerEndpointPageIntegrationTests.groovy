@@ -180,13 +180,13 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
             List<GeneralPageRoleMapping> list = GeneralPageRoleMapping.fetchByAppId(configApplication.appId)
             //def list = endpointPage.getAllConfigByAppName(appName)
             Set<String> urlSet = new LinkedHashSet<String>()
-            list.each { GeneralPageRoleMapping requestURLMap -> urlSet.add(requestURLMap.pageName) }
+            list.each { GeneralPageRoleMapping requestURLMap -> urlSet.add(requestURLMap.pageUrl) }
 
             def requestMap = new LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>>()
             urlSet.each { String url ->
                 def patternList = new ArrayList<GeneralPageRoleMapping>()
                 list.each { GeneralPageRoleMapping requestURLMap ->
-                    if (requestURLMap.pageName.equals(url)) {
+                    if (requestURLMap.pageUrl.equals(url)) {
                         patternList << requestURLMap
                     }
                 }

@@ -115,8 +115,8 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
         ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage(
                 description: 'TEST',
                 displaySequence: 1,
-                pageId: 1,
-                pageName: 'TEST PAGE'
+                pageId: 'EndPointPage',
+                pageUrl: 'TEST PAGE'
         )
         return configControllerEndpointPage
     }
@@ -127,7 +127,7 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
      */
     private ConfigRolePageMapping getConfigRolePageMapping() {
         ConfigRolePageMapping configRolePageMapping = new ConfigRolePageMapping(
-                pageId: 1,
+                pageId: 'EndPointPageConfig',
                 roleCode: 'TEST_ROLE'
         )
         return configRolePageMapping
@@ -153,9 +153,9 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
         GeneralPageRoleMapping generalRequestMap = new GeneralPageRoleMapping(
                 applicationId: appId,
                 applicationName: appName,
-                pageId: 1001,
+                pageId: 'EndPointPageRequestMap',
                 displaySequence: 1,
-                pageName: 'TEST_PAGE',
+                pageUrl: 'TEST_PAGE',
                 roleCode: 'TEST_ROLE_12'
         )
         return generalRequestMap
