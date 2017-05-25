@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general
 
@@ -24,10 +24,12 @@ import javax.persistence.TemporalType
                 query = """FROM   ConfigurationData a
 		   WHERE  a.name = :name
 		   AND    a.type = :type
+		   AND    a.appId = :appId
 	      """),
         @NamedQuery(name = "ConfigurationData.fetchByType",
                 query = """FROM   ConfigurationData a
 		   WHERE  a.type = :type
+		   AND    a.appId = :appId
 	      """)
 ])
 class ConfigurationData implements Serializable{
@@ -85,6 +87,12 @@ class ConfigurationData implements Serializable{
     @Temporal(TemporalType.TIMESTAMP)
     Date lastModified
 
+    /**
+     * Application Id
+     */
+    @Column(name="GUROCFG_GUBAPPL_APP_ID" , nullable = false)
+    String appId
+
     boolean equals(o) {
         if (this.is(o)) return true
         if (getClass() != o.class) return false
@@ -99,6 +107,7 @@ class ConfigurationData implements Serializable{
         if (type != that.type) return false
         if (value != that.value) return false
         if (version != that.version) return false
+        if (appId != that.appId) return false
 
         return true
     }
@@ -113,6 +122,7 @@ class ConfigurationData implements Serializable{
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (dataOrigin != null ? dataOrigin.hashCode() : 0)
         result = 31 * result + (lastModified != null ? lastModified.hashCode() : 0)
+        result = 31 * result + (appId != null ? appId.hashCode() : 0)
         return result
     }
 
@@ -127,22 +137,23 @@ class ConfigurationData implements Serializable{
                 ", version=" + version +
                 ", lastModifiedBy='" + lastModifiedBy + '\'' +
                 ", dataOrigin='" + dataOrigin + '\'' +
+                ", appId='" + appId + '\'' +
                 ", lastModified=" + lastModified +
                 '}';
     }
 
-    public static ConfigurationData fetchByNameAndType(String name, String type) {
+    public static ConfigurationData fetchByNameAndType(String name, String type,String appId) {
         List<ConfigurationData> configurationData
         configurationData = ConfigurationData.withSession {session ->
-            configurationData = session.getNamedQuery('ConfigurationData.fetchByNameAndType').setString('name',name).setString('type',type).list()}
+            configurationData = session.getNamedQuery('ConfigurationData.fetchByNameAndType').setString('appId',appId).setString('name',name).setString('type',type).list()}
         ConfigurationData result = configurationData?.size()>0?configurationData.get(0):null
         return result
     }
 
-    public static List fetchByType(String type) {
+    public static List fetchByType(String type,String appId) {
         List configurationData
         configurationData = ConfigurationData.withSession {session ->
-            configurationData = session.getNamedQuery('ConfigurationData.fetchByType').setString('type',type).list()}
+            configurationData = session.getNamedQuery('ConfigurationData.fetchByType').setString('appId',appId).setString('type',type).list()}
         return configurationData
     }
 }

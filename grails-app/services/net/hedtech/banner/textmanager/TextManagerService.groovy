@@ -208,24 +208,24 @@ class TextManagerService {
             //Then get the value of interest by stripping of the distance.
             def statement = """
                  |WITH locales AS
-                 |( 
+                 |(
                  |  SELECT ( 1 + DECODE(gtvlang_code,:locale,0,1) -INSTR(:locale,gtvlang_code) ) AS distance
-                 |  ,gtvlang_code AS lang_code 
+                 |  ,gtvlang_code AS lang_code
                  |  FROM gtvlang
                  |  WHERE gtvlang_code IN  (SUBSTR(:locale,1,2), :locale)
                  |),
-                 |props_with_changes AS 
+                 |props_with_changes AS
                  |(
-                 |  SELECT DISTINCT 
-                 |  gmrsprp_project,gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type, 
+                 |  SELECT DISTINCT
+                 |  gmrsprp_project,gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
                  |  gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop
                  |  FROM gmrsprp
-                 |  WHERE gmrsprp_project = :pc 
+                 |  WHERE gmrsprp_project = :pc
                  |    AND gmrsprp_activity_date >= (SYSDATE - :days_ago)
                  |    AND gmrsprp_lang_code IN (SELECT lang_code FROM locales) -- Only select relevant records
                  |)
                  |SELECT
-                 |:locale request_locale  
+                 |:locale request_locale
                  |,MIN(locales.distance) distance
                  |,gmrsprp_project, gmrsprp_module_name
                  |,SUBSTR(MIN( TO_CHAR(locales.distance)||locales.lang_code),2) AS lang_code
@@ -233,7 +233,7 @@ class TextManagerService {
                  |,SUBSTR(MIN( TO_CHAR(locales.distance)||DECODE(gmrsprp_stat_code,11,'',gmrsprp_pre_str||gmbstrg_string||gmrsprp_pst_str)),2) AS string
                  |FROM locales, gmrsprp p1, gmbstrg
                  |WHERE locales.lang_code = gmrsprp_lang_code
-                 |  AND gmbstrg_strcode=gmrsprp_strcode  
+                 |  AND gmbstrg_strcode=gmrsprp_strcode
                  |  AND (gmrsprp_project, gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
                  |       gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop)
                  |       IN (SELECT * FROM props_with_changes)
@@ -269,4 +269,4 @@ class TextManagerService {
         msg
     }
 
-    }
+}
