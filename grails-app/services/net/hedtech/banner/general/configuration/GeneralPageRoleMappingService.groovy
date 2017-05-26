@@ -28,6 +28,8 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
     private String wildcardKey = '/**'
 
+    public static boolean isDataIsSeededForInterceptUrlMap = false
+
     /**
      * Overriden because this method calls reset().
      */
@@ -78,13 +80,16 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         }
         Map interceptedUrlMapFromConfig
 
-        if (originalInterceptUrlMap == null) {
-            originalInterceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
-        }
-        interceptedUrlMapFromConfig = originalInterceptUrlMap.clone()
+        if (!isDataIsSeededForInterceptUrlMap) {
+            if (originalInterceptUrlMap == null) {
+                originalInterceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
+            }
+            interceptedUrlMapFromConfig = originalInterceptUrlMap.clone()
 
-        interceptedUrlMapFromConfig.putAll(interceptedUrlMapFromDB)
-        Holders.config.grails.plugin.springsecurity.interceptUrlMap = [:]
+            interceptedUrlMapFromConfig.putAll(interceptedUrlMapFromDB)
+        } else {
+            interceptedUrlMapFromConfig = interceptedUrlMapFromDB.clone()
+        }
 
         if (interceptedUrlMapFromConfig.get(wildcardKey)) {
             def wildcardValue = interceptedUrlMapFromConfig.get(wildcardKey)
@@ -93,6 +98,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         }
 
         // Prepare List of interceptedUrlMap from the Merged data.
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap = [:]
         interceptedUrlMapFromConfig.each { k, v ->
             HttpMethod method = null
             InterceptedUrl iu = new InterceptedUrl(k, super.split(v?.join(',')), method)
@@ -158,10 +164,12 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                                                                                 generalPageRoleMapping.pageId,
                                                                                 generalPageRoleMapping.applicationId,
                                                                                 generalPageRoleMapping.version)
-                                                                          FROM GeneralPageRoleMapping generalPageRoleMapping
-                                                                          WHERE generalPageRoleMapping.applicationId = :appId
-                                                                          AND generalPageRoleMapping.statusIndicator = true ''')
-                                .setParameter('appId', appId).list()
+                                                      FROM GeneralPageRoleMapping generalPageRoleMapping
+                                                      WHERE generalPageRoleMapping.applicationId = :appId
+                                                      AND generalPageRoleMapping.statusIndicator = :statusIndicator''')
+                                .setParameter('appId', appId)
+                                .setParameter('statusIndicator', true)
+                                .list()
                     }
                     catch (e) {
                         logger.error('Exception while executing the query with new Hibernate session;', e)
@@ -194,5 +202,119 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         generalPageRoleMapping
     }
 
+    private Map prepareMap(List list, Map generalPageRoleMapping) {
+        def urlSet = new LinkedHashSet<String>()
+        list.each { GeneralPageRoleMapping grm ->
+            urlSet.add(grm.pageUrl)
+        }
+
+        urlSet.each { String pageUrl ->
+            def pageRoleMappingList = new ArrayList<GeneralPageRoleMapping>()
+            list.each { GeneralPageRoleMapping pageRoleMapping ->
+                if (pageRoleMapping.pageUrl == pageUrl) {
+                    pageRoleMappingList << pageRoleMapping
+                }
+            }
+            generalPageRoleMapping.put(pageUrl, pageRoleMappingList)
+        }
+        generalPageRoleMapping
+    }
+
+    /**
+     * Method is used to seed the data when server starts,
+     * The data will be seeded in to three tables
+     * 1) GUBAPPL - If application is starting for 1st time (This call will be before
+     *              ConfigPropertiesService.seedDataToDBFromConfig()
+     * 2) GURCTLEP
+     * 3) GURAPPR
+     */
+    public void seedInterceptUrlMapAtServerStartup() {
+        try {
+            String appName = Holders.grailsApplication.metadata['app.name']
+            String appId = Holders.grailsApplication.metadata['app.appId']
+
+            ConfigApplication application = ConfigApplication.fetchByAppName(appName)
+            if (!application) {
+                ConfigApplication newConfigApp = new ConfigApplication()
+                newConfigApp.setAppId(appId)
+                newConfigApp.setAppName(appName)
+                newConfigApp.setLastModifiedBy('BANNER')
+                application = newConfigApp.save(failOnError: true, flush: true)
+            }
+
+            LinkedHashMap<String, ArrayList<String>> interceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
+            List list = GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator(appId)
+            Map<String, ArrayList<String>> interceptUrlMapFromDB = new HashMap<String, ArrayList<String>>()
+            interceptUrlMapFromDB = prepareMap(list, interceptUrlMapFromDB)
+
+            List<String> keyList = new ArrayList<>(interceptUrlMap.keySet())
+
+            interceptUrlMap.each { String url, List<String> roles ->
+                if (!interceptUrlMapFromDB.containsKey(url)) {
+                    // Start
+                    // Save GURCTLEP
+                    ConfigControllerEndpointPage ccep = new ConfigControllerEndpointPage()
+                    ccep.setLastModifiedBy('BANNER')
+                    ccep.setLastModified(new Date())
+                    ccep.setDisplaySequence(keyList.findIndexOf { value -> url <=> value })
+                    ccep.setPageUrl(url)
+                    ccep.setStatusIndicator(true)
+                    ConfigApplication ca = new ConfigApplication()
+                    ca.setId(application.getId())
+
+                    ccep.setConfigApplication(ca)
+                    ccep.setPageId(getStringForPageId(url))
+                    ccep.save(failOnError: true, flush: true)
+
+                    // Save GURAPPR - multile roles
+                    roles.each { roleCode ->
+                        ConfigRolePageMapping crpm = new ConfigRolePageMapping()
+                        crpm.setConfigApplication(ca)
+                        crpm.setLastModifiedBy('BANNER')
+                        crpm.setLastModified(new Date())
+                        crpm.setEndpointPage(ccep)
+                        crpm.setRoleCode(roleCode)
+                        crpm.save(failOnError: true, flush: true)
+                    }
+                    // End
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage())
+        }
+
+        isDataIsSeededForInterceptUrlMap = true
+    }
+
+    /**
+     * The method is to prepare the pageId (PK) for GURCTLEP table, method will accept the
+     * GURCTLEP_PAGE_URL and will return the end point with last two '/' char.
+     * Eg. url = '/ssb/themeEditor/**' then the prepared pageId = '/themeEditor/**'
+     * from the 2nd last '/' char.
+     * @param url GURCTLEP_PAGE_URL value from GURCTLEP table.
+     * @return pageId prepared pageId from the pageUrl.
+     */
+    private String getStringForPageId(String url) {
+        String preparedPageId = ''
+        def urlCharArray = url ? url.toCharArray() : ''
+        int charCount = 0
+        int index = 0
+        if (urlCharArray && urlCharArray.length > 0) {
+            for (int i = urlCharArray.length - 1; i >= 0; i--) {
+                if (urlCharArray[i] == '/') {
+                    charCount++
+                }
+                if (charCount == 2) {
+                    index = i
+                    break
+                }
+            }
+            if (charCount > 0) {
+                preparedPageId = url.substring(index, urlCharArray.length)
+            }
+        }
+
+        return preparedPageId
+    }
 
 }
