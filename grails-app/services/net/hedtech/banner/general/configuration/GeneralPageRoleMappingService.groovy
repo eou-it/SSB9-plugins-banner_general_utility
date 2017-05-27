@@ -247,8 +247,6 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             Map<String, ArrayList<String>> interceptUrlMapFromDB = new HashMap<String, ArrayList<String>>()
             interceptUrlMapFromDB = prepareMap(list, interceptUrlMapFromDB)
 
-            List<String> keyList = new ArrayList<>(interceptUrlMap.keySet())
-
             interceptUrlMap.each { String url, List<String> roles ->
                 if (!interceptUrlMapFromDB.containsKey(url)) {
                     // Start
@@ -256,7 +254,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     ConfigControllerEndpointPage ccep = new ConfigControllerEndpointPage()
                     ccep.setLastModifiedBy('BANNER')
                     ccep.setLastModified(new Date())
-                    ccep.setDisplaySequence(keyList.findIndexOf { value -> url <=> value })
+                    ccep.setDisplaySequence(interceptUrlMap.findIndexOf { it.key == url })
                     ccep.setPageUrl(url)
                     ccep.setStatusIndicator(true)
                     ConfigApplication ca = new ConfigApplication()
