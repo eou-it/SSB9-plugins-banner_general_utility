@@ -25,7 +25,7 @@ public class ConfigControllerEndpointPage implements Serializable {
 
 
     @Id
-    @SequenceGenerator(name = 'GURCTLEP_SEQ_GENERATOR', sequenceName = 'GURCTLEP_SURROGATE_ID_SEQ')
+    @SequenceGenerator(name = 'GURCTLEP_SEQ_GENERATOR', sequenceName = 'GURCTLEP_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GURCTLEP_SEQ_GENERATOR')
     @Column(name = 'GURCTLEP_SURROGATE_ID')
     Long id
@@ -143,7 +143,7 @@ public class ConfigControllerEndpointPage implements Serializable {
     static constraints = {
         pageId(nullable: false, maxSize: 60)
         pageUrl(nullable: true, maxSize: 256)
-        configApplication(nullable: false, unique: true)
+        configApplication(nullable: false)
         statusIndicator( nullable: false, maxSize:1)
         displaySequence(nullable: true)
         description(nullable: true)
