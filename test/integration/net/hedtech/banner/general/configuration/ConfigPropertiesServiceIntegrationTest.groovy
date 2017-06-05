@@ -6,7 +6,6 @@ package net.hedtech.banner.general.configuration
 
 import grails.util.Holders
 import grails.util.Holders as CH
-import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
@@ -54,25 +53,6 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         createNewConfigProperties()
         configPropertiesService.setConfigFromDb()
         assertTrue CH.config.get(CONFIG_NAME) == CONFIG_VALUE
-    }
-
-    @Test
-    public void testGlobalConfiguration() {
-        setSurrogateIdForGlobal(999)
-        createNewGlobalConfigProps()
-        configPropertiesService.setConfigFromDb()
-        assertTrue CH.config.get("testing") == GLOBAL
-        setSurrogateIdForGlobal(null)
-    }
-
-    @Test
-    public void testAppPreferenceOverGlobal() {
-        setSurrogateIdForGlobal(999)
-        createNewGlobalConfigProps()
-        createNewAppSpecificConfigProps()
-        configPropertiesService.setConfigFromDb()
-        assertTrue CH.config.get("testing") == "CUSTOM"
-        setSurrogateIdForGlobal(null)
     }
 
     /**
@@ -270,16 +250,6 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
                 appId: appId
         )
         return configApplication
-    }
-
-    private setSurrogateIdForGlobal(id) {
-        Sql sql
-        try {
-            sql = new Sql(sessionFactory.getCurrentSession().connection())
-            sql.executeUpdate("update GUBAPPL set GUBAPPL_SURROGATE_ID = ?  where GUBAPPL_APP_ID = ?", [id, GLOBAL])
-        } finally {
-            sql?.close() // note that the test will close the connection, since it's our current session's connection
-        }
     }
 
     private def mergeSeedDataKeysIntoConfigForTest() {
