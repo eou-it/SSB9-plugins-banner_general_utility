@@ -205,7 +205,81 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     }
 
 
-    private void createNewGlobalConfigProps() {
+    @Test
+    public void testTransactionTimeOutDefault() {
+        configPropertiesService.setTransactionTimeOUt()
+        def result = CH.config.get("transactionTimeout")
+        assertEquals result, 30
+    }
+
+    @Test
+    public void testTransactionTimeOut() {
+        def oldTransactionTimeout = grailsApplication.config.banner?.transactionTimeout
+        grailsApplication.config.banner?.transactionTimeout = 150
+        configPropertiesService.setTransactionTimeOUt()
+        def result = CH.config.get("transactionTimeout")
+        assertEquals result, 150
+        grailsApplication.config.banner?.transactionTimeout = oldTransactionTimeout
+    }
+
+    @Test
+    public void testLoginEndPointUrlDefault() {
+        def oldLoginEndpoint = grailsApplication.config?.loginEndpoint
+        grailsApplication.config?.loginEndpoint = ''
+        configPropertiesService.setLoginEndPointUrl()
+        def result = CH.config.get("loginEndpoint")
+        assertEquals result, ""
+        grailsApplication.config?.loginEndpoint = oldLoginEndpoint
+    }
+
+    @Test
+    public void testLoginEndPointUrl() {
+        def oldLoginEndpoint = grailsApplication.config?.loginEndpoint
+        grailsApplication.config?.loginEndpoint = 'test/testURL'
+        configPropertiesService.setLoginEndPointUrl()
+        def result = CH.config.get("loginEndpoint")
+        assertEquals result, "test/testURL"
+        grailsApplication.config?.loginEndpoint = oldLoginEndpoint
+    }
+
+    @Test
+    public void testLogOutEndPointUrl() {
+        def logoutEndpoint = grailsApplication?.config?.logoutEndpoint
+        grailsApplication?.config?.logoutEndpoint = ''
+        configPropertiesService.setLogOutEndPointUrl()
+        def result = CH.config.get("logoutEndpoint")
+        assertEquals result, ""
+        grailsApplication?.config?.logoutEndpoint = logoutEndpoint
+    }
+
+    @Test
+    public void testLogOutEndPointUrlLocal() {
+        def authProvider = Holders?.config.banner.sso.authenticationProvider
+        def localLogout = Holders?.config.banner?.sso?.authentication.saml.localLogout
+        Holders?.config.banner.sso.authenticationProvider = 'saml'
+        Holders?.config.banner?.sso?.authentication.saml.localLogout = 'true'
+        configPropertiesService.setLogOutEndPointUrl()
+        def result = CH.config.get("logoutEndpoint")
+        assertEquals result, "saml/logout?local=true"
+        Holders?.config.banner.sso.authenticationProvider = authProvider
+        Holders?.config.banner?.sso?.authentication.saml.localLogout = localLogout
+    }
+
+    @Test
+    public void testLogOutEndPointUrlNotLocal() {
+        def authProvider = Holders?.config.banner.sso.authenticationProvider
+        def localLogout = Holders?.config.banner?.sso?.authentication.saml.localLogout
+        Holders?.config.banner.sso.authenticationProvider = 'saml'
+        Holders?.config.banner?.sso?.authentication.saml.localLogout = 'false'
+        configPropertiesService.setLogOutEndPointUrl()
+        def result = CH.config.get("logoutEndpoint")
+        assertEquals result, "saml/logout"
+        Holders?.config.banner.sso.authenticationProvider = authProvider
+        Holders?.config.banner?.sso?.authentication.saml.localLogout = localLogout
+    }
+
+
+        private void createNewGlobalConfigProps() {
         ConfigApplication configApplication = ConfigApplication.fetchByAppName(GLOBAL)
         assertNotNull configApplication?.id
         configApplication.refresh()

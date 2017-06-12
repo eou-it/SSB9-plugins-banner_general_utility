@@ -5,6 +5,7 @@
 package net.hedtech.banner.general.configuration
 
 import grails.util.Holders as CH
+import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
 import org.springframework.dao.InvalidDataAccessResourceUsageException
@@ -18,6 +19,8 @@ class ConfigPropertiesService extends ServiceBase {
 
     private static final LOGGER = Logger.getLogger(ConfigPropertiesService.class.name)
     private static final String GLOBAL = "GLOBAL"
+    private static String localLogoutEnable="saml/logout?local=true"
+    private static String globalLogoutEnable="saml/logout"
     def grailsApplication
     def configApplicationService
     ConfigSlurper configSlurper = new ConfigSlurper()
@@ -132,6 +135,40 @@ class ConfigPropertiesService extends ServiceBase {
                 }
             }else{
                 LOGGER.info("No App Id Specified in application.properties");
+        }
+    }
+
+    public setTransactionTimeOUt() {
+        grailsApplication?.config?.transactionTimeout = (grailsApplication.config.banner?.transactionTimeout instanceof Integer
+                ? grailsApplication.config.banner?.transactionTimeout
+                : 30)
+
+    }
+
+
+    public setLoginEndPointUrl() {
+        grailsApplication?.config?.loginEndpoint = grailsApplication.config?.loginEndpoint ?: ""
+    }
+
+
+    public setLogOutEndPointUrl() {
+        if (ControllerUtils.isSamlEnabled()) {
+            if (ControllerUtils.isLocalLogoutEnabled()) {
+                grailsApplication?.config?.logoutEndpoint = localLogoutEnable
+            } else {
+                grailsApplication?.config?.logoutEndpoint = globalLogoutEnable
+            }
+        } else {
+            grailsApplication?.config?.logoutEndpoint = grailsApplication.config?.logoutEndpoint ?: ""
+        }
+    }
+
+
+    public setGuestLoginEnabled() {
+        if ((true == grailsApplication.config?.guestAuthenticationEnabled) && (!"default".equalsIgnoreCase(grailsApplication.config?.banner?.sso?.authenticationProvider.toString()))) {
+            grailsApplication?.config?.guestLoginEnabled = true
+        } else {
+            grailsApplication?.config?.guestLoginEnabled = false
         }
     }
 }
