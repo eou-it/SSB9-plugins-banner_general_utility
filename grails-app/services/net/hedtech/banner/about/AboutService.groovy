@@ -26,7 +26,7 @@ class AboutService {
         loadResourcePropertiesFile();
 
         about['api.title'] = getMessage("about.banner.title")
-
+        about['api.close'] = getMessage("about.banner.close")
         about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
 
