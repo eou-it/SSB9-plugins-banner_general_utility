@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
@@ -7,6 +7,7 @@ package net.hedtech.banner.about
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.core.context.SecurityContextHolder
+import net.hedtech.banner.i18n.MessageHelper
 
 class AboutService {
 
@@ -42,10 +43,17 @@ class AboutService {
     }
 
     private String getApplicationName(){
-        if(resourceProperties){
-            formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
-        } else {
-            grailsApplication.metadata['app.name']
+        String aboutApplicationName = MessageHelper.message("about.application.name")
+        if(!aboutApplicationName.equalsIgnoreCase("about.application.name"))
+        {
+            aboutApplicationName
+        }
+        else {
+            if(resourceProperties){
+                formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
+            } else {
+                grailsApplication.metadata['app.name']
+            }
         }
     }
     private void loadResourcePropertiesFile() {
@@ -73,6 +81,7 @@ class AboutService {
 
     }
 
+/*
     private String getMepDescription() {
 
         String mepDescription
@@ -90,6 +99,7 @@ class AboutService {
 
     }
 
+
     private Map getAppInfo() {
         def appInfo = [:]
         if (resourceProperties) {
@@ -105,6 +115,7 @@ class AboutService {
 
         return appInfo
     }
+ */
 
     private String getVersion(){
         if (resourceProperties) {
@@ -114,7 +125,7 @@ class AboutService {
         }
     }
 
-    private Map getPluginsInfo(def pattern) {
+/*    private Map getPluginsInfo(def pattern) {
         def pluginInfo = [:]
         // plugin details
         def plugins = pluginManager.allPlugins.findAll { plugin -> plugin.name ==~ pattern  }
@@ -125,7 +136,7 @@ class AboutService {
             pluginInfo[name] = version
         }
         return pluginInfo.sort { formatCamelCaseToEnglish(it.key) }
-    }
+    }*/
 
     private String getCopyright() {
         getMessage("net.hedtech.banner.login.copyright1")
@@ -135,7 +146,7 @@ class AboutService {
         getMessage("net.hedtech.banner.login.copyright2")
     }
 
-    private String getUserName() {
+/*    private String getUserName() {
         String userName = ""
         try {
             userName = SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase()
@@ -146,7 +157,7 @@ class AboutService {
             userName = "N/A"
         }
         return userName
-    }
+    }*/
 
     private String formatCamelCaseToEnglish(value) {
         if(value) {

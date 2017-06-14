@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 package net.hedtech.banner.general.utility
@@ -168,6 +168,86 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
                 ]
     }
 
+
+    @Test
+    void testHashCode() {
+        BannerUserSession bannerUserSession = newBannerUserSession()
+        bannerUserSession.save(failOnError: true, flush: true)
+        assertNotNull bannerUserSession.id
+        assertEquals 0L, bannerUserSession.version
+        assertNotNull bannerUserSession.sessionToken
+
+        BannerUserSession bannerUserSessionCopy = BannerUserSession.findById(bannerUserSession.id)
+        assertNotNull bannerUserSessionCopy
+        Integer bannerUserSessionHashCode = bannerUserSessionCopy.hashCode()
+        assertNotNull bannerUserSessionHashCode
+    }
+
+
+    @Test
+    void testToString() {
+        BannerUserSession bannerUserSession = newBannerUserSession()
+        bannerUserSession.save(failOnError: true, flush: true)
+        assertNotNull bannerUserSession.id
+        assertEquals 0L, bannerUserSession.version
+        assertNotNull bannerUserSession.sessionToken
+
+        BannerUserSession bannerUserSessionCopy = BannerUserSession.findById(bannerUserSession.id)
+        assertNotNull bannerUserSessionCopy
+        String bannerUserSessionToString = bannerUserSessionCopy.toString()
+        assertNotNull bannerUserSessionToString
+        assertTrue bannerUserSessionToString.contains('sessionToken')
+    }
+
+
+    @Test
+    void testEquals() {
+        BannerUserSession bannerUserSession = newBannerUserSession()
+        bannerUserSession.save(failOnError: true, flush: true)
+        assertNotNull bannerUserSession.id
+        assertEquals 0L, bannerUserSession.version
+        assertNotNull bannerUserSession.sessionToken
+
+        BannerUserSession bannerUserSessionCopy = BannerUserSession.findById(bannerUserSession.id)
+        assertNotNull bannerUserSessionCopy
+        assertEquals bannerUserSessionCopy.info, bannerUserSession.info
+        assertEquals bannerUserSessionCopy.infoType, bannerUserSession.infoType
+        assertEquals bannerUserSessionCopy.sessionToken, bannerUserSession.sessionToken
+        assertEquals bannerUserSessionCopy.id, bannerUserSession.id
+        assertEquals bannerUserSessionCopy.version, bannerUserSession.version
+        assertEquals bannerUserSessionCopy.dataOrigin, bannerUserSession.dataOrigin
+    }
+
+
+    @Test
+    public void testSerialization() {
+        try {
+            BannerUserSession bannerUserSession = newBannerUserSession()
+            bannerUserSession = bannerUserSession.save(failOnError: true, flush: true)
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            ObjectOutputStream oos = new ObjectOutputStream(out)
+            oos.writeObject(bannerUserSession)
+            oos.close()
+
+            byte[] bytes = out.toByteArray()
+            BannerUserSession bannerUserSessionCopy
+            new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
+                bannerUserSessionCopy = (BannerUserSession) is.readObject()
+                is.close()
+            }
+
+            assertEquals bannerUserSessionCopy.infoType, bannerUserSession.infoType
+            assertEquals bannerUserSessionCopy.sessionToken, bannerUserSession.sessionToken
+            assertEquals bannerUserSessionCopy.id, bannerUserSession.id
+            assertEquals bannerUserSessionCopy.version, bannerUserSession.version
+            assertEquals bannerUserSessionCopy.dataOrigin, bannerUserSession.dataOrigin
+
+        } catch (e) {
+            e.printStackTrace()
+        }
+    }
+
+
     private BannerUserSession newBannerUserSession() {
         def bannerUserSession = new BannerUserSession(
                 infoType:GOTO_CURRENTLY_OPENED,
@@ -195,10 +275,4 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
         return bannerUserSession
     }
 
-    /**
-     * Please put all the custom tests in this protected section to protect the code
-     * from being overwritten on re-generation
-     */
-    /*PROTECTED REGION ID(MenuAndToolbarPreference_custom_integration_test_methods) ENABLED START*/
-    /*PROTECTED REGION END*/
 }
