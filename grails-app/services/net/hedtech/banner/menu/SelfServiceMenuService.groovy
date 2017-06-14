@@ -9,6 +9,7 @@ import org.apache.commons.collections.ListUtils
 import org.apache.commons.lang.math.RandomUtils
 import org.apache.log4j.Logger
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.context.i18n.LocaleContextHolder
 
 /**
  * Service for retrieving Banner menu item for Classic SSB.
@@ -20,6 +21,8 @@ class SelfServiceMenuService {
     def grailsApplication
     private static final Logger log = Logger.getLogger(getClass())
     static final String SS_APPS = "SS_APPS"
+    String url
+    def banner8SSLocaleUrls
 
     /**
      * This is returns map of all menu items based on user access
@@ -137,7 +140,7 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
-            mnu.url = it.twgrmenu_db_link_ind == "Y" ? getMepSsb8UrlFromConfig() + it.twgrmenu_url : it.twgrmenu_url
+            mnu.url = it.twgrmenu_db_link_ind == "Y" ? getBanner8SsUrlFromConfig() + it.twgrmenu_url : it.twgrmenu_url
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
             mnu.sourceIndicator = it.twgrmenu_source_ind
@@ -368,15 +371,43 @@ class SelfServiceMenuService {
         return allRoleCriteria;
     }
 
-    // gets MEP urls for BANNER SS
-    private String getMepSsb8UrlFromConfig() {
-        String url
+    // gets urls for BANNER 8
+    private String getBanner8SsUrlFromConfig() {
         def mep = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
-        if (mep && Holders.config?.mep?.banner8?.SS?.url) {
-            url = Holders.config?.mep?.banner8?.SS?.url[mep]
-        }else{
-            url = Holders?.config?.banner8?.SS?.url
+        url=getLocaleSpecificBanner8Url(mep)
+        if(url==null){
+           url= getWithoutLocaleSpecificBanner8Url(mep)
         }
+        return url
+    }
+
+    /*Get banner8 url which is irrespective of locale
+    Ex. banner8.SS.url ='http://m039064.ellucian.com:8002'*/
+    private String getWithoutLocaleSpecificBanner8Url(mep){
+       if( mep && Holders.config?.mep?.banner8?.SS?.url) {
+           url = Holders.config?.mep?.banner8?.SS?.url[mep]
+       }else{
+           url = Holders?.config?.banner8?.SS?.url
+       }
+       return url
+    }
+
+   /* get Locale Specific Banner 8 URL with fall back Mechanism
+    Ex. if entry for fr_CA does not exist then entry for fr will be picked.if that also does not exist it will pick Default entry
+    Ex. banner8.SS.locale.url =[default : 'http://m039064.ellucian.com:8002/DEFAULT/',fr_CA : 'http://m039064.ellucian.com:8002/EN/']*/
+
+    private String getLocaleSpecificBanner8Url(mep) {
+        String language
+        String localeString
+        if (mep && Holders.config?.mep?.banner8?.SS?.locale?.url) {
+            banner8SSLocaleUrls = Holders.config?.mep?.banner8?.SS?.locale?.url[mep]
+        }else{
+            banner8SSLocaleUrls = Holders?.config?.banner8?.SS?.locale?.url
+        }
+        Locale locale=LocaleContextHolder.getLocale()
+        localeString = locale.toString()
+        language= locale.getLanguage()
+        url=banner8SSLocaleUrls.get(localeString)?: (banner8SSLocaleUrls.get(language)?:banner8SSLocaleUrls.get("default"))
         return url
     }
 
