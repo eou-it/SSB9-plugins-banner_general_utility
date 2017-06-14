@@ -21,8 +21,6 @@ class SelfServiceMenuService {
     def grailsApplication
     private static final Logger log = Logger.getLogger(getClass())
     static final String SS_APPS = "SS_APPS"
-    String url
-    def banner8SSLocaleUrls
 
     /**
      * This is returns map of all menu items based on user access
@@ -373,6 +371,7 @@ class SelfServiceMenuService {
 
     // gets urls for BANNER 8
     private String getBanner8SsUrlFromConfig() {
+        String url
         def mep = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
         url=getLocaleSpecificBanner8Url(mep)
         if(url==null){
@@ -384,6 +383,7 @@ class SelfServiceMenuService {
     /*Get banner8 url which is irrespective of locale
     Ex. banner8.SS.url ='http://m039064.ellucian.com:8002'*/
     private String getWithoutLocaleSpecificBanner8Url(mep){
+       String url
        if( mep && Holders.config?.mep?.banner8?.SS?.url) {
            url = Holders.config?.mep?.banner8?.SS?.url[mep]
        }else{
@@ -399,6 +399,8 @@ class SelfServiceMenuService {
     private String getLocaleSpecificBanner8Url(mep) {
         String language
         String localeString
+        String url
+        def banner8SSLocaleUrls
         if (mep && Holders.config?.mep?.banner8?.SS?.locale?.url) {
             banner8SSLocaleUrls = Holders.config?.mep?.banner8?.SS?.locale?.url[mep]
         }else{
