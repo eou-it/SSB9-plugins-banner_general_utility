@@ -9,6 +9,8 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.context.i18n.LocaleContextHolder
+import org.springframework.web.context.request.RequestContextHolder
 
 class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
@@ -20,6 +22,60 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
     private static final def BANNER_ID_WITH_STUDENT_ROLE = 'ESSREG02'
     private static final def BANNER_ID_WITH_OUT_STUDENT_ROLE = 'HOSS001'
     private static final def BANNER_MENU_APP_CONCEPT_WITHOUT_ROLE = 'HOS00010'
+    private final String AR = "ar"
+    private final String EN = "en"
+    private final String ZH = "zh"
+    private final String FR = "fr"
+    private final String PT = "pt"
+    private final String ES = "es"
+    private final String RO = "ro"
+    private final String GB = "GB"
+    private final String IN = "IN"
+    private final String AU = "AU"
+    private final String IE = "IE"
+    private final String CA = "CA"
+    private final String SA = "SA"
+    private final String CH = "CH"
+    private final String MD = "MD"
+
+    private final String MEP_GVU = "GVU"
+    private final String MEP_BANNER = "BANNER"
+
+    private final String BANNER8_URL_AR = "http://m089899.sct.com:8002/AR/"
+    private final String BANNER8_URL_EN = "http://m089899.sct.com:8002/EN/"
+    private final String BANNER8_URL_ENAU = "http://m089899.sct.com:8002/enAU/"
+    private final String BANNER8_URL_ENGB = "http://m089899.sct.com:8002/enGB/"
+    private final String BANNER8_URL_ENIE = "http://m089899.sct.com:8002/enIE/"
+    private final String BANNER8_URL_ENIN = "http://m089899.sct.com:8002/enIN/"
+    private final String BANNER8_URL_FR = "http://m089899.sct.com:8002/FR/"
+    private final String BANNER8_URL_FRCA = "http://m089899.sct.com:8002/frCA/"
+    private final String BANNER8_URL_PT = "http://m089899.sct.com:8002/PT/"
+    private final String BANNER8_URL_ES = "http://m089899.sct.com:8002/ES/"
+    private final String BANNER8_URL_DEFAULT = "http://m089899.sct.com:8002/DEFAULT/"
+
+    private final String GVU_BANNER8_URL_AR = "http://m089899.sct.com:8002/GVU/AR/"
+    private final String GVU_BANNER8_URL_EN = "http://m089899.sct.com:8002/GVU/EN/"
+    private final String GVU_BANNER8_URL_ENAU = "http://m089899.sct.com:8002/GVU/enAU/"
+    private final String GVU_BANNER8_URL_ENGB = "http://m089899.sct.com:8002/GVU/enGB/"
+    private final String GVU_BANNER8_URL_ENIE = "http://m089899.sct.com:8002/GVU/enIE/"
+    private final String GVU_BANNER8_URL_ENIN = "http://m089899.sct.com:8002/GVU/enIN/"
+    private final String GVU_BANNER8_URL_FR = "http://m089899.sct.com:8002/GVU/FR/"
+    private final String GVU_BANNER8_URL_FRCA = "http://m089899.sct.com:8002/GVU/frCA/"
+    private final String GVU_BANNER8_URL_PT = "http://m089899.sct.com:8002/GVU/PT/"
+    private final String GVU_BANNER8_URL_ES = "http://m089899.sct.com:8002/GVU/ES/"
+    private final String GVU_BANNER8_URL_DEFAULT = "http://m089899.sct.com:8002/GVU/DEFAULT/"
+
+    private final String BANNER_BANNER8_URL_AR = "http://m089899.sct.com:8002/BANNER/AR/"
+    private final String BANNER_BANNER8_URL_EN = "http://m089899.sct.com:8002/BANNER/EN/"
+    private final String BANNER_BANNER8_URL_ENAU = "http://m089899.sct.com:8002/BANNER/enAU/"
+    private final String BANNER_BANNER8_URL_ENGB = "http://m089899.sct.com:8002/BANNER/enGB/"
+    private final String BANNER_BANNER8_URL_ENIE = "http://m089899.sct.com:8002/BANNER/enIE/"
+    private final String BANNER_BANNER8_URL_ENIN = "http://m089899.sct.com:8002/BANNER/enIN/"
+    private final String BANNER_BANNER8_URL_FR = "http://m089899.sct.com:8002/BANNER/FR/"
+    private final String BANNER_BANNER8_URL_FRCA = "http://m089899.sct.com:8002/BANNER/frCA/"
+    private final String BANNER_BANNER8_URL_PT = "http://m089899.sct.com:8002/BANNER/PT/"
+    private final String BANNER_BANNER8_URL_ES = "http://m089899.sct.com:8002/BANNER/ES/"
+    private final String BANNER_BANNER8_URL_DEFAULT = "http://m089899.sct.com:8002/BANNER/DEFAULT/"
 
     @Before
     public void setUp() {
@@ -31,9 +87,33 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         grailsApplication.config?.seamless?.selfServiceApps = ["http://abc:8080/StudentFacultyGradeEntry/ssb/gradeEntry"]
     }
 
+    public void setUpBanner8LocaleSpecificURL(){
+       Holders?.config?.banner8.SS.locale?.url = [default:BANNER8_URL_DEFAULT,en:BANNER8_URL_EN,en_AU:BANNER8_URL_ENAU,en_GB:BANNER8_URL_ENGB,en_IE:BANNER8_URL_ENIE,en_IN:BANNER8_URL_ENIN,fr:BANNER8_URL_FR,fr_CA:BANNER8_URL_FRCA,pt:BANNER8_URL_PT,es:BANNER8_URL_ES,ar:BANNER8_URL_AR]
+       Holders?.config?.mep?.banner8?.SS?.locale?.url=[GVU:[default:GVU_BANNER8_URL_DEFAULT,en:GVU_BANNER8_URL_EN,en_AU:GVU_BANNER8_URL_ENAU,en_GB:GVU_BANNER8_URL_ENGB,en_IE:GVU_BANNER8_URL_ENIE,en_IN:GVU_BANNER8_URL_ENIN,fr:GVU_BANNER8_URL_FR,fr_CA:GVU_BANNER8_URL_FRCA,pt:GVU_BANNER8_URL_PT,es:GVU_BANNER8_URL_ES,ar:GVU_BANNER8_URL_AR ],
+       BANNER:[default:BANNER_BANNER8_URL_DEFAULT,en:BANNER_BANNER8_URL_EN,en_AU:BANNER_BANNER8_URL_ENAU,en_GB:BANNER_BANNER8_URL_ENGB,en_IE:BANNER_BANNER8_URL_ENIE,en_IN:BANNER_BANNER8_URL_ENIN,fr:BANNER_BANNER8_URL_FR,fr_CA:BANNER_BANNER8_URL_FRCA,pt:BANNER_BANNER8_URL_PT,es:BANNER_BANNER8_URL_ES,ar:BANNER_BANNER8_URL_AR ]]
+    }
+
+    public void setUpWithoutLocaleSpecificBanner8URL() {
+        Holders?.config?.mep?.banner8?.SS?.url = [GVU: GVU_BANNER8_URL_DEFAULT, BANNER: BANNER_BANNER8_URL_DEFAULT]
+        Holders?.config?.banner8?.SS?.url = BANNER8_URL_DEFAULT
+    }
+
+    public void tearDownBanner8LocaleSpecificURL(){
+        Holders?.config?.banner8.SS.locale?.url=[:]
+        Holders?.config?.mep?.banner8?.SS?.locale?.url=[:]
+    }
+
+    public void tearDownBanner8URL(){
+        Holders?.config?.mep?.banner8?.SS?.url = [:]
+        Holders?.config?.banner8?.SS?.url =  null
+    }
+
     @After
     public void tearDown() {
-        super.tearDown();
+        super.tearDown()
+        removeMepCode()
+        tearDownBanner8URL()
+        tearDownBanner8LocaleSpecificURL()
         if (sql) sql?.close()
     }
 
@@ -179,6 +259,400 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
             pidm = it.spriden_pidm
         }
         return pidm
+    }
+
+    @Test
+    void testMepGVUBanner8EnglishLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(EN))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_EN,url)
+    }
+
+    @Test
+    void testMepGVUBanner8URL(){
+        setUpWithoutLocaleSpecificBanner8URL()
+        setMepCode(MEP_GVU)
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_DEFAULT,url)
+    }
+
+    @Test
+    void testMepGVUBanner8EnglishGBLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(EN,GB))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_ENGB,url)
+    }
+
+    @Test
+    void testMepGVUBanner8EnglishINLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(EN,IN))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_ENIN,url)
+    }
+
+    @Test
+    void testMepGVUBanner8EnglishIELocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(EN,IE))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_ENIE,url)
+    }
+
+    @Test
+    void testMepGVUBanner8EnglishAULocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(EN,AU))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_ENAU,url)
+    }
+
+    @Test
+    void testMepGVUBanner8SpanishLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(ES))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_ES,url)
+    }
+
+    @Test
+    void testMepGVUBanner8FrenchLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(FR))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_FR,url)
+    }
+
+    @Test
+    void testMepGVUBanner8FrenchCanadaLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(FR,CA))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_FRCA,url)
+    }
+
+    @Test
+    void testMepGVUBanner8PortugueseLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(PT))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_PT,url)
+    }
+
+    @Test
+    void testMepGVUBanner8ArabicLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(AR))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_AR,url)
+    }
+
+    @Test
+    void testMepGVUBanner8SaudiArabicLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(AR,SA))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_AR,url)
+    }
+
+    @Test
+    void testMepGVUBanner8FrenchSwitzerlandLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(FR,CH))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_FR,url)
+    }
+
+    @Test
+    void testMepGVUBanner8RomaniaLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(RO,MD))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_DEFAULT,url)
+    }
+
+    @Test
+    void testMepGVUBanner8ChineseLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_GVU)
+        LocaleContextHolder.setLocale(new Locale(ZH))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(GVU_BANNER8_URL_DEFAULT,url)
+    }
+
+    @Test
+    void testMepBanner8EnglishLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(EN))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_EN,url)
+    }
+
+    @Test
+    void testMepBanner8URL(){
+        setUpWithoutLocaleSpecificBanner8URL()
+        setMepCode(MEP_BANNER)
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_DEFAULT,url)
+    }
+
+    @Test
+    void testMepBanner8EnglishGBLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(EN,GB))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_ENGB,url)
+    }
+
+    @Test
+    void testMepBanner8EnglishINLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(EN,IN))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_ENIN,url)
+    }
+
+    @Test
+    void testMepBanner8EnglishIELocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(EN,IE))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_ENIE,url)
+    }
+
+    @Test
+    void testMepBanner8EnglishAULocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(EN,AU))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_ENAU,url)
+    }
+
+    @Test
+    void testMepBanner8SpanishLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(ES))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_ES,url)
+    }
+
+    @Test
+    void testMepBanner8FrenchLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(FR))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_FR,url)
+    }
+
+    @Test
+    void testMepBanner8FrenchCanadaLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(FR,CA))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_FRCA,url)
+    }
+
+    @Test
+    void testMepBanner8PortugueseLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(PT))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_PT,url)
+    }
+
+    @Test
+    void testMepBanner8ArabicLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(AR))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_AR,url)
+    }
+
+    @Test
+    void testMepBanner8SaudiArabicLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(AR,SA))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_AR,url)
+    }
+
+    @Test
+    void testMepBanner8FrenchSwitzerlandLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(FR,CH))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_FR,url)
+    }
+
+    @Test
+    void testMepBanner8RomaniaLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(RO,MD))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_DEFAULT,url)
+    }
+
+    @Test
+    void testMepBanner8ChineseLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        setMepCode(MEP_BANNER)
+        LocaleContextHolder.setLocale(new Locale(ZH))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER_BANNER8_URL_DEFAULT,url)
+    }
+
+    @Test
+    void testBanner8EnglishLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(EN))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_EN,url)
+    }
+
+    @Test
+    void testBanner8URL(){
+        setUpWithoutLocaleSpecificBanner8URL()
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_DEFAULT,url)
+    }
+
+    @Test
+    void testBanner8EnglishGBLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(EN,GB))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_ENGB,url)
+    }
+
+    @Test
+    void testBanner8EnglishINLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(EN,IN))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_ENIN,url)
+    }
+
+    @Test
+    void testBanner8EnglishIELocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(EN,IE))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_ENIE,url)
+    }
+
+    @Test
+    void testBanner8EnglishAULocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(EN,AU))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_ENAU,url)
+    }
+
+    @Test
+    void testBanner8SpanishLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(ES))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_ES,url)
+    }
+
+    @Test
+    void testBanner8FrenchLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(FR))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_FR,url)
+    }
+
+    @Test
+    void testBanner8FrenchCanadaLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(FR,CA))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_FRCA,url)
+    }
+
+    @Test
+    void testBanner8PortugueseLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(PT))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_PT,url)
+    }
+
+    @Test
+    void testBanner8ArabicLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(AR))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_AR,url)
+    }
+
+    @Test
+    void testBanner8SaudiArabicLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(AR,SA))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_AR,url)
+    }
+
+    @Test
+    void testBanner8FrenchSwitzerlandLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(FR,CH))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_FR,url)
+    }
+
+    @Test
+    void testBanner8RomaniaLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(RO,MD))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_DEFAULT,url)
+    }
+
+    @Test
+    void testBanner8ChineseLocaleURL(){
+        setUpBanner8LocaleSpecificURL()
+        LocaleContextHolder.setLocale(new Locale(ZH))
+        String url=selfServiceMenuService.getBanner8SsUrlFromConfig()
+        assertEquals(BANNER8_URL_DEFAULT,url)
+    }
+
+    private setMepCode(mepCode){
+        RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep",mepCode)
+    }
+    private removeMepCode(){
+        RequestContextHolder.currentRequestAttributes()?.request?.session?.removeAttribute("mep")
     }
 
 }
