@@ -138,7 +138,7 @@ class ConfigPropertiesService extends ServiceBase {
         }
     }
 
-    public setTransactionTimeOUt() {
+    public setTransactionTimeOut() {
         grailsApplication?.config?.transactionTimeout = (grailsApplication.config.banner?.transactionTimeout instanceof Integer
                 ? grailsApplication.config.banner?.transactionTimeout
                 : 30)

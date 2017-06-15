@@ -207,7 +207,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
     @Test
     public void testTransactionTimeOutDefault() {
-        configPropertiesService.setTransactionTimeOUt()
+        configPropertiesService.setTransactionTimeOut()
         def result = CH.config.get("transactionTimeout")
         assertEquals result, 30
     }
@@ -216,7 +216,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     public void testTransactionTimeOut() {
         def oldTransactionTimeout = grailsApplication.config.banner?.transactionTimeout
         grailsApplication.config.banner?.transactionTimeout = 150
-        configPropertiesService.setTransactionTimeOUt()
+        configPropertiesService.setTransactionTimeOut()
         def result = CH.config.get("transactionTimeout")
         assertEquals result, 150
         grailsApplication.config.banner?.transactionTimeout = oldTransactionTimeout

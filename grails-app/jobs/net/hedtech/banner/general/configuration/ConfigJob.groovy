@@ -29,7 +29,7 @@ class ConfigJob {
         if (actualCount != 0) {
             try {
                 configPropertiesService.setConfigFromDb()
-                configPropertiesService.setTransactionTimeOUt()
+                configPropertiesService.setTransactionTimeOut()
                 configPropertiesService.setLoginEndPointUrl()
                 configPropertiesService.setLogOutEndPointUrl()
                 configPropertiesService.setGuestLoginEnabled()
