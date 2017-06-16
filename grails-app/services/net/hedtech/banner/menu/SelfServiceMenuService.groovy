@@ -369,32 +369,38 @@ class SelfServiceMenuService {
         return allRoleCriteria;
     }
 
+
     // gets urls for BANNER 8
     private String getBanner8SsUrlFromConfig() {
         String url
         def mep = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
-        url=getLocaleSpecificBanner8Url(mep)
-        if(url==null){
-           url= getWithoutLocaleSpecificBanner8Url(mep)
+        url = getLocaleSpecificBanner8Url(mep)
+        if(url == null){
+           url = getWithoutLocaleSpecificBanner8Url(mep)
         }
         return url
     }
 
+
     /*Get banner8 url which is irrespective of locale
-    Ex. banner8.SS.url ='http://m039064.ellucian.com:8002'*/
-    private String getWithoutLocaleSpecificBanner8Url(mep){
+    Ex. banner8.SS.url ='http://<host_name>:<port_number>/<banner8>'*/
+
+
+    private String getWithoutLocaleSpecificBanner8Url(mep) {
        String url
        if( mep && Holders.config?.mep?.banner8?.SS?.url) {
            url = Holders.config?.mep?.banner8?.SS?.url[mep]
-       }else{
+       }else {
            url = Holders?.config?.banner8?.SS?.url
        }
        return url
     }
 
+
    /* get Locale Specific Banner 8 URL with fall back Mechanism
     Ex. if entry for fr_CA does not exist then entry for fr will be picked.if that also does not exist it will pick Default entry
-    Ex. banner8.SS.locale.url =[default : 'http://m039064.ellucian.com:8002/DEFAULT/',fr_CA : 'http://m039064.ellucian.com:8002/EN/']*/
+    Ex. banner8.SS.locale.url =[default : 'http://<host_name>:<port_number>/<banner8>/default', fr_CA : 'http://<host_name>:<port_number>/<banner8>/fr_CA']*/
+
 
     private String getLocaleSpecificBanner8Url(mep) {
         String language
@@ -403,12 +409,12 @@ class SelfServiceMenuService {
         def banner8SSLocaleUrls
         if (mep && Holders.config?.mep?.banner8?.SS?.locale?.url) {
             banner8SSLocaleUrls = Holders.config?.mep?.banner8?.SS?.locale?.url[mep]
-        }else{
+        }else {
             banner8SSLocaleUrls = Holders?.config?.banner8?.SS?.locale?.url
         }
-        Locale locale=LocaleContextHolder.getLocale()
+        Locale locale = LocaleContextHolder.getLocale()
         localeString = locale.toString()
-        language= locale.getLanguage()
+        language = locale.getLanguage()
         url=banner8SSLocaleUrls.get(localeString)?: (banner8SSLocaleUrls.get(language)?:banner8SSLocaleUrls.get("default"))
         return url
     }
