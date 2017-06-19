@@ -25,6 +25,13 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private def appId
     private static final String CONFIG_NAME = 'TEST_CONFIG'
     private static final String CONFIG_VALUE = 'TEST_VALUE'
+    private static final String CONFIG_TYPE_STRING = 'string'
+    private static final String CONFIG_TYPE_INTEGER = 'integer'
+    private static final String CONFIG_NAME_TRANSACTION_TIMEOUT = 'banner.transactionTimeout'
+    private static final String CONFIG_NAME_LOGIN_ENDPOINT_URL = 'loginEndpoint'
+    private static final String CONFIG_NAME_LOGOUT_ENDPOINT_URL = 'logoutEndpoint'
+    private static final String CONFIG_NAME_AUTH_PROVIDER = 'authenticationProvider'
+    private static final String CONFIG_NAME_LOCAL_LOGOUT = 'localLogout'
     private static final String GLOBAL = 'GLOBAL'
     private static final String TESTAPP = 'TESTAPP'
     private static String ACTUALAPPNAME = ''
@@ -209,82 +216,107 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     public void testTransactionTimeOutDefault() {
         configPropertiesService.setTransactionTimeOut()
         def result = CH.config.get("transactionTimeout")
-        assertEquals result, 30
+        assertEquals 30, result
     }
+
 
     @Test
     public void testTransactionTimeOut() {
-        def oldTransactionTimeout = grailsApplication.config.banner?.transactionTimeout
-        grailsApplication.config.banner?.transactionTimeout = 150
+        def oldTransactionTimeout = CH.config.banner?.transactionTimeout
+        int transactionTimeout = 150
+        def configApplication = createNewConfigApplication()
+        setConfigProperties(configApplication, CONFIG_NAME_TRANSACTION_TIMEOUT, transactionTimeout.toString(), CONFIG_TYPE_INTEGER)
+        configPropertiesService.setConfigFromDb()
         configPropertiesService.setTransactionTimeOut()
-        def result = CH.config.get("transactionTimeout")
-        assertEquals result, 150
-        grailsApplication.config.banner?.transactionTimeout = oldTransactionTimeout
+        def result = CH.config.banner?.transactionTimeout
+        assertEquals transactionTimeout, result
+        CH.config.banner?.transactionTimeout = oldTransactionTimeout
     }
+
 
     @Test
     public void testLoginEndPointUrlDefault() {
-        def oldLoginEndpoint = grailsApplication.config?.loginEndpoint
-        grailsApplication.config?.loginEndpoint = ''
+        def oldLoginEndpoint = CH.config?.loginEndpoint
+        String loginEndpoint = ''
+        def configApplication = createNewConfigApplication()
+        setConfigProperties(configApplication, CONFIG_NAME_LOGIN_ENDPOINT_URL, loginEndpoint, CONFIG_TYPE_STRING)
+        configPropertiesService.setConfigFromDb()
         configPropertiesService.setLoginEndPointUrl()
-        def result = CH.config.get("loginEndpoint")
-        assertEquals result, ""
-        grailsApplication.config?.loginEndpoint = oldLoginEndpoint
+        def result = CH.config?.loginEndpoint
+        assertEquals loginEndpoint, result
+        CH.config?.loginEndpoint = oldLoginEndpoint
     }
+
 
     @Test
     public void testLoginEndPointUrl() {
-        def oldLoginEndpoint = grailsApplication.config?.loginEndpoint
-        grailsApplication.config?.loginEndpoint = 'test/testURL'
+        def oldLoginEndpoint = CH.config?.loginEndpoint
+        String loginEndpoint = 'test/testURL'
+        def configApplication = createNewConfigApplication()
+        setConfigProperties(configApplication, CONFIG_NAME_LOGIN_ENDPOINT_URL, loginEndpoint, CONFIG_TYPE_STRING)
+        configPropertiesService.setConfigFromDb()
         configPropertiesService.setLoginEndPointUrl()
-        def result = CH.config.get("loginEndpoint")
-        assertEquals result, "test/testURL"
-        grailsApplication.config?.loginEndpoint = oldLoginEndpoint
+        def result = CH.config?.loginEndpoint
+        assertEquals loginEndpoint, result
+        CH.config?.loginEndpoint = oldLoginEndpoint
     }
+
 
     @Test
     public void testLogOutEndPointUrl() {
-        def logoutEndpoint = grailsApplication?.config?.logoutEndpoint
-        grailsApplication?.config?.logoutEndpoint = ''
+        def oldLogoutEndpoint = CH?.config?.logoutEndpoint
+        String logoutEndpoint = ''
+        def configApplication = createNewConfigApplication()
+        setConfigProperties(configApplication, CONFIG_NAME_LOGOUT_ENDPOINT_URL, logoutEndpoint, CONFIG_TYPE_STRING)
+        configPropertiesService.setConfigFromDb()
         configPropertiesService.setLogOutEndPointUrl()
-        def result = CH.config.get("logoutEndpoint")
-        assertEquals result, ""
-        grailsApplication?.config?.logoutEndpoint = logoutEndpoint
+        def result = CH.config?.logoutEndpoint
+        assertEquals logoutEndpoint, result
+        CH?.config?.logoutEndpoint = oldLogoutEndpoint
     }
+
 
     @Test
     public void testLogOutEndPointUrlLocal() {
-        def authProvider = Holders?.config.banner.sso.authenticationProvider
-        def localLogout = Holders?.config.banner?.sso?.authentication.saml.localLogout
-        Holders?.config.banner.sso.authenticationProvider = 'saml'
-        Holders?.config.banner?.sso?.authentication.saml.localLogout = 'true'
+        def oldAuthProvider = CH?.config.banner.sso.authenticationProvider
+        def oldLocalLogout = CH?.config.banner?.sso?.authentication.saml.localLogout
+        CH?.config.banner.sso.authenticationProvider = 'saml'
+        CH?.config.banner?.sso?.authentication.saml.localLogout = 'true'
+        def configApplication = createNewConfigApplication()
+        setConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH?.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
+        setConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH?.config.banner?.sso?.authentication.saml.localLogout, CONFIG_TYPE_STRING)
+        configPropertiesService.setConfigFromDb()
         configPropertiesService.setLogOutEndPointUrl()
-        def result = CH.config.get("logoutEndpoint")
-        assertEquals result, "saml/logout?local=true"
-        Holders?.config.banner.sso.authenticationProvider = authProvider
-        Holders?.config.banner?.sso?.authentication.saml.localLogout = localLogout
+        def result = CH.config?.logoutEndpoint
+        assertEquals "saml/logout?local=true", result
+        CH?.config?.banner?.sso.authenticationProvider = oldAuthProvider
+        CH?.config?.banner?.sso?.authentication.saml.localLogout = oldLocalLogout
     }
+
 
     @Test
     public void testLogOutEndPointUrlNotLocal() {
-        def authProvider = Holders?.config.banner.sso.authenticationProvider
-        def localLogout = Holders?.config.banner?.sso?.authentication.saml.localLogout
-        Holders?.config.banner.sso.authenticationProvider = 'saml'
-        Holders?.config.banner?.sso?.authentication.saml.localLogout = 'false'
+        def oldAuthProvider = CH?.config.banner.sso.authenticationProvider
+        def oldLocalLogout = CH?.config.banner?.sso?.authentication.saml.localLogout
+        CH?.config.banner.sso.authenticationProvider = 'saml'
+        CH?.config.banner?.sso?.authentication.saml.localLogout = 'false'
+        def configApplication = createNewConfigApplication()
+        setConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH?.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
+        setConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH?.config.banner?.sso?.authentication.saml.localLogout, CONFIG_TYPE_STRING)
+        configPropertiesService.setConfigFromDb()
         configPropertiesService.setLogOutEndPointUrl()
-        def result = CH.config.get("logoutEndpoint")
-        assertEquals result, "saml/logout"
-        Holders?.config.banner.sso.authenticationProvider = authProvider
-        Holders?.config.banner?.sso?.authentication.saml.localLogout = localLogout
+        def result = CH?.config.logoutEndpoint
+        assertEquals "saml/logout", result
+        CH?.config.banner.sso.authenticationProvider = oldAuthProvider
+        CH?.config.banner?.sso?.authentication.saml.localLogout = oldLocalLogout
     }
 
 
-        private void createNewGlobalConfigProps() {
+    private void createNewGlobalConfigProps() {
         ConfigApplication configApplication = ConfigApplication.fetchByAppName(GLOBAL)
         assertNotNull configApplication?.id
         configApplication.refresh()
         def configProps = []
-
         ConfigProperties configProperties = getConfigProperties()
         configProperties.configName = "testing"
         configProperties.configType = 'string'
@@ -292,8 +324,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         configProperties.setConfigApplication(configApplication)
         configProps.add(configProperties)
         configPropertiesService.create(configProps)
-
     }
+
 
     private createNewAppSpecificConfigProps() {
         ConfigApplication configApplication = getConfigApplication()
@@ -323,6 +355,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         return configProperties
     }
 
+
     private ConfigProperties getAppSpecificConfigProperties() {
         ConfigProperties configProperties = new ConfigProperties(
                 configName: "testing",
@@ -332,6 +365,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         )
         return configProperties
     }
+
 
     /**
      * Mocking ConfigApplication domain.
@@ -346,6 +380,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         return configApplication
     }
 
+
     private setSurrogateIdForGlobal(id) {
         Sql sql
         try {
@@ -355,6 +390,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
             sql?.close() // note that the test will close the connection, since it's our current session's connection
         }
     }
+
 
     private def mergeSeedDataKeysIntoConfigForTest() {
         ConfigSlurper configSlurper = new ConfigSlurper()
@@ -366,12 +402,36 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         CH.config.merge(configSlurper.parse(property))
     }
 
+
     private def getSeedDataKeysForTest() {
         return [
                 ['banner.applicationName': 'Sandbox'],
                 ['ssconfig.seedData.test.key1', 'ssconfig.seedData.test.key2'],
                 ['banner.applicationName1': 'SandboxTest']
         ]
+    }
+
+
+    private ConfigApplication createNewConfigApplication() {
+        setSurrogateIdForGlobal(999)
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplicationService.create(configApplication)
+        configApplication.refresh()
+        return configApplication
+    }
+
+
+    private void setConfigProperties(ConfigApplication configApplication, String configName, configValue, String configType) {
+        def configProps = []
+        ConfigProperties configProperties = new ConfigProperties(
+                configName: configName,
+                configType: configType,
+                configApplication: configApplication,
+                lastModified: new Date()
+        )
+        configProperties.setConfigValue(configValue)
+        configProps.add(configProperties)
+        configPropertiesService.create(configProps)
     }
 
 }
