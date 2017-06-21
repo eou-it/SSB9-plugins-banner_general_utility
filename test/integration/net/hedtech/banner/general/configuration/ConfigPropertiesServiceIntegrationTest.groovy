@@ -225,7 +225,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         def oldTransactionTimeout = CH.config.banner?.transactionTimeout
         int transactionTimeout = 150
         def configApplication = createNewConfigApplication()
-        setConfigProperties(configApplication, CONFIG_NAME_TRANSACTION_TIMEOUT, transactionTimeout.toString(), CONFIG_TYPE_INTEGER)
+        createConfigProperties(configApplication, CONFIG_NAME_TRANSACTION_TIMEOUT, transactionTimeout.toString(), CONFIG_TYPE_INTEGER)
         configPropertiesService.setConfigFromDb()
         configPropertiesService.setTransactionTimeOut()
         def result = CH.config.banner?.transactionTimeout
@@ -239,7 +239,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         def oldLoginEndpoint = CH.config?.loginEndpoint
         String loginEndpoint = ''
         def configApplication = createNewConfigApplication()
-        setConfigProperties(configApplication, CONFIG_NAME_LOGIN_ENDPOINT_URL, loginEndpoint, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_LOGIN_ENDPOINT_URL, loginEndpoint, CONFIG_TYPE_STRING)
         configPropertiesService.setConfigFromDb()
         configPropertiesService.setLoginEndPointUrl()
         def result = CH.config?.loginEndpoint
@@ -253,7 +253,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         def oldLoginEndpoint = CH.config?.loginEndpoint
         String loginEndpoint = 'test/testURL'
         def configApplication = createNewConfigApplication()
-        setConfigProperties(configApplication, CONFIG_NAME_LOGIN_ENDPOINT_URL, loginEndpoint, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_LOGIN_ENDPOINT_URL, loginEndpoint, CONFIG_TYPE_STRING)
         configPropertiesService.setConfigFromDb()
         configPropertiesService.setLoginEndPointUrl()
         def result = CH.config?.loginEndpoint
@@ -264,51 +264,51 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
     @Test
     public void testLogOutEndPointUrl() {
-        def oldLogoutEndpoint = CH?.config?.logoutEndpoint
+        def oldLogoutEndpoint = CH.config?.logoutEndpoint
         String logoutEndpoint = ''
         def configApplication = createNewConfigApplication()
-        setConfigProperties(configApplication, CONFIG_NAME_LOGOUT_ENDPOINT_URL, logoutEndpoint, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_LOGOUT_ENDPOINT_URL, logoutEndpoint, CONFIG_TYPE_STRING)
         configPropertiesService.setConfigFromDb()
         configPropertiesService.setLogOutEndPointUrl()
         def result = CH.config?.logoutEndpoint
         assertEquals logoutEndpoint, result
-        CH?.config?.logoutEndpoint = oldLogoutEndpoint
+        CH.config?.logoutEndpoint = oldLogoutEndpoint
     }
 
 
     @Test
     public void testLogOutEndPointUrlLocal() {
-        def oldAuthProvider = CH?.config.banner.sso.authenticationProvider
-        def oldLocalLogout = CH?.config.banner?.sso?.authentication.saml.localLogout
-        CH?.config.banner.sso.authenticationProvider = 'saml'
-        CH?.config.banner?.sso?.authentication.saml.localLogout = 'true'
+        def oldAuthProvider = CH.config.banner.sso.authenticationProvider
+        def oldLocalLogout = CH.config.banner?.sso?.authentication.saml.localLogout
+        CH.config.banner.sso.authenticationProvider = 'saml'
+        CH.config.banner?.sso?.authentication.saml.localLogout = 'true'
         def configApplication = createNewConfigApplication()
-        setConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH?.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
-        setConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH?.config.banner?.sso?.authentication.saml.localLogout, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH.config.banner?.sso?.authentication.saml.localLogout, CONFIG_TYPE_STRING)
         configPropertiesService.setConfigFromDb()
         configPropertiesService.setLogOutEndPointUrl()
         def result = CH.config?.logoutEndpoint
         assertEquals "saml/logout?local=true", result
-        CH?.config?.banner?.sso.authenticationProvider = oldAuthProvider
-        CH?.config?.banner?.sso?.authentication.saml.localLogout = oldLocalLogout
+        CH.config?.banner?.sso.authenticationProvider = oldAuthProvider
+        CH.config?.banner?.sso?.authentication.saml.localLogout = oldLocalLogout
     }
 
 
     @Test
     public void testLogOutEndPointUrlNotLocal() {
-        def oldAuthProvider = CH?.config.banner.sso.authenticationProvider
-        def oldLocalLogout = CH?.config.banner?.sso?.authentication.saml.localLogout
-        CH?.config.banner.sso.authenticationProvider = 'saml'
-        CH?.config.banner?.sso?.authentication.saml.localLogout = 'false'
+        def oldAuthProvider = CH.config.banner.sso.authenticationProvider
+        def oldLocalLogout = CH.config.banner?.sso?.authentication.saml.localLogout
+        CH.config.banner.sso.authenticationProvider = 'saml'
+        CH.config.banner?.sso?.authentication.saml.localLogout = 'false'
         def configApplication = createNewConfigApplication()
-        setConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH?.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
-        setConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH?.config.banner?.sso?.authentication.saml.localLogout, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH.config.banner?.sso?.authentication.saml.localLogout, CONFIG_TYPE_STRING)
         configPropertiesService.setConfigFromDb()
         configPropertiesService.setLogOutEndPointUrl()
-        def result = CH?.config.logoutEndpoint
+        def result = CH.config.logoutEndpoint
         assertEquals "saml/logout", result
-        CH?.config.banner.sso.authenticationProvider = oldAuthProvider
-        CH?.config.banner?.sso?.authentication.saml.localLogout = oldLocalLogout
+        CH.config.banner.sso.authenticationProvider = oldAuthProvider
+        CH.config.banner?.sso?.authentication.saml.localLogout = oldLocalLogout
     }
 
 
@@ -413,7 +413,6 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
 
     private ConfigApplication createNewConfigApplication() {
-        setSurrogateIdForGlobal(999)
         ConfigApplication configApplication = getConfigApplication()
         configApplication = configApplicationService.create(configApplication)
         configApplication.refresh()
@@ -421,7 +420,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     }
 
 
-    private void setConfigProperties(ConfigApplication configApplication, String configName, configValue, String configType) {
+    private void createConfigProperties(ConfigApplication configApplication, String configName, configValue, String configType) {
         def configProps = []
         ConfigProperties configProperties = new ConfigProperties(
                 configName: configName,
