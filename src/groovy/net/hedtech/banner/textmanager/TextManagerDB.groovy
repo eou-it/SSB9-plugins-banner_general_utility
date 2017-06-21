@@ -49,7 +49,7 @@ class TextManagerDB {
     }
 
     public void closeConnection() throws SQLException {
-        if ( !sql) {
+        if ( sql) {
             sql.commit();
             sql.close();
         }

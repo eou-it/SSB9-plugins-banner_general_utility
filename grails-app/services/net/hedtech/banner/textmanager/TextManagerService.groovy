@@ -227,49 +227,40 @@ class TextManagerService {
             sql.cacheStatements = false
             //Query fetching changed messages. Don't use message with status pending (11).
             def statement = """
-                    |WITH locales AS
-                    |(
-                    |  SELECT * FROM (
-                    |     SELECT ( 1 + DECODE(gtvlang_code,:locale,0,1) -INSTR(:locale,gtvlang_code)) AS distance
-                    |     ,gtvlang_code AS lang_code
-                    |     FROM gtvlang
-                    |     WHERE gtvlang_code LIKE SUBSTR(:locale,1,2)||'%'
-                    |  )
-                    |  WHERE distance <=:max_distance
-                    |),
-                    |props_with_changes AS
-                    |(
-                    |  SELECT DISTINCT
-                    |  gmrsprp_project,gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
-                    |  gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop, locales.lang_code
-                    |  FROM gmrsprp, locales /*Carthesian Join with locales*/
-                    |  WHERE gmrsprp_project = :pc
-                    |    AND gmrsprp_activity_date >= (SYSDATE - :days_ago)
-                    |    AND gmrsprp_lang_code LIKE  SUBSTR(:locale,1,2)||'%'
-                    |)
-                    |SELECT
-                    |/*locales.code, locales.distance, gmrsprp_module_name AS source_name,*/
-                    |SUBSTR(gmrsprp_parent_name,2)||gmrsprp_object_name AS key
-                    |,DECODE(gmrsprp_stat_code,11,'',gmrsprp_pre_str||gmbstrg_string||gmrsprp_pst_str) AS string
-                    |FROM locales, gmrsprp p1, gmbstrg
-                    |WHERE gmrsprp_project = :pc
-                    |AND gmrsprp_module_type = 'J'
-                    |AND (gmrsprp_project, gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
-                    |     gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop, gmrsprp_lang_code)
-                    | IN (SELECT * FROM props_with_changes)
-                    |--
-                    |AND gmrsprp_lang_code = locales.lang_code
-                    |AND gmbstrg_strcode=gmrsprp_strcode
-                    |AND locales.distance = (
-                    |   SELECT
-                    |   MIN( locales.distance )
-                    |   FROM locales, gmrsprp
-                    |   WHERE gmrsprp_lang_code=locales.lang_code
-                    |     AND (gmrsprp_project, gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
-                    |          gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop, gmrsprp_lang_code)
-                    |      IN (SELECT * FROM props_with_changes)
-                    |)
-                    |""".stripMargin()
+                 |WITH locales AS
+                 |(
+                 |  SELECT ( 1 + DECODE(gtvlang_code,:locale,0,1) -INSTR(:locale,gtvlang_code) ) AS distance
+                 |  ,gtvlang_code AS lang_code
+                 |  FROM gtvlang
+                 |  WHERE gtvlang_code IN  (SUBSTR(:locale,1,2), :locale)
+                 |),
+                 |props_with_changes AS
+                 |(
+                 |  SELECT DISTINCT
+                 |  gmrsprp_project,gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
+                 |  gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop
+                 |  FROM gmrsprp
+                 |  WHERE gmrsprp_project = :pc
+                 |    AND gmrsprp_activity_date >= (SYSDATE - :days_ago)
+                 |    AND gmrsprp_lang_code IN (SELECT lang_code FROM locales) -- Only select relevant records
+                 |)
+                 |SELECT
+                 |:locale request_locale
+                 |,MIN(locales.distance) distance
+                 |,gmrsprp_project, gmrsprp_module_name
+                 |,SUBSTR(MIN( TO_CHAR(locales.distance)||locales.lang_code),2) AS lang_code
+                 |,SUBSTR(gmrsprp_parent_name,2)||gmrsprp_object_name AS key
+                 |,SUBSTR(MIN( TO_CHAR(locales.distance)||DECODE(gmrsprp_stat_code,11,'',gmrsprp_pre_str||gmbstrg_string||gmrsprp_pst_str)),2) AS string
+                 |FROM locales, gmrsprp p1, gmbstrg
+                 |WHERE locales.lang_code = gmrsprp_lang_code
+                 |  AND gmbstrg_strcode=gmrsprp_strcode
+                 |  AND (gmrsprp_project, gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
+                 |       gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop)
+                 |       IN (SELECT * FROM props_with_changes)
+                 |GROUP BY
+                 |gmrsprp_project, gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
+                 |gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop
+                 |""".stripMargin()
 
             //and parent_type = 10 and parent_name = :pn and object_type = 26 and object_name = :on and object_prop = 438
             def rows
@@ -283,7 +274,7 @@ class TextManagerService {
                 sql?.close()
             }
             def t1 = new Date()
-            if (rows.size()) {
+            if (rows?.size()) {
                 rows.each { row ->
                     def translations = cacheMsg[row.key] ?: [:]
                     translations[locale] = row.string
