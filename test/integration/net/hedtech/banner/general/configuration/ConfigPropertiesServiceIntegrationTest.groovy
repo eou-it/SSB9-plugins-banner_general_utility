@@ -216,7 +216,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     public void testTransactionTimeOutDefault() {
         configPropertiesService.setTransactionTimeOut()
         def result = CH.config.get("transactionTimeout")
-        assertEquals 30, result
+        assertTrue(result == CH.config.banner?.transactionTimeout || result == 30)
     }
 
 
@@ -425,10 +425,10 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         ConfigProperties configProperties = new ConfigProperties(
                 configName: configName,
                 configType: configType,
+                configValue: configValue,
                 configApplication: configApplication,
                 lastModified: new Date()
         )
-        configProperties.setConfigValue(configValue)
         configProps.add(configProperties)
         configPropertiesService.create(configProps)
     }
