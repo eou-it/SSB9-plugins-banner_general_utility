@@ -30,6 +30,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private static final String CONFIG_NAME_TRANSACTION_TIMEOUT = 'banner.transactionTimeout'
     private static final String CONFIG_NAME_LOGIN_ENDPOINT_URL = 'loginEndpoint'
     private static final String CONFIG_NAME_LOGOUT_ENDPOINT_URL = 'logoutEndpoint'
+    private static final String CONFIG_NAME_DEFAULT_WEBSESSION_TIMEOUT = 'defaultWebSessionTimeout'
     private static final String CONFIG_NAME_AUTH_PROVIDER = 'authenticationProvider'
     private static final String CONFIG_NAME_LOCAL_LOGOUT = 'localLogout'
     private static final String GLOBAL = 'GLOBAL'
@@ -309,6 +310,20 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         assertEquals "saml/logout", result
         CH.config.banner.sso.authenticationProvider = oldAuthProvider
         CH.config.banner?.sso?.authentication.saml.localLogout = oldLocalLogout
+    }
+
+
+    @Test
+    public void testUpdateDefaultWebSessionTimeout() {
+        def oldDefaultWebSessionTimeout = CH.config.defaultWebSessionTimeout
+        ConfigApplication configApplication = createNewConfigApplication()
+        Integer newDefaultWebSessionTimeout = 2000
+        createConfigProperties(configApplication, CONFIG_NAME_DEFAULT_WEBSESSION_TIMEOUT, newDefaultWebSessionTimeout, CONFIG_TYPE_INTEGER)
+        configPropertiesService.setConfigFromDb()
+        configPropertiesService.updateDefaultWebSessionTimeout()
+        def result = CH.config.defaultWebSessionTimeout
+        assertEquals newDefaultWebSessionTimeout, result
+        CH.config.defaultWebSessionTimeout = oldDefaultWebSessionTimeout
     }
 
 

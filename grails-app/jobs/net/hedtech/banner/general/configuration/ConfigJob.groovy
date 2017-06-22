@@ -10,7 +10,6 @@ import org.springframework.dao.InvalidDataAccessResourceUsageException
 class ConfigJob {
 
     def configPropertiesService
-    def generalPageRoleMappingService
     def springSecurityService
 
     private static final LOGGER = Logger.getLogger(ConfigJob.class.name)
@@ -30,6 +29,7 @@ class ConfigJob {
             try {
                 configPropertiesService.setConfigFromDb()
                 configPropertiesService.setTransactionTimeOut()
+                configPropertiesService.updateDefaultWebSessionTimeout()
                 configPropertiesService.setLoginEndPointUrl()
                 configPropertiesService.setLogOutEndPointUrl()
                 configPropertiesService.setGuestLoginEnabled()

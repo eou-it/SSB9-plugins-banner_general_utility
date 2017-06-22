@@ -6,6 +6,7 @@ package net.hedtech.banner.general.configuration
 
 import grails.util.Holders as CH
 import net.hedtech.banner.controllers.ControllerUtils
+import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
 import org.springframework.dao.InvalidDataAccessResourceUsageException
@@ -15,6 +16,7 @@ import org.springframework.dao.InvalidDataAccessResourceUsageException
  * and will merge those props to Context Holder by the help of bootstrap.
  */
 class ConfigPropertiesService extends ServiceBase {
+
     static transactional = true
 
     private static final LOGGER = Logger.getLogger(ConfigPropertiesService.class.name)
@@ -42,7 +44,7 @@ class ConfigPropertiesService extends ServiceBase {
             }
         }
         catch (InvalidDataAccessResourceUsageException ex) {
-            log.error("Exception occured  while fetching ConfigProperties from DB, Self Service Config Table doesn't exist")
+            LOGGER.error("Exception occured  while fetching ConfigProperties from DB, Self Service Config Table doesn't exist")
         }
 
     }
@@ -93,7 +95,7 @@ class ConfigPropertiesService extends ServiceBase {
                     }
 
                     def seedDataKey = CH.config.ssconfig.app.seeddata.keys
-                    LOGGER.debug("seeddata defined in config is :" + seedDataKey)
+                    LOGGER.debug("Seeddata defined in config is :" + seedDataKey)
                     def dataToSeed = []
 
                     seedDataKey.each { obj ->
@@ -138,6 +140,7 @@ class ConfigPropertiesService extends ServiceBase {
         }
     }
 
+
     public setTransactionTimeOut() {
         grailsApplication?.config?.transactionTimeout = (grailsApplication.config.banner?.transactionTimeout instanceof Integer
                 ? grailsApplication.config.banner?.transactionTimeout
@@ -169,6 +172,13 @@ class ConfigPropertiesService extends ServiceBase {
             grailsApplication?.config?.guestLoginEnabled = true
         } else {
             grailsApplication?.config?.guestLoginEnabled = false
+        }
+    }
+
+
+    public void updateDefaultWebSessionTimeout(){
+        if(AuthenticationProviderUtility.defaultWebSessionTimeout != CH.config.defaultWebSessionTimeout) {
+            AuthenticationProviderUtility.defaultWebSessionTimeout = CH.config.defaultWebSessionTimeout
         }
     }
 }
