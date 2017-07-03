@@ -27,7 +27,6 @@ class TextManagerDBIntegrationTests extends BaseIntegrationTestCase {
     @After
     public void cleanUp(){
         textManagerService.deleteProjectforApp()
-        textManagerDB.closeConnection()
     }
 
     public void initializeProject(){
