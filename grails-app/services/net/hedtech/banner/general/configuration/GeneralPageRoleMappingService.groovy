@@ -9,6 +9,7 @@ import grails.plugin.springsecurity.ReflectionUtils
 import grails.plugin.springsecurity.web.access.intercept.RequestmapFilterInvocationDefinition
 import grails.transaction.Transactional
 import grails.util.Holders
+import org.apache.commons.lang3.text.WordUtils
 import org.apache.log4j.Logger
 import org.hibernate.classic.Session
 import org.springframework.http.HttpMethod
@@ -261,7 +262,16 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     ca.setId(application.getId())
 
                     ccep.setConfigApplication(ca)
-                    ccep.setPageId(getStringForPageId(url))
+
+                    // Preparing the pageId
+                    String appIdCamelCase = WordUtils.capitalizeFully(application.getAppId())
+                    String pageId = ''
+                    if (url == '/' || url == '/**') {
+                        pageId = appIdCamelCase + ' ' + url
+                    } else {
+                        pageId = getStringForPageId(url, application.getAppId())
+                    }
+                    ccep.setPageId(pageId)
                     ccep.save(failOnError: true, flush: true)
 
                     // Save GURAPPR - multile roles
@@ -285,34 +295,48 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
     }
 
     /**
+     * Method is used to identify the duplicate pageId and appId
+     *
+     * @param pageId page id of String type.
+     * @param appId application id of String typel.
+     * @return return value is true or false type if boolean.
+     */
+    public boolean isDuplicatePageId(String pageId, String appId) {
+        def ccep = ConfigControllerEndpointPage.findByPageIdAndConfigApplication(pageId, ConfigApplication.fetchByAppId(appId))
+        return (ccep != null)
+    }
+
+    /**
      * The method is to prepare the pageId (PK) for GURCTLEP table, method will accept the
      * GURCTLEP_PAGE_URL and will return the end point with last two '/' char.
-     * Eg. url = '/ssb/themeEditor/**' then the prepared pageId = '/themeEditor/**'
-     * from the 2nd last '/' char.
+     * Eg. url = '/ssb/themeEditor/**' then the prepared pageId = 'Psa Themeeditor'
+     * from the 2nd last '/' char if the same url exists for the same application then we will append the previous
+     * page name Eg. 'Psa Ssb Themeeditor'.
      * @param url GURCTLEP_PAGE_URL value from GURCTLEP table.
      * @return pageId prepared pageId from the pageUrl.
      */
-    private String getStringForPageId(String url) {
-        String preparedPageId = ''
-        def urlCharArray = url ? url.toCharArray() : ''
-        int charCount = 0
-        int index = 0
-        if (urlCharArray && urlCharArray.length > 0) {
-            for (int i = urlCharArray.length - 1; i >= 0; i--) {
-                if (urlCharArray[i] == '/') {
-                    charCount++
-                }
-                if (charCount == 2) {
-                    index = i
-                    break
-                }
-            }
-            if (charCount > 0) {
-                preparedPageId = url.substring(index, urlCharArray.length)
-            }
+    private String getStringForPageId(String url, String appId) {
+        List<String> list = new ArrayList<String>(Arrays.asList(url.split("/")));
+        list.removeAll(Arrays.asList(null, ""));
+
+        int lastIndex = (list.size() - 1);
+        String preparedPageId = "";
+        String preparedAppId = WordUtils.capitalizeFully(appId)
+
+        if (list.size() > 1) {
+            preparedPageId = preparedAppId + " " + WordUtils.capitalizeFully(list.get(lastIndex - 1));
+        } else if (list.size() == 1) {
+            preparedPageId = preparedAppId + " " + WordUtils.capitalizeFully(list.get(lastIndex));
         }
 
-        return preparedPageId
+        if (isDuplicatePageId(preparedPageId, appId)) {
+            if (list.size() >= 3) {
+                String previousPageName = WordUtils.capitalizeFully(list.get(lastIndex - 2)?.toUpperCase())
+                String pageName = WordUtils.capitalizeFully(list.get(lastIndex - 1))
+                preparedPageId = preparedAppId + " " + previousPageName + " " + pageName;
+            }
+        }
+        return preparedPageId;
     }
 
 }
