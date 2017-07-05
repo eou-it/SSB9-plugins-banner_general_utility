@@ -324,19 +324,20 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         String preparedAppId = WordUtils.capitalizeFully(appId)
 
         if (list.size() > 1) {
-            preparedPageId = preparedAppId + " " + WordUtils.capitalizeFully(list.get(lastIndex - 1));
+            String pageName = WordUtils.capitalizeFully(list.get(lastIndex - 1)) + " " + WordUtils.capitalizeFully(list.get(lastIndex))
+            preparedPageId = (preparedAppId + " " + pageName)
         } else if (list.size() == 1) {
-            preparedPageId = preparedAppId + " " + WordUtils.capitalizeFully(list.get(lastIndex));
+            preparedPageId = preparedAppId + " " + WordUtils.capitalizeFully(list.get(lastIndex))
         }
 
         if (isDuplicatePageId(preparedPageId, appId)) {
             if (list.size() >= 3) {
                 String previousPageName = WordUtils.capitalizeFully(list.get(lastIndex - 2)?.toUpperCase())
-                String pageName = WordUtils.capitalizeFully(list.get(lastIndex - 1))
-                preparedPageId = preparedAppId + " " + previousPageName + " " + pageName;
+                String pageName = WordUtils.capitalizeFully(list.get(lastIndex - 1)) + " " + WordUtils.capitalizeFully(list.get(lastIndex))
+                preparedPageId = preparedAppId + " " + previousPageName + " " + pageName
             }
         }
-        return preparedPageId;
+        return preparedPageId
     }
 
 }
