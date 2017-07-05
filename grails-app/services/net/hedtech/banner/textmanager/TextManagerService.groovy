@@ -241,7 +241,6 @@ class TextManagerService {
                  |  gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop
                  |  FROM gmrsprp
                  |  WHERE gmrsprp_project = :pc
-                 |  AND GMRSPRP_STAT_CODE=2
                  |    AND gmrsprp_activity_date >= (SYSDATE - :days_ago)
                  |    AND gmrsprp_lang_code IN (SELECT lang_code FROM locales) -- Only select relevant records
                  |)
@@ -255,7 +254,6 @@ class TextManagerService {
                  |FROM locales, gmrsprp p1, gmbstrg
                  |WHERE locales.lang_code = gmrsprp_lang_code
                  |  AND gmbstrg_strcode=gmrsprp_strcode
-                 |  AND GMRSPRP_STAT_CODE=2
                  |  AND (gmrsprp_project, gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
                  |       gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop)
                  |       IN (SELECT * FROM props_with_changes)
