@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!-- *****************************************************************************
-Copyright 2014-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2014-2017 Ellucian Company L.P. and its affiliates.
 ****************************************************************************** -->
 
 <!--
@@ -16,8 +16,21 @@ there is no concept of an 'entity manager' within this project.
 <hibernate-configuration>
     <session-factory>
         <property name="dialect">org.hibernate.dialect.Oracle10gDialect</property>
+        <property name="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
+        <property name="hibernate.cache.use_second_level_cache">true</property>
+        <property name="hibernate.cache.use_query_cache">true</property>
+        <property name="hibernate.generate_statistics">true</property>
+        <property name="javax.persistence.sharedCache.mode">ENABLE_SELECTIVE</property>
+        <property name="hibernate.cache.region.factory_class">net.sf.ehcache.hibernate.EhCacheRegionFactory</property>
+        <property name="hibernate.cache.use_structured_entries=">true</property>
         <mapping class="net.hedtech.banner.session.BannerUserSession"/>
         <mapping class="net.hedtech.banner.test.ZipTest"/>
         <mapping class="net.hedtech.banner.general.ConfigurationData"/>
+        <mapping class="net.hedtech.banner.general.configuration.ConfigApplication"/>
+        <mapping class="net.hedtech.banner.general.configuration.ConfigControllerEndpointPage"/>
+        <mapping class="net.hedtech.banner.general.configuration.ConfigRolePageMapping"/>
+        <mapping class="net.hedtech.banner.general.configuration.ConfigProperties"/>
+        <mapping class="net.hedtech.banner.general.configuration.ConfigUserPreference"/>
+        <mapping class="net.hedtech.banner.general.configuration.GeneralPageRoleMapping"/>
     </session-factory>
 </hibernate-configuration>

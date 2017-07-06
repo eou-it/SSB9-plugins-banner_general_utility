@@ -74,7 +74,6 @@ class SelfServiceMenuController {
     }
     private def setHideSSBHeaderCompsParam(def mnuList){
         mnuList.eachWithIndex{ SelfServiceMenu,  i ->
-            println(session['mep']);
             if(SelfServiceMenu.url.indexOf(MEPCODE)>-1 && session["mep"]!=null){
                 SelfServiceMenu.url=SelfServiceMenu.url.replace("{mepCode}", session["mep"])
             }

@@ -1,18 +1,17 @@
 /*******************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
 
+import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import java.lang.reflect.Method
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
 class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
-
-    def aboutService = new AboutService()
+    def aboutService
 
     @Before
     public void setUp() {
@@ -27,6 +26,10 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void getAboutSuccess(){
-        assertNotNull(aboutService.getAbout())
+        assertEquals(MessageHelper.message("about.banner.title"),aboutService.getAbout().get("api.title"))
+        assertEquals("banner_general_utility",aboutService.getAbout().get("about.banner.application.name"))
+        assertTrue(aboutService.getAbout().get("about.banner.application.version").toString().contains("Version"))
+        assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright1"),aboutService.getAbout().get("about.banner.copyright"))
+        assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright2"),aboutService.getAbout().get("about.banner.copyrightLegalNotice"))
     }
 }

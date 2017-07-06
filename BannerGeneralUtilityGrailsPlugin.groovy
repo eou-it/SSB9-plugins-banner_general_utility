@@ -1,11 +1,16 @@
+/*******************************************************************************
+ Copyright 2013-2017 Ellucian Company L.P. and its affiliates.
+ ****************************************************************************** */
+import grails.plugin.springsecurity.SpringSecurityUtils
+import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
 class BannerGeneralUtilityGrailsPlugin {
-    String version = "9.22.1"
+    String version = "9.23"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2.1 > *"
 
     // the other plugins this plugin depends on
-    def dependsOn = [ 'springSecurityCore': '1.2.7.3 => *',
+    def dependsOn = ['springSecurityCore': '1.2.7.3 => *',
     ]
 
     // resources that are excluded from plugin packaging
@@ -40,6 +45,8 @@ class BannerGeneralUtilityGrailsPlugin {
 
     // Online location of the plugin's browseable source code.
 //    def scm = [ url: "http://svn.codehaus.org/grails-plugins/" ]
+    String securityConfigType = SpringSecurityUtils.securityConfigType
+    ConfigObject conf = SpringSecurityUtils.securityConfig
 
     def doWithWebDescriptor = { xml ->
         // TODO Implement additions to web.xml (optional), this event occurs before
@@ -47,6 +54,19 @@ class BannerGeneralUtilityGrailsPlugin {
 
     def doWithSpring = {
         // TODO Implement runtime spring config (optional)
+
+        /**
+         * If the securityConfigType = 'Requestmap' then the "GeneralPageRoleMappingService" will be get injected
+         * which extends "RequestmapFilterInvocationDefinition", this service will fetch the Requestmap from the
+         * DB and Config.groovy.
+         */
+        if (securityConfigType == 'Requestmap') {
+            objectDefinitionSource(GeneralPageRoleMappingService) {
+                if (conf.rejectIfNoRule instanceof Boolean) {
+                    rejectIfNoRule = conf.rejectIfNoRule
+                }
+            }
+        }
     }
 
     def doWithDynamicMethods = { ctx ->
