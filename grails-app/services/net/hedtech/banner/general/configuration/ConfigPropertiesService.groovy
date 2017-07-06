@@ -22,7 +22,6 @@ class ConfigPropertiesService extends ServiceBase {
     def configApplicationService
     ConfigSlurper configSlurper = new ConfigSlurper()
 
-
     /**
      * This method will be get called in bootstrap to load all the config properties from the DB.
      */
@@ -87,14 +86,14 @@ class ConfigPropertiesService extends ServiceBase {
                 configPropName << cp.configName
             }
 
-            def seedDataKey = CH.config.ssconfig.app.seeddata.keys
+            List seedDataKey = CH.config.ssconfig.app.seeddata.keys
             LOGGER.debug("seeddata defined in config is :" + seedDataKey)
             def dataToSeed = []
-
             seedDataKey.each { obj ->
                 if (obj instanceof List) {
                     obj.each { keyName ->
-                        if (!configPropName.contains(keyName)) {
+                        if (!configPropName.contains(keyName)
+                                && keyName != 'grails.plugin.springsecurity.interceptUrlMap') {
                             ConfigProperties cp = new ConfigProperties()
                             cp.setConfigName(keyName)
 
@@ -109,7 +108,8 @@ class ConfigPropertiesService extends ServiceBase {
                     }
                 } else if (obj instanceof Map) {
                     obj.each { k, v ->
-                        if (!configPropName.contains(k)) {
+                        if (!configPropName.contains(k)
+                                && k != 'grails.plugin.springsecurity.interceptUrlMap') {
                             ConfigProperties cp = new ConfigProperties()
                             cp.setConfigName(k)
                             cp.setConfigValue(v.toString())
@@ -122,6 +122,7 @@ class ConfigPropertiesService extends ServiceBase {
                     }
                 }
             }
+
             create(dataToSeed)
         }
         catch (InvalidDataAccessResourceUsageException ex) {
