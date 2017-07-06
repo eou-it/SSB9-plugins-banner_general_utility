@@ -3,7 +3,6 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
-import grails.plugin.springsecurity.InterceptedUrl
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -88,6 +87,13 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
             generalPageRoleMappingService.sessionFactory = oldSessionFactory
             Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
         }
+    }
+
+    @Test
+    public void testIsDuplicatePageId () {
+        saveDomains()
+        boolean result = generalPageRoleMappingService.isDuplicatePageId("EndPointPage", "TESTAPP")
+        assertTrue(result)
     }
 
     private ConfigApplication saveDomains() {

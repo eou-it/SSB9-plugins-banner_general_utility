@@ -9,6 +9,7 @@ import grails.plugin.springsecurity.ReflectionUtils
 import grails.plugin.springsecurity.web.access.intercept.RequestmapFilterInvocationDefinition
 import grails.transaction.Transactional
 import grails.util.Holders
+import org.apache.commons.lang3.text.WordUtils
 import org.apache.log4j.Logger
 import org.hibernate.classic.Session
 import org.springframework.http.HttpMethod
@@ -27,6 +28,8 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
     private static Map originalInterceptUrlMap
 
     private String wildcardKey = '/**'
+
+    public static boolean isDataIsSeededForInterceptUrlMap = false
 
     /**
      * Overriden because this method calls reset().
@@ -78,13 +81,16 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         }
         Map interceptedUrlMapFromConfig
 
-        if (originalInterceptUrlMap == null) {
-            originalInterceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
-        }
-        interceptedUrlMapFromConfig = originalInterceptUrlMap.clone()
+        if (!isDataIsSeededForInterceptUrlMap) {
+            if (originalInterceptUrlMap == null) {
+                originalInterceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
+            }
+            interceptedUrlMapFromConfig = originalInterceptUrlMap.clone()
 
-        interceptedUrlMapFromConfig.putAll(interceptedUrlMapFromDB)
-        Holders.config.grails.plugin.springsecurity.interceptUrlMap = [:]
+            interceptedUrlMapFromConfig.putAll(interceptedUrlMapFromDB)
+        } else {
+            interceptedUrlMapFromConfig = interceptedUrlMapFromDB.clone()
+        }
 
         if (interceptedUrlMapFromConfig.get(wildcardKey)) {
             def wildcardValue = interceptedUrlMapFromConfig.get(wildcardKey)
@@ -93,6 +99,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         }
 
         // Prepare List of interceptedUrlMap from the Merged data.
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap = [:]
         interceptedUrlMapFromConfig.each { k, v ->
             HttpMethod method = null
             InterceptedUrl iu = new InterceptedUrl(k, super.split(v?.join(',')), method)
@@ -158,10 +165,12 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                                                                                 generalPageRoleMapping.pageId,
                                                                                 generalPageRoleMapping.applicationId,
                                                                                 generalPageRoleMapping.version)
-                                                                          FROM GeneralPageRoleMapping generalPageRoleMapping
-                                                                          WHERE generalPageRoleMapping.applicationId = :appId
-                                                                          AND generalPageRoleMapping.statusIndicator = true ''')
-                                .setParameter('appId', appId).list()
+                                                      FROM GeneralPageRoleMapping generalPageRoleMapping
+                                                      WHERE generalPageRoleMapping.applicationId = :appId
+                                                      AND generalPageRoleMapping.statusIndicator = :statusIndicator''')
+                                .setParameter('appId', appId)
+                                .setParameter('statusIndicator', true)
+                                .list()
                     }
                     catch (e) {
                         logger.error('Exception while executing the query with new Hibernate session;')
@@ -194,5 +203,141 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         generalPageRoleMapping
     }
 
+    private Map prepareMap(List list, Map generalPageRoleMapping) {
+        def urlSet = new LinkedHashSet<String>()
+        list.each { GeneralPageRoleMapping grm ->
+            urlSet.add(grm.pageUrl)
+        }
+
+        urlSet.each { String pageUrl ->
+            def pageRoleMappingList = new ArrayList<GeneralPageRoleMapping>()
+            list.each { GeneralPageRoleMapping pageRoleMapping ->
+                if (pageRoleMapping.pageUrl == pageUrl) {
+                    pageRoleMappingList << pageRoleMapping
+                }
+            }
+            generalPageRoleMapping.put(pageUrl, pageRoleMappingList)
+        }
+        generalPageRoleMapping
+    }
+
+    /**
+     * Method is used to seed the data when server starts,
+     * The data will be seeded in to three tables
+     * 1) GUBAPPL - If application is starting for 1st time (This call will be before
+     *              ConfigPropertiesService.seedDataToDBFromConfig()
+     * 2) GURCTLEP
+     * 3) GURAPPR
+     */
+    public void seedInterceptUrlMapAtServerStartup() {
+        try {
+            String appName = Holders.grailsApplication.metadata['app.name']
+            String appId = Holders.grailsApplication.metadata['app.appId']
+
+            ConfigApplication application = ConfigApplication.fetchByAppName(appName)
+            if (!application) {
+                ConfigApplication newConfigApp = new ConfigApplication()
+                newConfigApp.setAppId(appId)
+                newConfigApp.setAppName(appName)
+                newConfigApp.setLastModifiedBy('BANNER')
+                application = newConfigApp.save(failOnError: true, flush: true)
+            }
+
+            LinkedHashMap<String, ArrayList<String>> interceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
+            List list = GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator(appId)
+            Map<String, ArrayList<String>> interceptUrlMapFromDB = new HashMap<String, ArrayList<String>>()
+            interceptUrlMapFromDB = prepareMap(list, interceptUrlMapFromDB)
+
+            interceptUrlMap.each { String url, List<String> roles ->
+                if (!interceptUrlMapFromDB.containsKey(url)) {
+                    // Start
+                    // Save GURCTLEP
+                    ConfigControllerEndpointPage ccep = new ConfigControllerEndpointPage()
+                    ccep.setLastModifiedBy('BANNER')
+                    ccep.setLastModified(new Date())
+                    ccep.setDisplaySequence(interceptUrlMap.findIndexOf { it.key == url })
+                    ccep.setPageUrl(url)
+                    ccep.setStatusIndicator(true)
+                    ConfigApplication ca = new ConfigApplication()
+                    ca.setId(application.getId())
+
+                    ccep.setConfigApplication(ca)
+
+                    // Preparing the pageId
+                    String appIdCamelCase = WordUtils.capitalizeFully(application.getAppId())
+                    String pageId = ''
+                    if (url == '/' || url == '/**') {
+                        pageId = appIdCamelCase + ' ' + url
+                    } else {
+                        pageId = getStringForPageId(url, application.getAppId())
+                    }
+                    ccep.setPageId(pageId)
+                    ccep.save(failOnError: true, flush: true)
+
+                    // Save GURAPPR - multile roles
+                    roles.each { roleCode ->
+                        ConfigRolePageMapping crpm = new ConfigRolePageMapping()
+                        crpm.setConfigApplication(ca)
+                        crpm.setLastModifiedBy('BANNER')
+                        crpm.setLastModified(new Date())
+                        crpm.setEndpointPage(ccep)
+                        crpm.setRoleCode(roleCode)
+                        crpm.save(failOnError: true, flush: true)
+                    }
+                    // End
+                }
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage())
+        }
+
+        isDataIsSeededForInterceptUrlMap = true
+    }
+
+    /**
+     * Method is used to identify the duplicate pageId and appId
+     *
+     * @param pageId page id of String type.
+     * @param appId application id of String typel.
+     * @return return value is true or false type if boolean.
+     */
+    public boolean isDuplicatePageId(String pageId, String appId) {
+        def ccep = ConfigControllerEndpointPage.findByPageIdAndConfigApplication(pageId, ConfigApplication.fetchByAppId(appId))
+        return (ccep != null)
+    }
+
+    /**
+     * The method is to prepare the pageId (PK) for GURCTLEP table, method will accept the
+     * GURCTLEP_PAGE_URL and will return the end point with last two '/' char.
+     * Eg. url = '/ssb/themeEditor/**' then the prepared pageId = 'Psa Themeeditor'
+     * from the 2nd last '/' char if the same url exists for the same application then we will append the previous
+     * page name Eg. 'Psa Ssb Themeeditor'.
+     * @param url GURCTLEP_PAGE_URL value from GURCTLEP table.
+     * @return pageId prepared pageId from the pageUrl.
+     */
+    private String getStringForPageId(String url, String appId) {
+        List<String> list = new ArrayList<String>(Arrays.asList(url.split("/")));
+        list.removeAll(Arrays.asList(null, ""));
+
+        int lastIndex = (list.size() - 1);
+        String preparedPageId = "";
+        String preparedAppId = WordUtils.capitalizeFully(appId)
+
+        if (list.size() > 1) {
+            String pageName = WordUtils.capitalizeFully(list.get(lastIndex - 1)) + " " + WordUtils.capitalizeFully(list.get(lastIndex))
+            preparedPageId = (preparedAppId + " " + pageName)
+        } else if (list.size() == 1) {
+            preparedPageId = preparedAppId + " " + WordUtils.capitalizeFully(list.get(lastIndex))
+        }
+
+        if (isDuplicatePageId(preparedPageId, appId)) {
+            if (list.size() >= 3) {
+                String previousPageName = WordUtils.capitalizeFully(list.get(lastIndex - 2)?.toUpperCase())
+                String pageName = WordUtils.capitalizeFully(list.get(lastIndex - 1)) + " " + WordUtils.capitalizeFully(list.get(lastIndex))
+                preparedPageId = preparedAppId + " " + previousPageName + " " + pageName
+            }
+        }
+        return preparedPageId
+    }
 
 }
