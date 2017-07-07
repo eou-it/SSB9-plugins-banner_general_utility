@@ -315,15 +315,17 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * @param url GURCTLEP_PAGE_URL value from GURCTLEP table.
      * @return pageId prepared pageId from the pageUrl.
      */
-    private String getStringForPageId(String url, String appId) {
+    private String getStringForPageId(String url) {
         List<String> list = new ArrayList<String>(Arrays.asList(url.split("/")))
         list.removeAll(Arrays.asList(null, ""))
 
         int lastIndex = (list.size() - 1)
 
-        if (list?.get(lastIndex) == '**' || list?.get(lastIndex)?.contains('**')) {
+        if (list?.get(lastIndex) == '**') {
             list.remove(lastIndex)
             lastIndex = (list.size() - 1)
+        } else if (list?.get(lastIndex)?.contains('**')) {
+            list?.set(lastIndex, list?.get(lastIndex)?.minus('**'))
         }
 
         String preparedPageId = ''
