@@ -316,25 +316,31 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * @return pageId prepared pageId from the pageUrl.
      */
     private String getStringForPageId(String url, String appId) {
-        List<String> list = new ArrayList<String>(Arrays.asList(url.split("/")));
-        list.removeAll(Arrays.asList(null, ""));
+        List<String> list = new ArrayList<String>(Arrays.asList(url.split("/")))
+        list.removeAll(Arrays.asList(null, ""))
 
-        int lastIndex = (list.size() - 1);
-        String preparedPageId = "";
-        String preparedAppId = WordUtils.capitalizeFully(appId)
+        int lastIndex = (list.size() - 1)
 
-        if (list.size() > 1) {
-            String pageName = WordUtils.capitalizeFully(list.get(lastIndex - 1)) + " " + WordUtils.capitalizeFully(list.get(lastIndex))
-            preparedPageId = (preparedAppId + " " + pageName)
-        } else if (list.size() == 1) {
-            preparedPageId = preparedAppId + " " + WordUtils.capitalizeFully(list.get(lastIndex))
+        if (list?.get(lastIndex) == '**' || list?.get(lastIndex)?.contains('**')) {
+            list.remove(lastIndex)
+            lastIndex = (list.size() - 1)
         }
 
-        if (isDuplicatePageId(preparedPageId, appId)) {
-            if (list.size() >= 3) {
-                String previousPageName = WordUtils.capitalizeFully(list.get(lastIndex - 2)?.toUpperCase())
-                String pageName = WordUtils.capitalizeFully(list.get(lastIndex - 1)) + " " + WordUtils.capitalizeFully(list.get(lastIndex))
-                preparedPageId = preparedAppId + " " + previousPageName + " " + pageName
+        String preparedPageId = ''
+        boolean endLoop = false
+        list.eachWithIndex { String str, int i ->
+            if (!endLoop) {
+                preparedPageId = preparedPageId + str.capitalize()
+                int initIndex = 0
+                if (preparedPageId?.size() > 60) {
+                    while (preparedPageId?.size() > 60) {
+                        logger.warn('Prepared PageId to seed data for intercepturl is exceed the size, ' +
+                                'the full length of prepared url is : ' + preparedPageId)
+                        preparedPageId = preparedPageId?.minus(list?.get(initIndex)?.capitalize())
+                        initIndex++
+                    }
+                    endLoop = true
+                }
             }
         }
         return preparedPageId
