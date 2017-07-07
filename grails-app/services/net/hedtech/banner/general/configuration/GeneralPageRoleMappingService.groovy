@@ -269,7 +269,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     if (url == '/' || url == '/**') {
                         pageId = appIdCamelCase + ' ' + url
                     } else {
-                        pageId = getStringForPageId(url, application.getAppId())
+                        pageId = getStringForPageId(url)
                     }
                     ccep.setPageId(pageId)
                     ccep.save(failOnError: true, flush: true)
@@ -330,6 +330,8 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
         String preparedPageId = ''
         boolean endLoop = false
+        def gurctleppColumnConstraints = ConfigControllerEndpointPage.constraints
+
         list.eachWithIndex { String str, int i ->
             if (!endLoop) {
                 preparedPageId = preparedPageId + str.capitalize()
