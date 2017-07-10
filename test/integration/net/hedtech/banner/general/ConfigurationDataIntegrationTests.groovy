@@ -1,6 +1,5 @@
-
 /*******************************************************************************
-Copyright 2016 Ellucian Company L.P. and its affiliates.
+Copyright 2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
  
 package net.hedtech.banner.general
@@ -11,11 +10,8 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
-import net.hedtech.banner.general.ConfigurationData
 
 class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
-
-	def themeService
 	
 	@Before
     public void setUp() {
@@ -40,7 +36,7 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	void testFetchByNameAndType(){
 		def configurationData = newConfigurationData()
 		save configurationData
-		configurationData = ConfigurationData.fetchByNameAndType("TTTTT", "json")
+		configurationData = ConfigurationData.fetchByNameAndType("TTTTT", "json","THEME")
 		assertNotNull configurationData.id
 	}
 
@@ -48,19 +44,19 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	void testFetchTypes(){
 		def configurationData = newConfigurationData()
 		save configurationData
-		configurationData = ConfigurationData.fetchByType("json")
+		configurationData = ConfigurationData.fetchByType("json","THEME")
 		assertNotNull configurationData.id
 	}
 
 	@Test
 	void testFetchNullTypes(){
-		def configurationData = ConfigurationData.fetchByType(null)
+		def configurationData = ConfigurationData.fetchByType(null,null)
 		 assertTrue configurationData.size() ==0
 	}
 
 	@Test
 	void testFetchByNameAndTypeNull(){
-		def configurationData =  ConfigurationData.fetchByNameAndType(null,null)
+		def configurationData =  ConfigurationData.fetchByNameAndType(null,null,null)
 		assertNull configurationData
 	}
 
@@ -125,8 +121,6 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 		configurationData.delete()
 		assertNull configurationData.get( id )
 	}
-
-
 
   private def newConfigurationData() {
     def configurationData = new ConfigurationData(
