@@ -315,7 +315,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * @param url GURCTLEP_PAGE_URL value from GURCTLEP table.
      * @return pageId prepared pageId from the pageUrl.
      */
-    private String getStringForPageId(String url) {
+    private static String getStringForPageId(String url) {
         List<String> list = new ArrayList<String>(Arrays.asList(url.split("/")))
         list.removeAll(Arrays.asList(null, ""))
 
@@ -330,16 +330,17 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
         String preparedPageId = ''
         boolean endLoop = false
-        def gurctleppColumnConstraints = ConfigControllerEndpointPage.constraints
+        def pageIdMaxSize = ConfigControllerEndpointPage?.constraints?.pageId?.maxSize
+        pageIdMaxSize = (pageIdMaxSize ? pageIdMaxSize : 60)
 
         list.eachWithIndex { String str, int i ->
             if (!endLoop) {
                 preparedPageId = preparedPageId + str.capitalize()
                 int initIndex = 0
-                if (preparedPageId?.size() > 60) {
-                    while (preparedPageId?.size() > 60) {
-                        logger.warn('Prepared PageId to seed data for intercepturl is exceed the size, ' +
-                                'the full length of prepared url is : ' + preparedPageId)
+                if (preparedPageId?.size() > pageIdMaxSize) {
+                    while (preparedPageId?.size() > pageIdMaxSize) {
+                        logger.warn("Prepared PageId to seed data for intercepturl is exceed the size(maxSize=${pageIdMaxSize}), " +
+                                "the full length of prepared url is : " + preparedPageId)
                         preparedPageId = preparedPageId?.minus(list?.get(initIndex)?.capitalize())
                         initIndex++
                     }
