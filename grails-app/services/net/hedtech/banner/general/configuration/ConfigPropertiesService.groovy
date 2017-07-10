@@ -71,63 +71,73 @@ class ConfigPropertiesService extends ServiceBase {
     public void seedDataToDBFromConfig() {
         String appName = grailsApplication.metadata['app.name']
         String appId = grailsApplication.metadata['app.appId']
+        if (appId) {
+            try {
+                ConfigApplication configApp = ConfigApplication.fetchByAppId(appId)
+                if (configApp == null) {
+                    ConfigApplication newConfigApp = new ConfigApplication()
+                    newConfigApp.setAppId(appId)
+                    newConfigApp.setAppName(appName)
+                    newConfigApp.setLastModifiedBy('BANNER')
+                    configApplicationService.create(newConfigApp)
+                }
+                def appSeedDataKey = CH.config.ssconfig.app.seeddata.keys
+                def globalSeedDataKey = CH.config.ssconfig.global.seeddata.keys
+                LOGGER.debug("App seeddata defined in config is : " + appSeedDataKey)
+                LOGGER.debug("Global seeddata defined in config is : " + globalSeedDataKey)
+
+                seedConfigDataToDB(appId, appSeedDataKey)
+                seedConfigDataToDB(GLOBAL, globalSeedDataKey)
+            }
+            catch (InvalidDataAccessResourceUsageException ex) {
+                LOGGER.error("Exception occured while running seedDataToDBFromConfig method, SelfService Config Table doesn't exist" + ex.getMessage())
+            }
+        } else {
+            LOGGER.error("No App Id Specified in application.properties");
+        }
+    }
+
+
+    private void seedConfigDataToDB(appId, seedDataKey) {
         ConfigApplication configApp = ConfigApplication.fetchByAppId(appId)
-        try {
-            if (configApp == null) {
-                ConfigApplication newConfigApp = new ConfigApplication()
-                newConfigApp.setAppId(appId)
-                newConfigApp.setAppName(appName)
-                newConfigApp.setLastModifiedBy('BANNER')
-                configApp = configApplicationService.create(newConfigApp)
-            }
+        ArrayList configPropName = []
+        ConfigProperties.fetchByAppId(appId).each { ConfigProperties cp ->
+            configPropName << cp.configName
+        }
+        def dataToSeed = []
+        seedDataKey.each { obj ->
+            if (obj instanceof List) {
+                obj.each { keyName ->
+                    if (!configPropName.contains(keyName)
+                            && keyName != 'grails.plugin.springsecurity.interceptUrlMap') {
+                        ConfigProperties cp = new ConfigProperties()
+                        cp.setConfigName(keyName)
 
-            ArrayList configPropName = []
-            ConfigProperties.fetchByAppId(appId).each { ConfigProperties cp ->
-                configPropName << cp.configName
-            }
-
-            List seedDataKey = CH.config.ssconfig.app.seeddata.keys
-            LOGGER.debug("seeddata defined in config is :" + seedDataKey)
-            def dataToSeed = []
-            seedDataKey.each { obj ->
-                if (obj instanceof List) {
-                    obj.each { keyName ->
-                        if (!configPropName.contains(keyName)
-                                && keyName != 'grails.plugin.springsecurity.interceptUrlMap') {
-                            ConfigProperties cp = new ConfigProperties()
-                            cp.setConfigName(keyName)
-
-                            def value = CH.config.flatten()."$keyName"
-                            cp.setConfigValue(value.toString())
-                            cp.setConfigApplication(configApp)
-                            cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
-                            cp.setLastModifiedBy('BANNER')
-                            cp.setLastModified(new Date())
-                            dataToSeed << cp
-                        }
+                        def value = CH.config.flatten()."$keyName"
+                        cp.setConfigValue(value.toString())
+                        cp.setConfigApplication(configApp)
+                        cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
+                        cp.setLastModifiedBy('BANNER')
+                        cp.setLastModified(new Date())
+                        dataToSeed << cp
                     }
-                } else if (obj instanceof Map) {
-                    obj.each { k, v ->
-                        if (!configPropName.contains(k)
-                                && k != 'grails.plugin.springsecurity.interceptUrlMap') {
-                            ConfigProperties cp = new ConfigProperties()
-                            cp.setConfigName(k)
-                            cp.setConfigValue(v.toString())
-                            cp.setConfigApplication(configApp)
-                            cp.setConfigType(v?.getClass()?.simpleName?.toLowerCase())
-                            cp.setLastModifiedBy('BANNER')
-                            cp.setLastModified(new Date())
-                            dataToSeed << cp
-                        }
+                }
+            } else if (obj instanceof Map) {
+                obj.each { k, v ->
+                    if (!configPropName.contains(k)
+                            && k != 'grails.plugin.springsecurity.interceptUrlMap') {
+                        ConfigProperties cp = new ConfigProperties()
+                        cp.setConfigName(k)
+                        cp.setConfigValue(v.toString())
+                        cp.setConfigApplication(configApp)
+                        cp.setConfigType(v?.getClass()?.simpleName?.toLowerCase())
+                        cp.setLastModifiedBy('BANNER')
+                        cp.setLastModified(new Date())
+                        dataToSeed << cp
                     }
                 }
             }
-
-            create(dataToSeed)
         }
-        catch (InvalidDataAccessResourceUsageException ex) {
-            LOGGER.error("Exception occured while running seedDataToDBFromConfig method, Self Service Config Table doesn't exist")
-
-        }
+        create(dataToSeed)
     }
 }

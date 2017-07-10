@@ -173,7 +173,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                                 .list()
                     }
                     catch (e) {
-                        logger.error('Exception while executing the query with new Hibernate session;', e)
+                        logger.error('Exception while executing the query with new Hibernate session;')
                     }
                     finally {
                         session?.close()
