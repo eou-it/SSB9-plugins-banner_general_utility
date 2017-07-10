@@ -27,6 +27,7 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     @Test
     public void getAboutSuccess(){
         assertEquals(MessageHelper.message("about.banner.title"),aboutService.getAbout().get("api.title"))
+        assertEquals(MessageHelper.message("about.banner.close"),aboutService.getAbout().get("api.close"))
         assertEquals("banner_general_utility",aboutService.getAbout().get("about.banner.application.name"))
         assertTrue(aboutService.getAbout().get("about.banner.application.version").toString().contains("Version"))
         assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright1"),aboutService.getAbout().get("about.banner.copyright"))
