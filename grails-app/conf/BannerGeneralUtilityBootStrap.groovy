@@ -41,6 +41,10 @@ class BannerGeneralUtilityBootStrap {
             }
         }
         configPropertiesService.setConfigFromDb()
+        configPropertiesService.setTransactionTimeOut()
+        configPropertiesService.setLoginEndPointUrl()
+        configPropertiesService.setLogOutEndPointUrl()
+        configPropertiesService.setGuestLoginEnabled()
     }
 
     def destroy = {
