@@ -132,7 +132,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * @return list
      */
     @Transactional(readOnly = true)
-    private def getPageRoleMappingList() {
+    public LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>> getPageRoleMappingList() {
         fetchGeneralPageRoleMappingByAppId()
     }
 
@@ -148,7 +148,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * The private method and this common method will be called with Hibernate Session passed as a param.
      * @param session
      */
-    private LinkedHashMap fetchGeneralPageRoleMappingByAppId() {
+    private LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>> fetchGeneralPageRoleMappingByAppId() {
         def list
         def generalPageRoleMapping = new LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>>()
         try {
@@ -224,10 +224,12 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
     /**
      * Method is used to seed the data when server starts,
      * The data will be seeded in to three tables
-     * 1) GUBAPPL - If application is starting for 1st time (This call will be before
+     * <p><ul>
+     * <li> GUBAPPL - If application is starting for 1st time (This call will be before
      *              ConfigPropertiesService.seedDataToDBFromConfig()
-     * 2) GURCTLEP
-     * 3) GURAPPR
+     * <li> GURCTLEP - Page id, app id and url will be seeded.
+     * <li> GURAPPR - Roles for the page id of GURCTLEP will be seeded.
+     * </ul><p>
      */
     public void seedInterceptUrlMapAtServerStartup() {
         try {
@@ -315,16 +317,22 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
     }
 
     /**
-     * The method is to prepare the pageId (PK) for GURCTLEP table, method will accept the
-     * 1) GURCTLEP_PAGE_URL and will return the end point with last two '/' char.
-     *    Eg. url = '/ssb/themeEditor/**' then the prepared pageId = 'PsaThemeeditor'
-     *    from the 2nd last '/' char if the same url exists for the same application then we will append the previous
-     *    page name Eg. 'PsaSsbThemeeditor'.
-     * 2) If the '**' will be removed if url has it at the end.
+     * The method is to prepare the pageId (PK) for GURCTLEP table.
+     * <p><ul>
+     * <li> GURCTLEP_PAGE_URL and will return the url without the '/' string.
+     *    Eg. url = '/ssb/themeEditor/**' then the prepared pageId = 'SsbThemeeditor'
+     * <li> If the '**' will be removed if url has it at the end.
      *    eg: /ssb/home/**  ---> SsbHome
      *        /ssb/home/test**  ---> SsbHomeTest
+     * <li> If the prepared page id is greater than the size of the column length
+     *    then method will remove the page id string from the beginning.
+     *    eg: /ssb/AuthenticationTesting/testingEndPoint1/testingEndPoint2/homePage
+     *        the page id will be SsbAuthenticationTestingTestingEndPoint1TestingEndPoint2HomePage
+     *        prepared page id for above string is - EndPoint1TestingEndPoint2HomePage
+     * </ul><p>
      * @param url GURCTLEP_PAGE_URL value from GURCTLEP table.
-     * @return pageId prepared pageId from the pageUrl.
+     * @param pageIdMaxSize Size of the table column - GURCTLEP_PAGE_ID
+     * @return pageId - @String type, prepared pageId from the pageUrl.
      */
     private static String getStringForPageId(String url, int pageIdMaxSize) {
         List<String> list = new ArrayList<String>(Arrays.asList(url.split("/")))
