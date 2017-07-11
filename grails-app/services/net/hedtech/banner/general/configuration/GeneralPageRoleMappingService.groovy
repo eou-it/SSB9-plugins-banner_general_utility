@@ -234,7 +234,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             String appName = Holders.grailsApplication.metadata['app.name']
             String appId = Holders.grailsApplication.metadata['app.appId']
 
-            ConfigApplication application = ConfigApplication.fetchByAppName(appName)
+            ConfigApplication application = ConfigApplication.fetchByAppId(appId)
             if (!application) {
                 ConfigApplication newConfigApp = new ConfigApplication()
                 newConfigApp.setAppId(appId)
@@ -248,20 +248,27 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             Map<String, ArrayList<String>> interceptUrlMapFromDB = new HashMap<String, ArrayList<String>>()
             interceptUrlMapFromDB = prepareMap(list, interceptUrlMapFromDB)
 
-            interceptUrlMap.each { String url, List<String> roles ->
+            int pageIdMaxSize = ConfigControllerEndpointPage?.constraints?.pageId?.maxSize
+            pageIdMaxSize = (pageIdMaxSize ? pageIdMaxSize : 60)
+
+            Long maxOfDisplaySequence = ConfigControllerEndpointPage.createCriteria()?.get {
+                projections {
+                    max 'displaySequence'
+                }
+            } as Long
+            maxOfDisplaySequence = (maxOfDisplaySequence ? maxOfDisplaySequence : 0)
+
+            interceptUrlMap.each { String url, ArrayList<String> roles ->
                 if (!interceptUrlMapFromDB.containsKey(url)) {
                     // Start
                     // Save GURCTLEP
                     ConfigControllerEndpointPage ccep = new ConfigControllerEndpointPage()
                     ccep.setLastModifiedBy('BANNER')
                     ccep.setLastModified(new Date())
-                    ccep.setDisplaySequence(interceptUrlMap.findIndexOf { it.key == url })
+                    ccep.setDisplaySequence(maxOfDisplaySequence + 1)
                     ccep.setPageUrl(url)
                     ccep.setStatusIndicator(true)
-                    ConfigApplication ca = new ConfigApplication()
-                    ca.setId(application.getId())
-
-                    ccep.setConfigApplication(ca)
+                    ccep.setConfigApplication(application)
 
                     // Preparing the pageId
                     String appIdCamelCase = WordUtils.capitalizeFully(application.getAppId())
@@ -269,7 +276,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     if (url == '/' || url == '/**') {
                         pageId = appIdCamelCase + ' ' + url
                     } else {
-                        pageId = getStringForPageId(url)
+                        pageId = getStringForPageId(url, pageIdMaxSize)
                     }
                     ccep.setPageId(pageId)
                     ccep.save(failOnError: true, flush: true)
@@ -277,7 +284,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     // Save GURAPPR - multile roles
                     roles.each { roleCode ->
                         ConfigRolePageMapping crpm = new ConfigRolePageMapping()
-                        crpm.setConfigApplication(ca)
+                        crpm.setConfigApplication(application)
                         crpm.setLastModifiedBy('BANNER')
                         crpm.setLastModified(new Date())
                         crpm.setEndpointPage(ccep)
@@ -285,6 +292,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                         crpm.save(failOnError: true, flush: true)
                     }
                     // End
+                    maxOfDisplaySequence++
                 }
             }
         } catch (Exception e) {
@@ -308,14 +316,17 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
     /**
      * The method is to prepare the pageId (PK) for GURCTLEP table, method will accept the
-     * GURCTLEP_PAGE_URL and will return the end point with last two '/' char.
-     * Eg. url = '/ssb/themeEditor/**' then the prepared pageId = 'Psa Themeeditor'
-     * from the 2nd last '/' char if the same url exists for the same application then we will append the previous
-     * page name Eg. 'Psa Ssb Themeeditor'.
+     * 1) GURCTLEP_PAGE_URL and will return the end point with last two '/' char.
+     *    Eg. url = '/ssb/themeEditor/**' then the prepared pageId = 'PsaThemeeditor'
+     *    from the 2nd last '/' char if the same url exists for the same application then we will append the previous
+     *    page name Eg. 'PsaSsbThemeeditor'.
+     * 2) If the '**' will be removed if url has it at the end.
+     *    eg: /ssb/home/**  ---> SsbHome
+     *        /ssb/home/test**  ---> SsbHomeTest
      * @param url GURCTLEP_PAGE_URL value from GURCTLEP table.
      * @return pageId prepared pageId from the pageUrl.
      */
-    private static String getStringForPageId(String url) {
+    private static String getStringForPageId(String url, int pageIdMaxSize) {
         List<String> list = new ArrayList<String>(Arrays.asList(url.split("/")))
         list.removeAll(Arrays.asList(null, ""))
 
@@ -323,15 +334,12 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
         if (list?.get(lastIndex) == '**') {
             list.remove(lastIndex)
-            lastIndex = (list.size() - 1)
         } else if (list?.get(lastIndex)?.contains('**')) {
             list?.set(lastIndex, list?.get(lastIndex)?.minus('**'))
         }
 
         String preparedPageId = ''
         boolean endLoop = false
-        def pageIdMaxSize = ConfigControllerEndpointPage?.constraints?.pageId?.maxSize
-        pageIdMaxSize = (pageIdMaxSize ? pageIdMaxSize : 60)
 
         list.eachWithIndex { String str, int i ->
             if (!endLoop) {

@@ -36,7 +36,6 @@ class BannerGeneralUtilityBootStrap {
             ArrayList seedDataKey = Holders.config.ssconfig.app.seeddata.keys
             if (seedDataKey && seedDataKey.contains(['grails.plugin.springsecurity.interceptUrlMap'])) {
                 generalPageRoleMappingService.seedInterceptUrlMapAtServerStartup()
-                GeneralPageRoleMappingService.isDataIsSeededForInterceptUrlMap = true
                 springSecurityService.clearCachedRequestmaps()
             }
         }
