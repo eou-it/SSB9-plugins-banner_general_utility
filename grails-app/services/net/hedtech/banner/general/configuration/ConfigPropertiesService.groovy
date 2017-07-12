@@ -146,4 +146,46 @@ class ConfigPropertiesService extends ServiceBase {
         }
         create(dataToSeed)
     }
+
+
+    public setTransactionTimeOut() {
+        grailsApplication?.config?.transactionTimeout = (grailsApplication.config.banner?.transactionTimeout instanceof Integer
+                ? grailsApplication.config.banner?.transactionTimeout
+                : 30)
+
+    }
+
+
+    public setLoginEndPointUrl() {
+        grailsApplication?.config?.loginEndpoint = grailsApplication.config?.loginEndpoint ?: ""
+    }
+
+
+    public setLogOutEndPointUrl() {
+        if (ControllerUtils.isSamlEnabled()) {
+            if (ControllerUtils.isLocalLogoutEnabled()) {
+                grailsApplication?.config?.logoutEndpoint = localLogoutEnable
+            } else {
+                grailsApplication?.config?.logoutEndpoint = globalLogoutEnable
+            }
+        } else {
+            grailsApplication?.config?.logoutEndpoint = grailsApplication.config?.logoutEndpoint ?: ""
+        }
+    }
+
+
+    public setGuestLoginEnabled() {
+        if ((true == grailsApplication.config?.guestAuthenticationEnabled) && (!"default".equalsIgnoreCase(grailsApplication.config?.banner?.sso?.authenticationProvider.toString()))) {
+            grailsApplication?.config?.guestLoginEnabled = true
+        } else {
+            grailsApplication?.config?.guestLoginEnabled = false
+        }
+    }
+
+
+    public void updateDefaultWebSessionTimeout(){
+        if(AuthenticationProviderUtility.defaultWebSessionTimeout != CH.config.defaultWebSessionTimeout) {
+            AuthenticationProviderUtility.defaultWebSessionTimeout = CH.config.defaultWebSessionTimeout
+        }
+    }
 }
