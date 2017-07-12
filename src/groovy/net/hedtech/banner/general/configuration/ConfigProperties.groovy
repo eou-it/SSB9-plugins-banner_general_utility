@@ -81,6 +81,7 @@ public class ConfigProperties implements Serializable {
         configName(maxSize: 50)
         lastModified(nullable: true)
         configType(maxSize: 30)
+        configValue(nullable: true)
         dataOrigin(maxSize: 30, nullable: true)
         configApplication(nullable: true)
         lastModifiedBy(maxSize: 30, nullable: true)

@@ -28,7 +28,13 @@ class ConfigJob {
         if (actualCount != 0) {
             try {
                 configPropertiesService.setConfigFromDb()
+                configPropertiesService.setTransactionTimeOut()
+                configPropertiesService.updateDefaultWebSessionTimeout()
+                configPropertiesService.setLoginEndPointUrl()
+                configPropertiesService.setLogOutEndPointUrl()
+                configPropertiesService.setGuestLoginEnabled()
                 springSecurityService.clearCachedRequestmaps()
+
             } catch (InvalidDataAccessResourceUsageException e) {
                 LOGGER.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
             }

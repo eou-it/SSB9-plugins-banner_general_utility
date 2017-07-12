@@ -6,6 +6,7 @@ package net.hedtech.banner.general.configuration
 
 import grails.util.Holders
 import grails.util.Holders as CH
+import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
@@ -24,6 +25,14 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private def appId
     private static final String CONFIG_NAME = 'TEST_CONFIG'
     private static final String CONFIG_VALUE = 'TEST_VALUE'
+    private static final String CONFIG_TYPE_STRING = 'string'
+    private static final String CONFIG_TYPE_INTEGER = 'integer'
+    private static final String CONFIG_NAME_TRANSACTION_TIMEOUT = 'banner.transactionTimeout'
+    private static final String CONFIG_NAME_LOGIN_ENDPOINT_URL = 'loginEndpoint'
+    private static final String CONFIG_NAME_LOGOUT_ENDPOINT_URL = 'logoutEndpoint'
+    private static final String CONFIG_NAME_DEFAULT_WEBSESSION_TIMEOUT = 'defaultWebSessionTimeout'
+    private static final String CONFIG_NAME_AUTH_PROVIDER = 'authenticationProvider'
+    private static final String CONFIG_NAME_LOCAL_LOGOUT = 'localLogout'
     private static final String GLOBAL = 'GLOBAL'
     private static final String TESTAPP = 'TESTAPP'
     private static String ACTUALAPPNAME = ''
@@ -185,6 +194,120 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     }
 
 
+    @Test
+    public void testTransactionTimeOutDefault() {
+        configPropertiesService.setTransactionTimeOut()
+        def result = CH.config?.transactionTimeout
+        assertTrue(result == CH.config.banner?.transactionTimeout || result == 30)
+    }
+
+
+    @Test
+    public void testTransactionTimeOut() {
+        def oldTransactionTimeout = CH.config.banner?.transactionTimeout
+        int transactionTimeout = 150
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_TRANSACTION_TIMEOUT, transactionTimeout.toString(), CONFIG_TYPE_INTEGER)
+        configPropertiesService.setConfigFromDb()
+        configPropertiesService.setTransactionTimeOut()
+        def result = CH.config.banner?.transactionTimeout
+        assertEquals transactionTimeout, result
+        CH.config.banner?.transactionTimeout = oldTransactionTimeout
+    }
+
+
+    @Test
+    public void testLoginEndPointUrlDefault() {
+        def oldLoginEndpoint = CH.config?.loginEndpoint
+        String loginEndpoint = ''
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_LOGIN_ENDPOINT_URL, loginEndpoint, CONFIG_TYPE_STRING)
+        configPropertiesService.setConfigFromDb()
+        configPropertiesService.setLoginEndPointUrl()
+        def result = CH.config?.loginEndpoint
+        assertEquals loginEndpoint, result
+        CH.config?.loginEndpoint = oldLoginEndpoint
+    }
+
+
+    @Test
+    public void testLoginEndPointUrl() {
+        def oldLoginEndpoint = CH.config?.loginEndpoint
+        String loginEndpoint = 'test/testURL'
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_LOGIN_ENDPOINT_URL, loginEndpoint, CONFIG_TYPE_STRING)
+        configPropertiesService.setConfigFromDb()
+        configPropertiesService.setLoginEndPointUrl()
+        def result = CH.config?.loginEndpoint
+        assertEquals loginEndpoint, result
+        CH.config?.loginEndpoint = oldLoginEndpoint
+    }
+
+
+    @Test
+    public void testLogOutEndPointUrl() {
+        def oldLogoutEndpoint = CH.config?.logoutEndpoint
+        String logoutEndpoint = ''
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_LOGOUT_ENDPOINT_URL, logoutEndpoint, CONFIG_TYPE_STRING)
+        configPropertiesService.setConfigFromDb()
+        configPropertiesService.setLogOutEndPointUrl()
+        def result = CH.config?.logoutEndpoint
+        assertEquals logoutEndpoint, result
+        CH.config?.logoutEndpoint = oldLogoutEndpoint
+    }
+
+
+    @Test
+    public void testLogOutEndPointUrlLocal() {
+        def oldAuthProvider = CH.config.banner.sso.authenticationProvider
+        def oldLocalLogout = CH.config.banner?.sso?.authentication.saml.localLogout
+        CH.config.banner.sso.authenticationProvider = 'saml'
+        CH.config.banner?.sso?.authentication.saml.localLogout = 'true'
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH.config.banner?.sso?.authentication.saml.localLogout, CONFIG_TYPE_STRING)
+        configPropertiesService.setConfigFromDb()
+        configPropertiesService.setLogOutEndPointUrl()
+        def result = CH.config?.logoutEndpoint
+        assertEquals "saml/logout?local=true", result
+        CH.config?.banner?.sso.authenticationProvider = oldAuthProvider
+        CH.config?.banner?.sso?.authentication.saml.localLogout = oldLocalLogout
+    }
+
+
+    @Test
+    public void testLogOutEndPointUrlNotLocal() {
+        def oldAuthProvider = CH.config.banner.sso.authenticationProvider
+        def oldLocalLogout = CH.config.banner?.sso?.authentication.saml.localLogout
+        CH.config.banner.sso.authenticationProvider = 'saml'
+        CH.config.banner?.sso?.authentication.saml.localLogout = 'false'
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH.config.banner?.sso?.authentication.saml.localLogout, CONFIG_TYPE_STRING)
+        configPropertiesService.setConfigFromDb()
+        configPropertiesService.setLogOutEndPointUrl()
+        def result = CH.config.logoutEndpoint
+        assertEquals "saml/logout", result
+        CH.config.banner.sso.authenticationProvider = oldAuthProvider
+        CH.config.banner?.sso?.authentication.saml.localLogout = oldLocalLogout
+    }
+
+
+    @Test
+    public void testUpdateDefaultWebSessionTimeout() {
+        def oldDefaultWebSessionTimeout = CH.config.defaultWebSessionTimeout
+        ConfigApplication configApplication = createNewConfigApplication()
+        Integer newDefaultWebSessionTimeout = 2000
+        createConfigProperties(configApplication, CONFIG_NAME_DEFAULT_WEBSESSION_TIMEOUT, newDefaultWebSessionTimeout, CONFIG_TYPE_INTEGER)
+        configPropertiesService.setConfigFromDb()
+        configPropertiesService.updateDefaultWebSessionTimeout()
+        def result = CH.config.defaultWebSessionTimeout
+        assertEquals newDefaultWebSessionTimeout, result
+        CH.config.defaultWebSessionTimeout = oldDefaultWebSessionTimeout
+    }
+
+
     private void createNewGlobalConfigProps() {
         ConfigApplication configApplication = ConfigApplication.fetchByAppName(GLOBAL)
         assertNotNull configApplication?.id
@@ -229,6 +352,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         return configProperties
     }
 
+
     private ConfigProperties getAppSpecificConfigProperties() {
         ConfigProperties configProperties = new ConfigProperties(
                 configName: "testing",
@@ -238,6 +362,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         )
         return configProperties
     }
+
 
     /**
      * Mocking ConfigApplication domain.
@@ -262,12 +387,35 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         CH.config.merge(configSlurper.parse(property))
     }
 
+
     private def getSeedDataKeysForTest() {
         return [
                 ['banner.applicationName': 'Sandbox'],
                 ['ssconfig.seedData.test.key1', 'ssconfig.seedData.test.key2'],
                 ['banner.applicationName1': 'SandboxTest']
         ]
+    }
+
+
+    private ConfigApplication createNewConfigApplication() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplicationService.create(configApplication)
+        configApplication.refresh()
+        return configApplication
+    }
+
+
+    private void createConfigProperties(ConfigApplication configApplication, String configName, configValue, String configType) {
+        def configProps = []
+        ConfigProperties configProperties = new ConfigProperties(
+                configName: configName,
+                configType: configType,
+                configValue: configValue,
+                configApplication: configApplication,
+                lastModified: new Date()
+        )
+        configProps.add(configProperties)
+        configPropertiesService.create(configProps)
     }
 
 }

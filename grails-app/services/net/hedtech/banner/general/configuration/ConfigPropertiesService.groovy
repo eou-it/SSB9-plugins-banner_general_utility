@@ -5,6 +5,8 @@
 package net.hedtech.banner.general.configuration
 
 import grails.util.Holders as CH
+import net.hedtech.banner.controllers.ControllerUtils
+import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
 import org.springframework.dao.InvalidDataAccessResourceUsageException
@@ -14,13 +16,17 @@ import org.springframework.dao.InvalidDataAccessResourceUsageException
  * and will merge those props to Context Holder by the help of bootstrap.
  */
 class ConfigPropertiesService extends ServiceBase {
+
     static transactional = true
 
     private static final LOGGER = Logger.getLogger(ConfigPropertiesService.class.name)
     private static final String GLOBAL = "GLOBAL"
+    private static String localLogoutEnable="saml/logout?local=true"
+    private static String globalLogoutEnable="saml/logout"
     def grailsApplication
     def configApplicationService
     ConfigSlurper configSlurper = new ConfigSlurper()
+
 
     /**
      * This method will be get called in bootstrap to load all the config properties from the DB.
@@ -38,7 +44,7 @@ class ConfigPropertiesService extends ServiceBase {
             }
         }
         catch (InvalidDataAccessResourceUsageException ex) {
-            log.error("Exception occured  while fetching ConfigProperties from DB, Self Service Config Table doesn't exist")
+            LOGGER.error("Exception occured  while fetching ConfigProperties from DB, Self Service Config Table doesn't exist")
         }
 
     }
@@ -71,67 +77,108 @@ class ConfigPropertiesService extends ServiceBase {
     public void seedDataToDBFromConfig() {
         String appName = grailsApplication.metadata['app.name']
         String appId = grailsApplication.metadata['app.appId']
-        if (appId) {
-            try {
-                ConfigApplication configApp = ConfigApplication.fetchByAppId(appId)
-                if (configApp == null) {
-                    ConfigApplication newConfigApp = new ConfigApplication()
-                    newConfigApp.setAppId(appId)
-                    newConfigApp.setAppName(appName)
-                    newConfigApp.setLastModifiedBy('BANNER')
-                    configApp = configApplicationService.create(newConfigApp)
-                }
+        if(appId)
+            {
+                try {
+                    ConfigApplication configApp = ConfigApplication.fetchByAppId(appId)
+                    if (configApp == null) {
+                        ConfigApplication newConfigApp = new ConfigApplication()
+                        newConfigApp.setAppId(appId)
+                        newConfigApp.setAppName(appName)
+                        newConfigApp.setLastModifiedBy('BANNER')
+                        configApp = configApplicationService.create(newConfigApp)
+                    }
 
-                ArrayList configPropName = []
-                ConfigProperties.fetchByAppId(appId).each { ConfigProperties cp ->
-                    configPropName << cp.configName
-                }
+                    ArrayList configPropName = []
+                    ConfigProperties.fetchByAppId(appId).each { ConfigProperties cp ->
+                        configPropName << cp.configName
+                    }
 
-                def seedDataKey = CH.config.ssconfig.app.seeddata.keys
-                LOGGER.debug("seeddata defined in config is :" + seedDataKey)
-                def dataToSeed = []
+                    def seedDataKey = CH.config.ssconfig.app.seeddata.keys
+                    LOGGER.debug("seeddata defined in config is :" + seedDataKey)
+                    def dataToSeed = []
 
-                seedDataKey.each { obj ->
-                    if (obj instanceof List) {
-                        obj.each { keyName ->
-                            if (!configPropName.contains(keyName)
-                                    && keyName != 'grails.plugin.springsecurity.interceptUrlMap') {
-                                ConfigProperties cp = new ConfigProperties()
-                                cp.setConfigName(keyName)
+                    seedDataKey.each { obj ->
+                        if (obj instanceof List) {
+                            obj.each { keyName ->
+                                if (!configPropName.contains(keyName)) {
+                                    ConfigProperties cp = new ConfigProperties()
+                                    cp.setConfigName(keyName)
 
-                                def value = CH.config.flatten()."$keyName"
-                                cp.setConfigValue(value.toString())
-                                cp.setConfigApplication(configApp)
-                                cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
-                                cp.setLastModifiedBy('BANNER')
-                                cp.setLastModified(new Date())
-                                dataToSeed << cp
+                                    def value = CH.config.flatten()."$keyName"
+                                    cp.setConfigValue(value.toString())
+                                    cp.setConfigApplication(configApp)
+                                    cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
+                                    cp.setLastModifiedBy('BANNER')
+                                    cp.setLastModified(new Date())
+                                    dataToSeed << cp
+                                }
                             }
-                        }
-                    } else if (obj instanceof Map) {
-                        obj.each { k, v ->
-                            if (!configPropName.contains(k)
-                                    && k != 'grails.plugin.springsecurity.interceptUrlMap') {
-                                ConfigProperties cp = new ConfigProperties()
-                                cp.setConfigName(k)
-                                cp.setConfigValue(v.toString())
-                                cp.setConfigApplication(configApp)
-                                cp.setConfigType(v?.getClass()?.simpleName?.toLowerCase())
-                                cp.setLastModifiedBy('BANNER')
-                                cp.setLastModified(new Date())
-                                dataToSeed << cp
+                        } else if (obj instanceof Map) {
+                            obj.each { k, v ->
+                                if (!configPropName.contains(k)) {
+                                    ConfigProperties cp = new ConfigProperties()
+                                    cp.setConfigName(k)
+                                    cp.setConfigValue(v.toString())
+                                    cp.setConfigApplication(configApp)
+                                    cp.setConfigType(v?.getClass()?.simpleName?.toLowerCase())
+                                    cp.setLastModifiedBy('BANNER')
+                                    cp.setLastModified(new Date())
+                                    dataToSeed << cp
+                                }
                             }
                         }
                     }
+                    create(dataToSeed)
                 }
-                create(dataToSeed)
-            }
-            catch (InvalidDataAccessResourceUsageException ex) {
-                LOGGER.error("Exception occured while running seedDataToDBFromConfig method, Self Service Config Table doesn't exist")
+                catch (InvalidDataAccessResourceUsageException ex) {
+                    LOGGER.error("Exception occured while running seedDataToDBFromConfig method, Self Service Config Table doesn't exist")
 
+                }
+            }else{
+                LOGGER.info("No App Id Specified in application.properties");
+        }
+    }
+
+
+    public setTransactionTimeOut() {
+        grailsApplication?.config?.transactionTimeout = (grailsApplication.config.banner?.transactionTimeout instanceof Integer
+                ? grailsApplication.config.banner?.transactionTimeout
+                : 30)
+
+    }
+
+
+    public setLoginEndPointUrl() {
+        grailsApplication?.config?.loginEndpoint = grailsApplication.config?.loginEndpoint ?: ""
+    }
+
+
+    public setLogOutEndPointUrl() {
+        if (ControllerUtils.isSamlEnabled()) {
+            if (ControllerUtils.isLocalLogoutEnabled()) {
+                grailsApplication?.config?.logoutEndpoint = localLogoutEnable
+            } else {
+                grailsApplication?.config?.logoutEndpoint = globalLogoutEnable
             }
         } else {
-            LOGGER.info("No App Id Specified in application.properties");
+            grailsApplication?.config?.logoutEndpoint = grailsApplication.config?.logoutEndpoint ?: ""
+        }
+    }
+
+
+    public setGuestLoginEnabled() {
+        if ((true == grailsApplication.config?.guestAuthenticationEnabled) && (!"default".equalsIgnoreCase(grailsApplication.config?.banner?.sso?.authenticationProvider.toString()))) {
+            grailsApplication?.config?.guestLoginEnabled = true
+        } else {
+            grailsApplication?.config?.guestLoginEnabled = false
+        }
+    }
+
+
+    public void updateDefaultWebSessionTimeout(){
+        if(AuthenticationProviderUtility.defaultWebSessionTimeout != CH.config.defaultWebSessionTimeout) {
+            AuthenticationProviderUtility.defaultWebSessionTimeout = CH.config.defaultWebSessionTimeout
         }
     }
 }
