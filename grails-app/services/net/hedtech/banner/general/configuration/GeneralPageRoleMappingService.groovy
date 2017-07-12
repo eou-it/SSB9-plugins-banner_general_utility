@@ -132,7 +132,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * @return list
      */
     @Transactional(readOnly = true)
-    private def getPageRoleMappingList() {
+    public LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>> getPageRoleMappingList() {
         fetchGeneralPageRoleMappingByAppId()
     }
 
@@ -148,7 +148,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * The private method and this common method will be called with Hibernate Session passed as a param.
      * @param session
      */
-    private LinkedHashMap fetchGeneralPageRoleMappingByAppId() {
+    private LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>> fetchGeneralPageRoleMappingByAppId() {
         def list
         def generalPageRoleMapping = new LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>>()
         try {
@@ -224,17 +224,19 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
     /**
      * Method is used to seed the data when server starts,
      * The data will be seeded in to three tables
-     * 1) GUBAPPL - If application is starting for 1st time (This call will be before
+     * <p><ul>
+     * <li> GUBAPPL - If application is starting for 1st time (This call will be before
      *              ConfigPropertiesService.seedDataToDBFromConfig()
-     * 2) GURCTLEP
-     * 3) GURAPPR
+     * <li> GURCTLEP - Page id, app id and url will be seeded.
+     * <li> GURAPPR - Roles for the page id of GURCTLEP will be seeded.
+     * </ul><p>
      */
     public void seedInterceptUrlMapAtServerStartup() {
         try {
             String appName = Holders.grailsApplication.metadata['app.name']
             String appId = Holders.grailsApplication.metadata['app.appId']
 
-            ConfigApplication application = ConfigApplication.fetchByAppName(appName)
+            ConfigApplication application = ConfigApplication.fetchByAppId(appId)
             if (!application) {
                 ConfigApplication newConfigApp = new ConfigApplication()
                 newConfigApp.setAppId(appId)
@@ -248,20 +250,27 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             Map<String, ArrayList<String>> interceptUrlMapFromDB = new HashMap<String, ArrayList<String>>()
             interceptUrlMapFromDB = prepareMap(list, interceptUrlMapFromDB)
 
-            interceptUrlMap.each { String url, List<String> roles ->
+            int pageIdMaxSize = ConfigControllerEndpointPage?.constraints?.pageId?.maxSize
+            pageIdMaxSize = (pageIdMaxSize ? pageIdMaxSize : 60)
+
+            Long maxOfDisplaySequence = ConfigControllerEndpointPage.createCriteria()?.get {
+                projections {
+                    max 'displaySequence'
+                }
+            } as Long
+            maxOfDisplaySequence = (maxOfDisplaySequence ? maxOfDisplaySequence : 0)
+
+            interceptUrlMap.each { String url, ArrayList<String> roles ->
                 if (!interceptUrlMapFromDB.containsKey(url)) {
                     // Start
                     // Save GURCTLEP
                     ConfigControllerEndpointPage ccep = new ConfigControllerEndpointPage()
                     ccep.setLastModifiedBy('BANNER')
                     ccep.setLastModified(new Date())
-                    ccep.setDisplaySequence(interceptUrlMap.findIndexOf { it.key == url })
+                    ccep.setDisplaySequence(maxOfDisplaySequence + 1)
                     ccep.setPageUrl(url)
                     ccep.setStatusIndicator(true)
-                    ConfigApplication ca = new ConfigApplication()
-                    ca.setId(application.getId())
-
-                    ccep.setConfigApplication(ca)
+                    ccep.setConfigApplication(application)
 
                     // Preparing the pageId
                     String appIdCamelCase = WordUtils.capitalizeFully(application.getAppId())
@@ -269,7 +278,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     if (url == '/' || url == '/**') {
                         pageId = appIdCamelCase + ' ' + url
                     } else {
-                        pageId = getStringForPageId(url, application.getAppId())
+                        pageId = getStringForPageId(url, pageIdMaxSize)
                     }
                     ccep.setPageId(pageId)
                     ccep.save(failOnError: true, flush: true)
@@ -277,7 +286,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     // Save GURAPPR - multile roles
                     roles.each { roleCode ->
                         ConfigRolePageMapping crpm = new ConfigRolePageMapping()
-                        crpm.setConfigApplication(ca)
+                        crpm.setConfigApplication(application)
                         crpm.setLastModifiedBy('BANNER')
                         crpm.setLastModified(new Date())
                         crpm.setEndpointPage(ccep)
@@ -285,6 +294,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                         crpm.save(failOnError: true, flush: true)
                     }
                     // End
+                    maxOfDisplaySequence++
                 }
             }
         } catch (Exception e) {
@@ -307,34 +317,51 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
     }
 
     /**
-     * The method is to prepare the pageId (PK) for GURCTLEP table, method will accept the
-     * GURCTLEP_PAGE_URL and will return the end point with last two '/' char.
-     * Eg. url = '/ssb/themeEditor/**' then the prepared pageId = 'Psa Themeeditor'
-     * from the 2nd last '/' char if the same url exists for the same application then we will append the previous
-     * page name Eg. 'Psa Ssb Themeeditor'.
+     * The method is to prepare the pageId (PK) for GURCTLEP table.
+     * <p><ul>
+     * <li> GURCTLEP_PAGE_URL and will return the url without the '/' string.
+     *    Eg. url = '/ssb/themeEditor/**' then the prepared pageId = 'SsbThemeeditor'
+     * <li> If the '**' will be removed if url has it at the end.
+     *    eg: /ssb/home/**  ---> SsbHome
+     *        /ssb/home/test**  ---> SsbHomeTest
+     * <li> If the prepared page id is greater than the size of the column length
+     *    then method will remove the page id string from the beginning.
+     *    eg: /ssb/AuthenticationTesting/testingEndPoint1/testingEndPoint2/homePage
+     *        the page id will be SsbAuthenticationTestingTestingEndPoint1TestingEndPoint2HomePage
+     *        prepared page id for above string is - EndPoint1TestingEndPoint2HomePage
+     * </ul><p>
      * @param url GURCTLEP_PAGE_URL value from GURCTLEP table.
-     * @return pageId prepared pageId from the pageUrl.
+     * @param pageIdMaxSize Size of the table column - GURCTLEP_PAGE_ID
+     * @return pageId - @String type, prepared pageId from the pageUrl.
      */
-    private String getStringForPageId(String url, String appId) {
-        List<String> list = new ArrayList<String>(Arrays.asList(url.split("/")));
-        list.removeAll(Arrays.asList(null, ""));
+    private static String getStringForPageId(String url, int pageIdMaxSize) {
+        List<String> list = new ArrayList<String>(Arrays.asList(url.split("/")))
+        list.removeAll(Arrays.asList(null, ""))
 
-        int lastIndex = (list.size() - 1);
-        String preparedPageId = "";
-        String preparedAppId = WordUtils.capitalizeFully(appId)
+        int lastIndex = (list.size() - 1)
 
-        if (list.size() > 1) {
-            String pageName = WordUtils.capitalizeFully(list.get(lastIndex - 1)) + " " + WordUtils.capitalizeFully(list.get(lastIndex))
-            preparedPageId = (preparedAppId + " " + pageName)
-        } else if (list.size() == 1) {
-            preparedPageId = preparedAppId + " " + WordUtils.capitalizeFully(list.get(lastIndex))
+        if (list?.get(lastIndex) == '**') {
+            list.remove(lastIndex)
+        } else if (list?.get(lastIndex)?.contains('**')) {
+            list?.set(lastIndex, list?.get(lastIndex)?.minus('**'))
         }
 
-        if (isDuplicatePageId(preparedPageId, appId)) {
-            if (list.size() >= 3) {
-                String previousPageName = WordUtils.capitalizeFully(list.get(lastIndex - 2)?.toUpperCase())
-                String pageName = WordUtils.capitalizeFully(list.get(lastIndex - 1)) + " " + WordUtils.capitalizeFully(list.get(lastIndex))
-                preparedPageId = preparedAppId + " " + previousPageName + " " + pageName
+        String preparedPageId = ''
+        boolean endLoop = false
+
+        list.eachWithIndex { String str, int i ->
+            if (!endLoop) {
+                preparedPageId = preparedPageId + str.capitalize()
+                int initIndex = 0
+                if (preparedPageId?.size() > pageIdMaxSize) {
+                    while (preparedPageId?.size() > pageIdMaxSize) {
+                        logger.warn("Prepared PageId to seed data for intercepturl is exceed the size(maxSize=${pageIdMaxSize}), " +
+                                "the full length of prepared url is : " + preparedPageId)
+                        preparedPageId = preparedPageId?.minus(list?.get(initIndex)?.capitalize())
+                        initIndex++
+                    }
+                    endLoop = true
+                }
             }
         }
         return preparedPageId
