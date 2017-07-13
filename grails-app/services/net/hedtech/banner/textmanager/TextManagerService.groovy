@@ -9,7 +9,7 @@ import groovy.sql.Sql
 import org.apache.log4j.Logger
 
 class TextManagerService {
-    def dataSource
+    def sessionFactory
 
     static transactional = false //Transaction not managed by hibernate
 
@@ -23,6 +23,8 @@ class TextManagerService {
     private def cacheTime
     private Boolean tmEnabled = true
 
+    public static dbValues = [:]
+
     private def tranManProject() {
         if (!tmEnabled) {
             return
@@ -30,7 +32,7 @@ class TextManagerService {
         if (cacheTime && (new Date().getTime() - cacheTime.getTime()) < 5 * 60 * 1000) {
             return tranManProjectCache
         }
-        Sql sql = new Sql(dataSource.underlyingSsbDataSource)
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         String appName = Holders.grailsApplication.metadata['app.name']
         String result = ""
         int matches = 0
@@ -38,17 +40,16 @@ class TextManagerService {
             // Find projects with a matching application name in GMRPCFG
             // If more matches exist pick the project with the latest activity date
             def statement = """
-          select GMRPCFG_PROJECT from GMRPCFG join GMBPROJ on GMBPROJ_PROJECT=GMRPCFG_PROJECT
-          where GMRPCFG_KEY = $PROJECT_CFG_KEY_APP
-          and GMRPCFG_VALUE = $appName
-          order by GMRPCFG_ACTIVITY_DATE
-        """
+                               select GMRPCFG_PROJECT from GMRPCFG join GMBPROJ on GMBPROJ_PROJECT=GMRPCFG_PROJECT
+                               where GMRPCFG_KEY = $PROJECT_CFG_KEY_APP and GMRPCFG_VALUE = $appName
+                               order by GMRPCFG_ACTIVITY_DATE
+                            """
             sql.eachRow(statement) { row ->
                 result = row.GMRPCFG_PROJECT
                 matches++
             }
         } catch (e) {
-            log.error "Error initializing text manager $e"
+            log.error("Error initializing text manager", e)
             tmEnabled = false
         } finally {
             sql?.close()
@@ -70,18 +71,20 @@ class TextManagerService {
             return
         }
         if (!tranManProject()) {
-            Sql sql = new Sql(dataSource.underlyingSsbDataSource)
+            Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
             def appName = Holders.grailsApplication.metadata['app.name']
             try {
                 def statement = """
-                   insert into GMBPROJ (GMBPROJ_PROJECT, GMBPROJ_ACTIVITY_DATE, GMBPROJ_DESC, GMBPROJ_OWNER,GMBPROJ_USER_ID)
-                   values ($projectCode, sysdate, $projectDescription, 'TRANMGR','ban_ss_user')
-                """
+                                   insert into GMBPROJ (GMBPROJ_PROJECT, GMBPROJ_ACTIVITY_DATE, GMBPROJ_DESC,
+                                   GMBPROJ_OWNER,GMBPROJ_USER_ID) values ($projectCode, sysdate, $projectDescription,
+                                   'TRANMGR','ban_ss_user')
+                                """
                 sql.execute(statement)
                 statement = """
-                   insert into GMRPCFG (GMRPCFG_PROJECT, GMRPCFG_KEY, GMRPCFG_VALUE,GMRPCFG_DESC,GMRPCFG_USER_ID,GMRPCFG_ACTIVITY_DATE)
-                   values ($projectCode, $PROJECT_CFG_KEY_APP, $appName, 'Banner Application in this project','ban_ss_user',sysdate )
-                """
+                               insert into GMRPCFG (GMRPCFG_PROJECT, GMRPCFG_KEY, GMRPCFG_VALUE, GMRPCFG_DESC,
+                               GMRPCFG_USER_ID,GMRPCFG_ACTIVITY_DATE) values ($projectCode, $PROJECT_CFG_KEY_APP,
+                               $appName, 'Banner Application in this project','ban_ss_user',sysdate )
+                            """
                 sql.execute(statement)
                 cacheTime = null
                 log.info "Created TranMan project $projectCode"
@@ -98,50 +101,70 @@ class TextManagerService {
         }
         def project = tranManProject()
         if (project) {
-            Sql sql = new Sql(dataSource.underlyingSsbDataSource)
+            Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
             try {
                 def statement = """
-                  begin
-                    delete from GMRPCFG where GMRPCFG_project=$project;
-                    delete from GMRSPRP where GMRSPRP_project=$project;
-                    delete from GMRSHST where GMRSHST_project=$project;
-                    delete from GMRPOBJ where GMRPOBJ_project=$project;
-                    delete from GMBPROJ where GMBPROJ_project=$project;
-                  end;
-                """
+                                   begin
+                                    delete from GMRPCFG where GMRPCFG_project=$project;
+                                    delete from GMRSPRP where GMRSPRP_project=$project;
+                                    delete from GMRSHST where GMRSHST_project=$project;
+                                    delete from GMRPOBJ where GMRPOBJ_project=$project;
+                                    delete from GMBPROJ where GMBPROJ_project=$project;
+                                   end;
+                                """
                 sql.execute(statement)
                 cacheTime = null
                 log.info "Deleted TranMan project $project"
+            } catch(e){
+                log.error("Failed in deleting the project", e)
             } finally {
                 sql?.close()
             }
         }
     }
 
-    def save(properties, name, sourceLocale = ROOT_LOCALE_APP, locale) {
+
+    def save(properties, name, srcLocale = ROOT_LOCALE_APP, locale) {
         if (!tmEnabled) {
             return
         }
         def project = tranManProject()
         if (project) {
-            def textManagerUtil = new TextManagerUtil()
             def textManagerDB = new TextManagerDB()
-            textManagerDB.dataSource = dataSource
             textManagerDB.createConnection()
             int cnt = 0
             try {
-                String[] args = [
-                        "projectCode=${project}", //Todo configure project in translation manager
-                        "moduleName=${name.toUpperCase()}",
-                        "srcLocale=$ROOT_LOCALE_TM",
-                        locale == "$ROOT_LOCALE_APP" ? "srcFile=${name}.properties" : "srcFile=${name}_${locale}.properties",
-                        locale == "$sourceLocale" ? 'srcIndicator=s' : 'srcIndicator=r',
-                        locale == "$sourceLocale" ? '' : "tgtLocale=${locale.replace('_', '')}"
-                ]
+                String msg = """
+                                Arguments: mo=<mode> ba=<batch> lo=<db logon> pc=<TranMan Project> sl=<source language>
+                                tl=<target language>  sf=<source file> tf=<target file>
+                                mode: s (extract) | r (reverse extract) | t (translate) | q (quick translate - no check)
+                                batch: [y|n]. n (No) is default. If y (Yes), the module record will be updated with
+                                file locations etc.
+                             """
+                dbValues.projectCode = project
+                dbValues.moduleName =  name.toUpperCase()
+                dbValues.srcLocale =  ROOT_LOCALE_TM
+                dbValues.srcFile = locale == ROOT_LOCALE_APP ? "${name}.properties" : "${name}_${locale}.properties"
+                dbValues.srcIndicator = locale == srcLocale ? 's' : 'r'
+                dbValues.tgtLocale = locale == srcLocale ? '' : "${locale.replace('_','')}"
 
-                textManagerUtil.parseArgs(args)
-                textManagerDB.setDBContext(textManagerUtil)
-                textManagerDB.setDefaultProp(textManagerUtil)
+                if (dbValues.srcIndicator == null) {
+                    dbValues << [srcIndicator:"s"]
+                } else if (dbValues.srcIndicator.equals("t")) {
+                    if (dbValues.tgtFile == null) {
+                        log.error "No target file specified (tgtFile=...) \n" + msg
+                    }
+                    if (dbValues.tgtLocale == null) {
+                        log.error "No target language specified (tgtLocale=...) \n" + msg
+                    }
+                } else if (dbValues.srcIndicator.equals("r")) {
+                    if (dbValues.tgtLocale == null) {
+                        log.error "No target language specified (tgtLocale=...) \n" + msg
+                    }
+                }
+
+                textManagerDB.setDBContext(dbValues)
+                textManagerDB.setDefaultProp(dbValues)
                 def defaultObjectProp = textManagerDB.getDefaultObjectProp()
                 final String sep = "."
                 int sepLoc
@@ -156,16 +179,16 @@ class TextManagerService {
                     }
                     defaultObjectProp.parentName = sep + key.substring(0, sepLoc) //. plus expression between brackets in [x.y...].z
                     defaultObjectProp.objectName = key.substring(sepLoc)       // expression between brackets in x.y....[z]
-                    defaultObjectProp.string = TextManagerUtil.smartQuotesReplace(value)
+                    defaultObjectProp.string = smartQuotesReplace(value)
                     log.info key + " = " + defaultObjectProp.string
                     textManagerDB.setPropString(defaultObjectProp)
                     cnt++
                 }
                 //Invalidate strings that are in db but not in property file
-                if (textManagerUtil.dbValues.srcIndicator.equals("s")) {
+                if (dbValues.srcIndicator.equals("s")) {
                     textManagerDB.invalidateStrings()
                 }
-                textManagerDB.setModuleRecord(textManagerUtil)
+                textManagerDB.setModuleRecord(dbValues)
 
             } catch (e){
                 log.error("Exception in saving properties", e)
@@ -200,12 +223,9 @@ class TextManagerService {
             def params = [locale: tmLocale, pc: tmProject, days_ago: (cacheAgeMilis+timeOut)/1000/24/3600 , max_distance: 1]
             //max_distance: 1 means use strings with a matching locale, do not use a string from a different territory
             //max_distance: 2 means also use a string from a different territory (but just picks one if multiple territories exist)
-            Sql sql = new Sql(dataSource.underlyingSsbDataSource)
+            Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
             sql.cacheStatements = false
             //Query fetching changed messages. Don't use message with status pending (11).
-            //Using a trick to simplify query finding the best match: Take the MIN values of
-            //a concatenation of distance and the values of interest with the distance to the ideal
-            //Then get the value of interest by stripping of the distance.
             def statement = """
                  |WITH locales AS
                  |(
@@ -221,6 +241,7 @@ class TextManagerService {
                  |  gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop
                  |  FROM gmrsprp
                  |  WHERE gmrsprp_project = :pc
+                 |  AND GMRSPRP_STAT_CODE=2
                  |    AND gmrsprp_activity_date >= (SYSDATE - :days_ago)
                  |    AND gmrsprp_lang_code IN (SELECT lang_code FROM locales) -- Only select relevant records
                  |)
@@ -234,6 +255,7 @@ class TextManagerService {
                  |FROM locales, gmrsprp p1, gmbstrg
                  |WHERE locales.lang_code = gmrsprp_lang_code
                  |  AND gmbstrg_strcode=gmrsprp_strcode
+                 |  AND GMRSPRP_STAT_CODE=2
                  |  AND (gmrsprp_project, gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
                  |       gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop)
                  |       IN (SELECT * FROM props_with_changes)
@@ -248,13 +270,13 @@ class TextManagerService {
                 rows = sql.rows(statement, params, null)
             }
             catch (e) {
-                log.error("Exception in findMessage for key=$key, locale=$locale \n$e")
+                log.error("Exception in finding message for key=$key, locale=$locale", e)
             }
             finally {
                 sql?.close()
             }
             def t1 = new Date()
-            if (rows.size()) {
+            if (rows?.size()) {
                 rows.each { row ->
                     def translations = cacheMsg[row.key] ?: [:]
                     translations[locale] = row.string
@@ -264,9 +286,27 @@ class TextManagerService {
             localeLoaded[locale] = t0
             msg = cacheMsg[key] ? cacheMsg[key][locale] : null
             def t2 = new Date()
-            log.debug"Reloaded ${rows.size()} modified texts in ${t2.getTime() - t0.getTime()} ms . Query+Fetch time: ${t1.getTime() - t0.getTime()}"
+            log.debug "Reloaded ${rows.size()} modified texts in ${t2.getTime() - t0.getTime()} ms . Query+Fetch time: ${t1.getTime() - t0.getTime()}"
         }
         msg
     }
 
+    String smartQuotesReplace(String s) {
+        StringBuffer res = new StringBuffer()
+        char c
+        s.eachWithIndex{ item, index ->
+            c = item
+            if (c == '\'') {
+                // look ahead
+                if (index + 1 < s.length() && s[index + 1] == '\'') {
+                    res.append(c)
+                } else {
+                    res.append("\u2019")
+                }
+            } else {
+                res.append(c)
+            }
+        }
+        return res.toString()
+    }
 }
