@@ -184,8 +184,11 @@ class ConfigPropertiesService extends ServiceBase {
 
 
     public void updateDefaultWebSessionTimeout(){
-        if(AuthenticationProviderUtility.defaultWebSessionTimeout != CH.config.defaultWebSessionTimeout) {
-            AuthenticationProviderUtility.defaultWebSessionTimeout = CH.config.defaultWebSessionTimeout
+        def defaultWebSessionTimeoutFromConfig= CH.config.defaultWebSessionTimeout
+        if(!defaultWebSessionTimeoutFromConfig instanceof Map) {
+            if (AuthenticationProviderUtility.defaultWebSessionTimeout != defaultWebSessionTimeoutFromConfig) {
+                AuthenticationProviderUtility.defaultWebSessionTimeout = defaultWebSessionTimeoutFromConfig
+            }
         }
     }
 }
