@@ -78,7 +78,6 @@ public class ConfigProperties implements Serializable {
 
 
     static constraints = {
-        configName(maxSize: 50)
         lastModified(nullable: true)
         configType(maxSize: 30)
         dataOrigin(maxSize: 30, nullable: true)
