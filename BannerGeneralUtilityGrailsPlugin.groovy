@@ -3,6 +3,8 @@
  ****************************************************************************** */
 import grails.plugin.springsecurity.SpringSecurityUtils
 import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
+import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
+import net.hedtech.banner.i18n.BannerMessageSource
 class BannerGeneralUtilityGrailsPlugin {
     String version = "9.24.1"
 
@@ -53,7 +55,13 @@ class BannerGeneralUtilityGrailsPlugin {
     }
 
     def doWithSpring = {
-        // TODO Implement runtime spring config (optional)
+        // Reconfigure the messageSource to use BannerMessageSource
+        def beanConf = springConfig.getBeanConfig('messageSource')
+        def beanDef = beanConf ? beanConf.beanDefinition : springConfig.getBeanDefinition('messageSource')
+        if (beanDef?.beanClassName == PluginAwareResourceBundleMessageSource.class.canonicalName) {
+            //just change the target class of the bean, maintaining all configurations.
+            beanDef.beanClassName = BannerMessageSource.class.canonicalName
+        }
 
         /**
          * If the securityConfigType = 'Requestmap' then the "GeneralPageRoleMappingService" will be get injected
