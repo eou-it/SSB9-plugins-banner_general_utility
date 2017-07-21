@@ -10,9 +10,12 @@ import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.log4j.Logger
 
-@Transactional
 class TextManagerService {
     def sessionFactory
+
+    def underlyingDataSource
+    def underlyingSsbDataSource
+
 
     private final static Logger log = Logger.getLogger(TextManagerService.class.name)
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
@@ -33,7 +36,7 @@ class TextManagerService {
         if (cacheTime && (new Date().getTime() - cacheTime.getTime()) < 5 * 60 * 1000) {
             return tranManProjectCache
         }
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
         String appName = Holders.grailsApplication.metadata['app.name']
         String result = ""
         int matches = 0
@@ -72,7 +75,7 @@ class TextManagerService {
             return
         }
         if (!tranManProject()) {
-            Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+            Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
             def appName = Holders.grailsApplication.metadata['app.name']
             try {
                 def statement = """
@@ -102,7 +105,7 @@ class TextManagerService {
         }
         def project = tranManProject()
         if (project) {
-            Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+            Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
             try {
                 def statement = """
                                    begin
@@ -124,7 +127,7 @@ class TextManagerService {
         }
     }
 
-
+    @Transactional
     def save(properties, name, srcLocale = ROOT_LOCALE_APP, locale) {
         if (!tmEnabled) {
             return
@@ -205,7 +208,6 @@ class TextManagerService {
     def localeLoaded = [:]
     def timeOut = 60 * 1000 as long //milli seconds
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     def findMessage(key, locale) {
         if (!tmEnabled) {
             return null
@@ -225,7 +227,7 @@ class TextManagerService {
             def params = [locale: tmLocale, pc: tmProject, days_ago: (cacheAgeMilis+timeOut)/1000/24/3600 , max_distance: 1]
             //max_distance: 1 means use strings with a matching locale, do not use a string from a different territory
             //max_distance: 2 means also use a string from a different territory (but just picks one if multiple territories exist)
-            Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+            Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
             sql.cacheStatements = false
             //Query fetching changed messages. Don't use message with status pending (11).
             def statement = """
