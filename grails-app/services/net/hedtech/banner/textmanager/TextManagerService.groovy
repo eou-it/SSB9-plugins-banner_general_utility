@@ -4,14 +4,15 @@
 
 package net.hedtech.banner.textmanager
 
+import grails.transaction.Transactional
+import org.springframework.transaction.annotation.Propagation
 import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.log4j.Logger
 
+@Transactional
 class TextManagerService {
     def sessionFactory
-
-    static transactional = false //Transaction not managed by hibernate
 
     private final static Logger log = Logger.getLogger(TextManagerService.class.name)
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
@@ -204,6 +205,7 @@ class TextManagerService {
     def localeLoaded = [:]
     def timeOut = 60 * 1000 as long //milli seconds
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     def findMessage(key, locale) {
         if (!tmEnabled) {
             return null
@@ -286,7 +288,7 @@ class TextManagerService {
             localeLoaded[locale] = t0
             msg = cacheMsg[key] ? cacheMsg[key][locale] : null
             def t2 = new Date()
-            log.debug "Reloaded ${rows.size()} modified texts in ${t2.getTime() - t0.getTime()} ms . Query+Fetch time: ${t1.getTime() - t0.getTime()}"
+            log.debug "Reloaded ${rows?.size()} modified texts in ${t2.getTime() - t0.getTime()} ms . Query+Fetch time: //${t1.getTime() - t0.getTime()}"
         }
         msg
     }
