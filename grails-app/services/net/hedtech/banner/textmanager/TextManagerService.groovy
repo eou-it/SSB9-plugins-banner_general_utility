@@ -15,7 +15,7 @@ class TextManagerService {
 
     def underlyingDataSource
     def underlyingSsbDataSource
-
+    private Object savePropLock= new Object();
 
     private final static Logger log = Logger.getLogger(TextManagerService.class.name)
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
@@ -185,7 +185,9 @@ class TextManagerService {
                     defaultObjectProp.objectName = key.substring(sepLoc)       // expression between brackets in x.y....[z]
                     defaultObjectProp.string = smartQuotesReplace(value)
                     log.info key + " = " + defaultObjectProp.string
-                    textManagerDB.setPropString(defaultObjectProp)
+                    synchronized (savePropLock) {
+                        textManagerDB.setPropString(defaultObjectProp)
+                    }
                     cnt++
                 }
                 //Invalidate strings that are in db but not in property file
