@@ -15,6 +15,7 @@ class TextManagerService {
 
     def underlyingDataSource
     def underlyingSsbDataSource
+
     private Object savePropLock= new Object();
 
     private final static Logger log = Logger.getLogger(TextManagerService.class.name)
@@ -134,9 +135,11 @@ class TextManagerService {
         }
         def project = tranManProject()
         if (project) {
+            int cnt = 0
+            synchronized (savePropLock){
             def textManagerDB = new TextManagerDB()
             textManagerDB.createConnection()
-            int cnt = 0
+
             try {
                 String msg = """
                                 Arguments: mo=<mode> ba=<batch> lo=<db logon> pc=<TranMan Project> sl=<source language>
@@ -151,7 +154,6 @@ class TextManagerService {
                 dbValues.srcFile = locale == ROOT_LOCALE_APP ? "${name}.properties" : "${name}_${locale}.properties"
                 dbValues.srcIndicator = locale == srcLocale ? 's' : 'r'
                 dbValues.tgtLocale = locale == srcLocale ? '' : "${locale.replace('_','')}"
-
                 if (dbValues.srcIndicator == null) {
                     dbValues << [srcIndicator:"s"]
                 } else if (dbValues.srcIndicator.equals("t")) {
@@ -185,14 +187,15 @@ class TextManagerService {
                     defaultObjectProp.objectName = key.substring(sepLoc)       // expression between brackets in x.y....[z]
                     defaultObjectProp.string = smartQuotesReplace(value)
                     log.info key + " = " + defaultObjectProp.string
-                    synchronized (savePropLock) {
+
                         textManagerDB.setPropString(defaultObjectProp)
-                    }
+
                     cnt++
                 }
+
                 //Invalidate strings that are in db but not in property file
                 if (dbValues.srcIndicator.equals("s")) {
-                    textManagerDB.invalidateStrings()
+                        textManagerDB.invalidateStrings(dbValues)
                 }
                 textManagerDB.setModuleRecord(dbValues)
 
@@ -200,6 +203,7 @@ class TextManagerService {
                 log.error("Exception in saving properties", e)
             }finally{
                 textManagerDB.closeConnection()
+            }
             }
             return [error: null, count: cnt]
         }
