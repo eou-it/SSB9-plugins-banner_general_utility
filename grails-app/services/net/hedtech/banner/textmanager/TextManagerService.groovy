@@ -4,6 +4,8 @@
 
 package net.hedtech.banner.textmanager
 
+import grails.transaction.Transactional
+import org.springframework.transaction.annotation.Propagation
 import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.log4j.Logger
@@ -11,7 +13,10 @@ import org.apache.log4j.Logger
 class TextManagerService {
     def sessionFactory
 
-    static transactional = false //Transaction not managed by hibernate
+    def underlyingDataSource
+    def underlyingSsbDataSource
+
+    private Object savePropLock= new Object();
 
     private final static Logger log = Logger.getLogger(TextManagerService.class.name)
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
@@ -32,7 +37,7 @@ class TextManagerService {
         if (cacheTime && (new Date().getTime() - cacheTime.getTime()) < 5 * 60 * 1000) {
             return tranManProjectCache
         }
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
         String appName = Holders.grailsApplication.metadata['app.name']
         String result = ""
         int matches = 0
@@ -71,7 +76,7 @@ class TextManagerService {
             return
         }
         if (!tranManProject()) {
-            Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+            Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
             def appName = Holders.grailsApplication.metadata['app.name']
             try {
                 def statement = """
@@ -101,7 +106,7 @@ class TextManagerService {
         }
         def project = tranManProject()
         if (project) {
-            Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+            Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
             try {
                 def statement = """
                                    begin
@@ -123,16 +128,18 @@ class TextManagerService {
         }
     }
 
-
+    @Transactional
     def save(properties, name, srcLocale = ROOT_LOCALE_APP, locale) {
         if (!tmEnabled) {
             return
         }
         def project = tranManProject()
         if (project) {
+            int cnt = 0
+            synchronized (savePropLock){
             def textManagerDB = new TextManagerDB()
             textManagerDB.createConnection()
-            int cnt = 0
+
             try {
                 String msg = """
                                 Arguments: mo=<mode> ba=<batch> lo=<db logon> pc=<TranMan Project> sl=<source language>
@@ -147,7 +154,6 @@ class TextManagerService {
                 dbValues.srcFile = locale == ROOT_LOCALE_APP ? "${name}.properties" : "${name}_${locale}.properties"
                 dbValues.srcIndicator = locale == srcLocale ? 's' : 'r'
                 dbValues.tgtLocale = locale == srcLocale ? '' : "${locale.replace('_','')}"
-
                 if (dbValues.srcIndicator == null) {
                     dbValues << [srcIndicator:"s"]
                 } else if (dbValues.srcIndicator.equals("t")) {
@@ -181,12 +187,15 @@ class TextManagerService {
                     defaultObjectProp.objectName = key.substring(sepLoc)       // expression between brackets in x.y....[z]
                     defaultObjectProp.string = smartQuotesReplace(value)
                     log.info key + " = " + defaultObjectProp.string
-                    textManagerDB.setPropString(defaultObjectProp)
+
+                        textManagerDB.setPropString(defaultObjectProp)
+
                     cnt++
                 }
+
                 //Invalidate strings that are in db but not in property file
                 if (dbValues.srcIndicator.equals("s")) {
-                    textManagerDB.invalidateStrings()
+                        textManagerDB.invalidateStrings(dbValues)
                 }
                 textManagerDB.setModuleRecord(dbValues)
 
@@ -194,6 +203,7 @@ class TextManagerService {
                 log.error("Exception in saving properties", e)
             }finally{
                 textManagerDB.closeConnection()
+            }
             }
             return [error: null, count: cnt]
         }
@@ -223,7 +233,7 @@ class TextManagerService {
             def params = [locale: tmLocale, pc: tmProject, days_ago: (cacheAgeMilis+timeOut)/1000/24/3600 , max_distance: 1]
             //max_distance: 1 means use strings with a matching locale, do not use a string from a different territory
             //max_distance: 2 means also use a string from a different territory (but just picks one if multiple territories exist)
-            Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+            Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
             sql.cacheStatements = false
             //Query fetching changed messages. Don't use message with status pending (11).
             def statement = """
@@ -286,7 +296,7 @@ class TextManagerService {
             localeLoaded[locale] = t0
             msg = cacheMsg[key] ? cacheMsg[key][locale] : null
             def t2 = new Date()
-            log.debug "Reloaded ${rows.size()} modified texts in ${t2.getTime() - t0.getTime()} ms . Query+Fetch time: ${t1.getTime() - t0.getTime()}"
+            log.debug "Reloaded ${rows?.size()} modified texts in ${t2.getTime() - t0.getTime()} ms . Query+Fetch time: //${t1.getTime() - t0.getTime()}"
         }
         msg
     }

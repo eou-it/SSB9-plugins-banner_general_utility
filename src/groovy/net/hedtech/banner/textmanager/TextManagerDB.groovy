@@ -14,11 +14,11 @@ class TextManagerDB {
     Sql sql
     ObjectProperty defaultProp
 
-    String projectCode
+    /*String projectCode
     String langCodeSrc
     String langCodeTgt
     String moduleType
-    String moduleName
+    String moduleName*/
 
     private static final def log = Logger.getLogger(TextManagerDB.class.name)
 
@@ -71,11 +71,11 @@ class TextManagerDB {
         int defStatus = 1 //set to 1 for properties - assume translatable by default
         int sqlTrace = 0
         long timestamp = System.currentTimeMillis()
-        projectCode   = dbValues.projectCode
-        langCodeSrc  = dbValues.srcLocale
-        langCodeTgt  = dbValues.tgtLocale
-        moduleType = 'J'
-        moduleName = dbValues.moduleName
+        String projectCode   = dbValues.projectCode
+        String langCodeSrc  = dbValues.srcLocale
+        String langCodeTgt  = dbValues.tgtLocale
+        String moduleType = 'J'
+        String moduleName = dbValues.moduleName
 
         //Reverse extract.
         if (dbValues.srcIndicator.equals("r")) {
@@ -101,25 +101,29 @@ class TextManagerDB {
 
 
     void setModuleRecord(Map dbValues) throws SQLException {
-        String dataSrc = dbValues.srcFile
-        String langCode = langCodeSrc
+        String dataSrc
+        String langCode
         String modDesc
-
+        String projectCode   = dbValues.projectCode
+        String langCodeSrc  = dbValues.srcLocale
+        String langCodeTgt  = dbValues.tgtLocale
+        String moduleType = 'J'
+        String moduleName = dbValues.moduleName
 
         switch (dbValues.srcIndicator.charAt(0) ) {
             case 's':
                 dataSrc = dbValues.srcFile
-                langCode = langCodeSrc
+                langCode = dbValues.srcLocale
                 modDesc = "Properties batch extract"
                 break
             case 'r':
                 dataSrc = dbValues.srcFile
-                langCode = langCodeTgt
+                langCode = dbValues.tgtLocale
                 modDesc = "Properties batch reverse extract"
                 break
             default: //q and t both translate
                 dataSrc = dbValues.tgtFile
-                langCode = langCodeTgt
+                langCode = dbValues.tgtLocale
                 modDesc = "Properties batch translate"
         }
         try{
@@ -186,7 +190,11 @@ class TextManagerDB {
         }
     }
 
-    void invalidateStrings() throws SQLException {
+    void invalidateStrings(Map dbValues) throws SQLException {
+        String projectCode   = dbValues.projectCode
+        String langCodeSrc  = dbValues.srcLocale
+        String moduleType = 'J'
+        String moduleName = dbValues.moduleName
         long timestamp = System.currentTimeMillis()
         try {
             def params = [projectCode, langCodeSrc,moduleType, moduleName, Sql.INTEGER]
