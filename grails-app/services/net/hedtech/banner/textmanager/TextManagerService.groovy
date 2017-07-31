@@ -50,6 +50,7 @@ class TextManagerService {
           order by GMRPCFG_ACTIVITY_DATE
         """
             sql.eachRow(statement) { row ->
+                println(row.GMRPCFG_PROJECT)
                 result = row.GMRPCFG_PROJECT
                 matches++
             }
