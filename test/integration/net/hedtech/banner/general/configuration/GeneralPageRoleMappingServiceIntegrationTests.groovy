@@ -33,7 +33,7 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
         generalPageRoleMappingService.initialized = false
     }
 
-    /*@Test
+    @Test
     public void testInitialize() {
         try {
             saveDomains()
@@ -65,7 +65,7 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
         } finally {
             Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
         }
-    }*/
+    }
 
     @Test
     public void testInitializeWithoutSessionFactory() {
@@ -82,12 +82,43 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
 
             generalPageRoleMappingService.initialize()
             assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
-            assertTrue (generalPageRoleMappingService.fetchCompiledValue()?.size()
-                            == Holders.config.grails.plugin.springsecurity.interceptUrlMap?.size())
+            assertTrue(generalPageRoleMappingService.fetchCompiledValue()?.size()
+                    == Holders.config.grails.plugin.springsecurity.interceptUrlMap?.size())
         } finally {
             generalPageRoleMappingService.sessionFactory = oldSessionFactory
             Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
         }
+    }
+
+    @Test
+    public void testIsDuplicatePageId() {
+        saveDomains()
+        boolean result = generalPageRoleMappingService.isDuplicatePageId("EndPointPage", "TESTAPP")
+        assertTrue(result)
+    }
+
+    @Test
+    public void testSeedInterceptUrlMapAtServerStartup() {
+        def properties = new Properties()
+        properties.put('grails.plugin.springsecurity.interceptUrlMap', getInterceptedURLMap())
+        def configSlurper = new ConfigSlurper()
+        Holders.config.merge(configSlurper.parse(properties))
+
+        generalPageRoleMappingService.seedInterceptUrlMapAtServerStartup()
+
+        LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>> pageRoleMappingList = generalPageRoleMappingService.getPageRoleMappingList()
+        LinkedHashMap<String, List<String>> interceptedUrlMapFromDB = new LinkedHashMap<String, List<String>>()
+        pageRoleMappingList.each { String key, ArrayList<GeneralPageRoleMapping> grmList ->
+            def roleList = []
+            grmList.each { GeneralPageRoleMapping grm ->
+                roleList << grm.roleCode
+            }
+            grmList.each {
+                interceptedUrlMapFromDB.put(key, generalPageRoleMappingService.split(roleList?.join(',')))
+            }
+        }
+
+        assertTrue(interceptedUrlMapFromDB == Holders.config.grails.plugin.springsecurity.interceptUrlMap)
     }
 
     private ConfigApplication saveDomains() {
@@ -187,6 +218,8 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
                                                'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M'],
                 '/ssb/theme/**'             : ['IS_AUTHENTICATED_ANONYMOUSLY'],
                 '/ssb/themeEditor/**'       : ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M'],
+                '/ssb/themeEditor/test**'       : ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M'],
+                '/ssb/AuthenticationTesting/testingEndPoint1/testingEndPoint2/homePage': ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M'],
                 '/**'                       : ['IS_AUTHENTICATED_ANONYMOUSLY']
         ]
     }

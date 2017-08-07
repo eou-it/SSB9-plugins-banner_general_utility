@@ -4,8 +4,6 @@
 package net.hedtech.banner.general.configuration
 
 import org.apache.log4j.Logger
-import org.hibernate.annotations.CacheConcurrencyStrategy
-import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 import javax.persistence.*
 
@@ -13,8 +11,7 @@ import javax.persistence.*
  * The persistent class for the GUROCFG database table.
  *
  */
-@Cacheable(true)
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "configPropertiesCache")
+
 @Entity
 @Table(name = 'GUROCFG')
 @NamedQueries(value = [
@@ -27,7 +24,6 @@ import javax.persistence.*
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 10009L
 
-    static final String CONFIG_CACHE_REGION_NAME = "configPropertiesCache"
     private static Logger logger = Logger.getLogger(ConfigProperties.getClass().getName())
 
     @Id
@@ -80,6 +76,7 @@ public class ConfigProperties implements Serializable {
     static constraints = {
         lastModified(nullable: true)
         configType(maxSize: 30)
+        configValue(nullable: true)
         dataOrigin(maxSize: 30, nullable: true)
         configApplication(nullable: true)
         lastModifiedBy(maxSize: 30, nullable: true)
@@ -144,7 +141,7 @@ public class ConfigProperties implements Serializable {
         if (appId) {
             configProperties = ConfigProperties.withSession { session ->
                 configProperties = session.getNamedQuery('ConfigProperties.fetchByAppId')
-                        .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
+                        .setString('appId', appId).list()
             }
         }
         return configProperties
@@ -156,7 +153,7 @@ public class ConfigProperties implements Serializable {
 
         configProperties = ConfigProperties.withSession { session ->
             configProperties = session.getNamedQuery('ConfigProperties.fetchSimpleConfigByAppId')
-                    .setString('appId', appId).setCacheable(true).setCacheRegion(CONFIG_CACHE_REGION_NAME).list()
+                    .setString('appId', appId).list()
         }
         return configProperties
     }

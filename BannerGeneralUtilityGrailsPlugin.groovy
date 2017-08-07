@@ -4,7 +4,7 @@
 import grails.plugin.springsecurity.SpringSecurityUtils
 import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
 class BannerGeneralUtilityGrailsPlugin {
-    String version = "9.23.1"
+    String version = "9.24"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2.1 > *"
