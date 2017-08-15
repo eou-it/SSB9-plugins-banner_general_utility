@@ -148,4 +148,34 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         }
         return locale
     }
+
+    /**
+     * Get all strings for locale, both from properties files and TextManager.
+     *
+     * Mimics getMergedProperties and getMergedPluginProperties
+     * without using the protected inner class PropertiesHolder,
+     * because it appears inaccessible from groovy.
+     *
+     * @return Map of timestamp, properties, like PropertiesHolder
+     */
+    public Map getAllProperties( Locale locale ) {
+        Map propertiesFromFiles = [:]
+        Map finalProperties
+        long start = System.nanoTime()
+
+        // plugin properties, then application properties so app properties overide plugin defaults
+        propertiesFromFiles.putAll( getMergedPluginProperties( locale ).properties )
+        propertiesFromFiles.putAll( getMergedProperties( locale ).properties )
+
+        // this loop seems like it would be very inefficient, but only takes tens of milliseconds
+        // for banner_employee_ssb_app
+        finalProperties = propertiesFromFiles.collectEntries { key, _ ->
+            [key, textManagerService.findMessage(key, locale)]
+        }
+
+        log.debug "getAllProperties returning ${finalProperties.size()} in time: ${(System.nanoTime() - start)/1e6}ms"
+
+        // timeout should really be based on textManageService.cacheTime
+        [ 'timeout':System.currentTimeMillis(), 'properties': finalProperties ];
+    }
 }

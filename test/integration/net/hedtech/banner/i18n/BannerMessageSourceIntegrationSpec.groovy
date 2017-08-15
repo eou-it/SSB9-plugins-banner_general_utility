@@ -5,6 +5,14 @@ package net.hedtech.banner.i18n
 
 import grails.test.spock.IntegrationSpec
 
+
+class StubbyTextManagerService {
+    public final static String MOCK_PREFIX = "MOCK "
+    def findMessage(key, locale) {
+        MOCK_PREFIX + "${locale}-${key})"
+    }
+}
+
 class BannerMessageSourceIntegrationSpec extends IntegrationSpec {
 
     def messageSource
@@ -20,6 +28,8 @@ class BannerMessageSourceIntegrationSpec extends IntegrationSpec {
                 externalLocation, 'integrationTest',
                 "Setting up external message for integration test")
         messageSource?.setExternalMessageSource(externalMessageSource)
+
+        messageSource?.textManagerService = new StubbyTextManagerService()
     }
 
     def cleanup() {
@@ -37,6 +47,15 @@ class BannerMessageSourceIntegrationSpec extends IntegrationSpec {
         then:
         names.size > 0
         properties.size  > 0
+    }
+
+    void "test getAllProperties"() {
+        when:
+        def properties = messageSource.getAllProperties(new Locale('en')).properties
+
+        then:
+        properties.size()
+        0 == properties.count( { _, value -> !value.startsWith( StubbyTextManagerService.MOCK_PREFIX )})
     }
 
 }
