@@ -8,6 +8,7 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.dao.QueryTimeoutException
 
 /**
  * ConfigPropertiesIntegrationTests are used to test the ConfigProperties domain.
@@ -25,10 +26,12 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         appId = 'TESTAPP'
     }
 
+
     @After
     public void tearDown() {
         super.tearDown()
     }
+
 
     @Test
     void testCreateConfigProperties() {
@@ -40,6 +43,44 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "TEST_CONFIG", configProperties.configName
         assertEquals "TEST_CONFIG_TYPE", configProperties.configType
         assertEquals "TEST_VALUE", configProperties.configValue
+    }
+
+
+    @Test
+    void testSuccessCreateLongConfigName() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.refresh()
+
+        ConfigProperties configProperties = getConfigProperties()
+        configProperties.setConfigApplication(configApplication)
+        configProperties.configName = "Y" * 256
+        configProperties.save(failOnError: true, flush: true)
+
+        assertNotNull configProperties.id
+        assertEquals 0L, configProperties.version
+        assertEquals "Y" * 256 , configProperties.configName
+        assertEquals "TEST_CONFIG_TYPE", configProperties.configType
+        assertEquals "TEST_VALUE", configProperties.configValue
+    }
+
+
+    @Test
+    void testFailureCreateLongConfigName() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication.save(failOnError: true, flush: true)
+        configApplication = configApplication.refresh()
+
+        ConfigProperties configProperties = getConfigProperties()
+        configProperties.setConfigApplication(configApplication)
+        configProperties.configName = "Y" * 257
+        try {
+            configProperties.save(failOnError: true, flush: true)
+        }
+        catch (QueryTimeoutException ex){
+            assertTrue ex.getCause().getCause().message.contains('ORA-12899: value too large for column "GENERAL"."GUROCFG"."GUROCFG_NAME" (actual: 257, maximum: 256)')
+
+        }
     }
 
 
