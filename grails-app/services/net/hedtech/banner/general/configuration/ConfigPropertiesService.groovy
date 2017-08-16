@@ -5,6 +5,7 @@
 package net.hedtech.banner.general.configuration
 
 import grails.util.Holders as CH
+import groovy.sql.Sql
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
@@ -23,9 +24,11 @@ class ConfigPropertiesService extends ServiceBase {
     private static final String GLOBAL = "GLOBAL"
     private static String localLogoutEnable="saml/logout?local=true"
     private static String globalLogoutEnable="saml/logout"
+    private static final String DECRYPT_TEXT_FUNCTION = "{?= call GSKDSEC.decrypt_string(?)}"
     def grailsApplication
     def configApplicationService
     ConfigSlurper configSlurper = new ConfigSlurper()
+    def dataSource
 
 
     /**
@@ -190,5 +193,30 @@ class ConfigPropertiesService extends ServiceBase {
                 AuthenticationProviderUtility.defaultWebSessionTimeout = defaultWebSessionTimeoutFromConfig
             }
         }
+    }
+
+    /**
+     * This Method will used to decrypt the encrypted value.
+     * @Param appId and configName are of type String
+     * */
+    public String getDecryptedValue(String appId, String configName) {
+        String decryptedValue
+        String encryptedValue
+        def conn
+        try {
+            if(appId && configName) {
+                encryptedValue = ConfigProperties.fetchEncryptedValueByAppIdAndConfigName(appId, configName)
+            }
+            if(encryptedValue) {
+                conn = dataSource.getSsbConnection()
+                Sql db = new Sql(conn)
+                db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
+                    decryptedValue = y_string
+                }
+            }
+        } finally {
+            conn?.close()
+        }
+        return decryptedValue
     }
 }
