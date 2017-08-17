@@ -31,7 +31,7 @@ public class ConfigProperties implements Serializable {
     private static Logger logger = Logger.getLogger(ConfigProperties.getClass().getName())
 
     @Id
-    @SequenceGenerator(name = 'GUROCFG_SEQ_GENERATOR', sequenceName = 'GUROCFG_SURROGATE_ID_SEQUENCE')
+    @SequenceGenerator(name = 'GUROCFG_SEQ_GENERATOR', allocationSize = 1, sequenceName = 'GUROCFG_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GUROCFG_SEQ_GENERATOR')
     @Column(name = 'GUROCFG_SURROGATE_ID')
     Long id
