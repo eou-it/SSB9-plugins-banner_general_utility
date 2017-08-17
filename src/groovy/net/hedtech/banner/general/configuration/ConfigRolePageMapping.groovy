@@ -20,7 +20,7 @@ public class ConfigRolePageMapping implements Serializable {
     private static final long serialVersionUID = 100L
 
     @Id
-    @SequenceGenerator(name = 'GURAPPR_SEQ_GENERATOR', sequenceName = 'GURAPPR_SURROGATE_ID_SEQUENCE')
+    @SequenceGenerator(name = 'GURAPPR_SEQ_GENERATOR', allocationSize = 1, sequenceName = 'GURAPPR_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GURAPPR_SEQ_GENERATOR')
     @Column(name = 'GURAPPR_SURROGATE_ID')
     Long id

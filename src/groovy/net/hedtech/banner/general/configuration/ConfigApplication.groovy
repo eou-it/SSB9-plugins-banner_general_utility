@@ -31,7 +31,7 @@ public class ConfigApplication implements Serializable {
     * Surrogate ID for GUBAPPL
     */
     @Id
-    @SequenceGenerator(name = 'GUBAPPL_SEQ_GENERATOR', sequenceName = 'GUBAPPL_SURROGATE_ID_SEQUENCE')
+    @SequenceGenerator(name = 'GUBAPPL_SEQ_GENERATOR', allocationSize = 1, sequenceName = 'GUBAPPL_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GUBAPPL_SEQ_GENERATOR')
     @Column(name = 'GUBAPPL_SURROGATE_ID')
     Long id
