@@ -25,6 +25,7 @@ class ConfigPropertiesService extends ServiceBase {
     private static String localLogoutEnable="saml/logout?local=true"
     private static String globalLogoutEnable="saml/logout"
     private static final String DECRYPT_TEXT_FUNCTION = "{?= call GSKDSEC.decrypt_string(?)}"
+    private static final String ENCRYPT_TEXT_FUNCTION = '{call  GSPCRPT.p_apply(?,?)}'
     def grailsApplication
     def configApplicationService
     ConfigSlurper configSlurper = new ConfigSlurper()
@@ -218,5 +219,27 @@ class ConfigPropertiesService extends ServiceBase {
             conn?.close()
         }
         return decryptedValue
+    }
+
+
+    /**
+     * This Method will used to encrypt the clear text .
+     * @Param clearText of type String
+     * */
+    public String getEncryptedValue(String clearText ) {
+        def conn
+        String encryptedValue
+        try {
+            conn = dataSource.getSsbConnection()
+            Sql db = new Sql(conn)
+            if(clearText) {
+                db.call(ENCRYPT_TEXT_FUNCTION, [clearText, Sql.VARCHAR]) { v_bdmPasswd ->
+                encryptedValue = v_bdmPasswd
+            }
+        }
+        }finally {
+            conn?.close()
+        }
+        return encryptedValue
     }
 }
