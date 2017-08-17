@@ -11,7 +11,7 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-
+import groovy.sql.Sql
 /**
  * ConfigPropertiesServiceIntegrationTest.
  */
@@ -20,13 +20,14 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     def configPropertiesService
     def configApplicationService
     def grailsApplication
-
+    def dataSource
     private def appName
     private def appId
     private static final String CONFIG_NAME = 'TEST_CONFIG'
     private static final String CONFIG_VALUE = 'TEST_VALUE'
     private static final String CONFIG_TYPE_STRING = 'string'
     private static final String CONFIG_TYPE_INTEGER = 'integer'
+    private static final String CONFIG_TYPE_CLEAR_TEXT = 'clear_text'
     private static final String CONFIG_NAME_TRANSACTION_TIMEOUT = 'banner.transactionTimeout'
     private static final String CONFIG_NAME_LOGIN_ENDPOINT_URL = 'loginEndpoint'
     private static final String CONFIG_NAME_LOGOUT_ENDPOINT_URL = 'logoutEndpoint'
@@ -37,6 +38,9 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private static final String TESTAPP = 'TESTAPP'
     private static String ACTUALAPPNAME = ''
     private static String ACTUALAPPID = ''
+    private static final String CONFIG_NAME_TESTAPP_PASSWORD = 'testapp.password'
+    private static String CONFIG_VALUE_TESTAPP_PASSWORD = "111111"
+    private static final String ENCRYPT_TEXT_FUNCTION = '{call  GSPCRPT.p_apply(?,?)}'
 
     @Before
     public void setUp() {
@@ -305,6 +309,54 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         def result = CH.config.defaultWebSessionTimeout
         assertEquals newDefaultWebSessionTimeout, result
         CH.config.defaultWebSessionTimeout = oldDefaultWebSessionTimeout
+    }
+
+
+    @Test
+    public void testGetDecryptedValue() {
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_TESTAPP_PASSWORD, getEncryptedValue(CONFIG_VALUE_TESTAPP_PASSWORD), CONFIG_TYPE_CLEAR_TEXT)
+        assertEquals CONFIG_VALUE_TESTAPP_PASSWORD, configPropertiesService.getDecryptedValue(appId, CONFIG_NAME_TESTAPP_PASSWORD)
+    }
+
+
+    @Test
+    public void testGetDecryptedValueWithNoAppId() {
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_TESTAPP_PASSWORD, getEncryptedValue(CONFIG_VALUE_TESTAPP_PASSWORD), CONFIG_TYPE_CLEAR_TEXT)
+        assertEquals null, configPropertiesService.getDecryptedValue(null, CONFIG_NAME_TESTAPP_PASSWORD)
+    }
+
+
+    @Test
+    public void testGetDecryptedValueWithNoConfigName() {
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_TESTAPP_PASSWORD, getEncryptedValue(CONFIG_VALUE_TESTAPP_PASSWORD), CONFIG_TYPE_CLEAR_TEXT)
+        assertEquals null, configPropertiesService.getDecryptedValue(appId, null)
+    }
+
+
+    @Test
+    public void testGetDecryptedValueWithNoAppIdAndConfigName() {
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_TESTAPP_PASSWORD, getEncryptedValue(CONFIG_VALUE_TESTAPP_PASSWORD), CONFIG_TYPE_CLEAR_TEXT)
+        assertEquals null, configPropertiesService.getDecryptedValue(null, null)
+    }
+
+
+    private String getEncryptedValue(String clearText ) {
+        def conn
+        String encryptedValue
+        try {
+            conn = dataSource.getSsbConnection()
+            Sql db = new Sql(conn)
+            db.call(ENCRYPT_TEXT_FUNCTION, [clearText, Sql.VARCHAR]) { v_bdmPasswd ->
+                encryptedValue = v_bdmPasswd
+        }
+        }finally {
+            conn?.close()
+        }
+        return encryptedValue
     }
 
 
