@@ -24,7 +24,7 @@ public class ConfigUserPreference implements Serializable {
     private static final long serialVersionUID = 190099L
 
     @Id
-    @SequenceGenerator(name = 'GURUCFG_SEQ_GENERATOR', sequenceName = 'GURUCFG_SURROGATE_ID_SEQUENCE')
+    @SequenceGenerator(name = 'GURUCFG_SEQ_GENERATOR', allocationSize = 1, sequenceName = 'GURUCFG_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GURUCFG_SEQ_GENERATOR')
     @Column(name = 'GURUCFG_SURROGATE_ID')
     Long id

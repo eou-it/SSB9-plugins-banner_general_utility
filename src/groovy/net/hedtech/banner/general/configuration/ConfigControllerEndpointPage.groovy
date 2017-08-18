@@ -25,7 +25,7 @@ public class ConfigControllerEndpointPage implements Serializable {
 
 
     @Id
-    @SequenceGenerator(name = 'GURCTLEP_SEQ_GENERATOR', sequenceName = 'GURCTLEP_SURROGATE_ID_SEQUENCE')
+    @SequenceGenerator(name = 'GURCTLEP_SEQ_GENERATOR', allocationSize = 1, sequenceName = 'GURCTLEP_SURROGATE_ID_SEQUENCE')
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = 'GURCTLEP_SEQ_GENERATOR')
     @Column(name = 'GURCTLEP_SURROGATE_ID')
     Long id
