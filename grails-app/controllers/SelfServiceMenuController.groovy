@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
@@ -71,21 +71,28 @@ class SelfServiceMenuController {
 
         if (session[currentMenu] == null) {
             menulist = selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm)
-            session[currentMenu] = setHideSSBHeaderCompsParam(menulist)
+            session[currentMenu] = updateURL(menulist)
         }
 
         return session[currentMenu]
     }
-    private def setHideSSBHeaderCompsParam(def mnuList){
-        mnuList.eachWithIndex{ SelfServiceMenu,  i ->
-            String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
-            SelfServiceMenu.url=SelfServiceMenu.url+symbol+hideSSBHeaderComps;
-            SelfServiceMenu.url=SelfServiceMenu.url.replace("{mepCode}",session["mep"])
+
+    private def updateURL(def mnuList){
+        mnuList.each{ SelfServiceMenu ->
+            if(SelfServiceMenu.url.indexOf(MEPCODE) >- 1 && session["mep"] != null){
+                SelfServiceMenu.url=SelfServiceMenu.url.replace("{mepCode}", session["mep"])
+            }
+            if(session['hideSSBHeaderComps'] != null && session['hideSSBHeaderComps'].trim() == 'true'){
+                String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
+                SelfServiceMenu.url = SelfServiceMenu.url+symbol+hideSSBHeaderComps
+            }
         }
         return mnuList
     }
 
-    static final String AMPERSAND="&";
-    static final String QUESTION_MARK="?";
-    static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
+
+    static final String AMPERSAND="&"
+    static final String QUESTION_MARK="?"
+    static final String hideSSBHeaderComps="hideSSBHeaderComps=true"
+    static final String MEPCODE="{mepCode}"
 }
