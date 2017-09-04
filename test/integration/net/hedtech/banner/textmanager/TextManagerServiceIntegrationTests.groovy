@@ -74,16 +74,16 @@ class TextManagerServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Before
     public void setUp(){
-        formContext = ['SELFSERVICE']
+        formContext = ['GUAGMNU']
         Holders.config.ssbEnabled = true
-        super.setUp();
+        super.setUp()
         createProjectForApp('UNITTEST', 'Integration Test Banner General Utility')
     }
 
     @After
     public void tearDown() {
         deleteProjectforApp()
-        super.tearDown();
+        super.tearDown()
     }
 
 
