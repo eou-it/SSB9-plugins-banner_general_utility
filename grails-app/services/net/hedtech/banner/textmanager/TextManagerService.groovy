@@ -71,62 +71,6 @@ class TextManagerService {
         result
     }
 
-    def createProjectForApp(projectCode, projectDescription) {
-        if (!tmEnabled) {
-            return
-        }
-        if (!tranManProject()) {
-            Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
-            def appName = Holders.grailsApplication.metadata['app.name']
-            try {
-                def statement = """
-                                   insert into GMBPROJ (GMBPROJ_PROJECT, GMBPROJ_ACTIVITY_DATE, GMBPROJ_DESC,
-                                   GMBPROJ_OWNER,GMBPROJ_USER_ID) values ($projectCode, sysdate, $projectDescription,
-                                   'TRANMGR','ban_ss_user')
-                                """
-                sql.execute(statement)
-                statement = """
-                               insert into GMRPCFG (GMRPCFG_PROJECT, GMRPCFG_KEY, GMRPCFG_VALUE, GMRPCFG_DESC,
-                               GMRPCFG_USER_ID,GMRPCFG_ACTIVITY_DATE) values ($projectCode, $PROJECT_CFG_KEY_APP,
-                               $appName, 'Banner Application in this project','ban_ss_user',sysdate )
-                            """
-                sql.execute(statement)
-                cacheTime = null
-                log.info "Created TranMan project $projectCode"
-            } finally {
-                sql?.close()
-            }
-        }
-    }
-
-    //Used to clean test project
-    def deleteProjectforApp() {
-        if (!tmEnabled) {
-            return
-        }
-        def project = tranManProject()
-        if (project) {
-            Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
-            try {
-                def statement = """
-                                   begin
-                                    delete from GMRPCFG where GMRPCFG_project=$project;
-                                    delete from GMRSPRP where GMRSPRP_project=$project;
-                                    delete from GMRSHST where GMRSHST_project=$project;
-                                    delete from GMRPOBJ where GMRPOBJ_project=$project;
-                                    delete from GMBPROJ where GMBPROJ_project=$project;
-                                   end;
-                                """
-                sql.execute(statement)
-                cacheTime = null
-                log.info "Deleted TranMan project $project"
-            } catch(e){
-                log.error("Failed in deleting the project", e)
-            } finally {
-                sql?.close()
-            }
-        }
-    }
 
     @Transactional
     def save(properties, name, srcLocale = ROOT_LOCALE_APP, locale) {
