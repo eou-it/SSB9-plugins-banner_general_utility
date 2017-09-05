@@ -1,23 +1,26 @@
 /*******************************************************************************
- Copyright 2015-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
-package net.hedtech.banner.testing
+package net.hedtech.banner.supplemental
 
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.test.ZipTest
+import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.log4j.Logger
 import org.junit.After
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+
+import java.text.ParseException
 
 /**
  * Integration tests of the supplemental data service.
  */
-class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
+class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
     def supplementalDataService        // injected by Spring
     private static final def log = Logger.getLogger(getClass())
+
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
@@ -35,7 +38,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
      * Tests when the block is SDE enabled
      * */
     @Test
-     void testIsSde() {
+    void testIsSde() {
         def isSde = supplementalDataService.hasSde("zipTestBlock")
         assertTrue isSde
 
@@ -106,28 +109,28 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         def model = ZipTest.findByCodeAndCity("02186", "Milton")
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
 
-        assertNull sdeModel.USERDEFINED."1".value
+        assertNull sdeModel.USERDEFINED."name".value
 
-        assertEquals "User Defined 1", sdeModel.USERDEFINED."1".prompt
+        assertEquals "User Defined name", sdeModel.USERDEFINED.name.prompt
 
-        assertEquals "VARCHAR2", sdeModel.USERDEFINED."1".dataType
-        assertEquals "S", sdeModel.USERDEFINED."1".discType
-        assertEquals 1, sdeModel.USERDEFINED."1".validation
-        assertEquals 4, sdeModel.USERDEFINED."1".attrOrder,0
+        assertEquals "VARCHAR2", sdeModel.USERDEFINED."name".dataType
+        assertEquals "M", sdeModel.USERDEFINED."name".discType
+        assertEquals 1, sdeModel.USERDEFINED."name".validation
+        assertEquals 4, sdeModel.USERDEFINED."name".attrOrder, 0
 
-        assertNull sdeModel.LANGUAGE."1".value
-        assertEquals "Language", sdeModel.LANGUAGE."1".prompt
+        assertNull sdeModel.LANGUAGE."ENG".value
+        assertEquals "Language", sdeModel.LANGUAGE."ENG".prompt
 
-        assertEquals "VARCHAR2", sdeModel.LANGUAGE."1".dataType
-        assertEquals "S", sdeModel.LANGUAGE."1".discType
-        assertEquals 1, sdeModel.LANGUAGE."1".validation
-        assertEquals 5, sdeModel.LANGUAGE."1".attrOrder,0
+        assertEquals "VARCHAR2", sdeModel.LANGUAGE."ENG".dataType
+        assertEquals "M", sdeModel.LANGUAGE."ENG".discType
+        assertEquals 1, sdeModel.LANGUAGE."ENG".validation
+        assertEquals 5, sdeModel.LANGUAGE."ENG".attrOrder, 0
 
-        Assert.assertEquals 2, sdeModel.size()
+        assertEquals 5, sdeModel.size()
         assertTrue 'USERDEFINED' in sdeModel
         assertTrue 'LANGUAGE' in sdeModel
 
-        assertEquals 1, sdeModel."USERDEFINED".size()
+        assertEquals 2, sdeModel."USERDEFINED".size()
         assertTrue sdeModel."LANGUAGE".size() > 0
 
     }
@@ -141,8 +144,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(ZipTest.findByCodeAndCity("02186", "Milton"))
 
-        assertNull sdeModel.USERDEFINED."1".value
-        assertNull sdeModel.LANGUAGE."1".value
+        assertNull sdeModel.USERDEFINED."name".value
+        assertNull sdeModel.LANGUAGE."ENG".value
         //assertNull sdeModel.NUMBER."1".value
     }
 
@@ -159,17 +162,17 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
 
         assert sdeModel.size() > 0
-        assertEquals "User Defined 1", sdeModel.USERDEFINED."1".prompt
-        assertEquals "Language", sdeModel.LANGUAGE."1".prompt
+        assertEquals "User Defined name", sdeModel.USERDEFINED."name".prompt
+        assertEquals "Language", sdeModel.LANGUAGE."ENG".prompt
 
-        sdeModel.USERDEFINED."1".prompt = "User Defined 2"
-        sdeModel.LANGUAGE."1".prompt = "Language update"
+        sdeModel.USERDEFINED."name".prompt = "User Defined name"
+        sdeModel.LANGUAGE."ENG".prompt = "Language"
 
         supplementalDataService.persistSupplementalDataFor(model, sdeModel)
 
         supplementalDataService.loadSupplementalDataForModel(model)
-        assertEquals "User Defined 2", sdeModel.USERDEFINED."1".prompt
-        assertEquals "Language update", sdeModel.LANGUAGE."1".prompt
+        assertEquals "User Defined name", sdeModel.USERDEFINED."name".prompt
+        assertEquals "Language", sdeModel.LANGUAGE."ENG".prompt
     }
 
     /**
@@ -182,14 +185,14 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         def model = ZipTest.findByCodeAndCity("02186", "Milton")
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
 
-        assertEquals "User Defined 1", sdeModel.USERDEFINED."1".prompt
-        assertEquals "Language", sdeModel.LANGUAGE."1".prompt
-        assertEquals 2, sdeModel.size()
+        assertEquals "User Defined name", sdeModel.USERDEFINED."name".prompt
+        assertEquals "Language", sdeModel.LANGUAGE."ENG".prompt
+        assertEquals 5, sdeModel.size()
 
-        sdeModel.USERDEFINED."1".prompt = null
+        sdeModel.USERDEFINED."name".prompt = null
         supplementalDataService.persistSupplementalDataFor(model, sdeModel)
         def sdeModelDeleted = supplementalDataService.loadSupplementalDataForModel(model)
-        assertEquals 2, sdeModelDeleted.size()
+        assertEquals 5, sdeModelDeleted.size()
 
     }
 
@@ -203,17 +206,17 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         def model = ZipTest.findByCodeAndCity("02186", "Milton");
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
 
-      /*  assertEquals "comment 2", sdeModel.COMMENTS."2".value   // in the middle
-        assertEquals "comment 1", sdeModel.TEST."1".value*/
-        assertNull sdeModel.USERDEFINED."1".value
+        /*  assertEquals "comment 2", sdeModel.COMMENTS."2".value   // in the middle
+          assertEquals "comment 1", sdeModel.TEST."1".value*/
+        assertNull sdeModel.USERDEFINED."name".value
 
-        sdeModel.USERDEFINED."1".prompt = null
+        sdeModel.USERDEFINED."name".prompt = null
         supplementalDataService.persistSupplementalDataFor(model, sdeModel)
         def sdeModelDeleted = supplementalDataService.loadSupplementalDataForModel(model)
-        assertEquals 1, sdeModelDeleted.USERDEFINED.size()
+        assertEquals 2, sdeModelDeleted.USERDEFINED.size()
 
-        assertNull sdeModelDeleted.USERDEFINED."1".value   // rebuilt discriminator
-        assertNotNull sdeModelDeleted.USERDEFINED."1".prompt
+        assertNull sdeModelDeleted.USERDEFINED."name".value   // rebuilt discriminator
+        assertNotNull sdeModelDeleted.USERDEFINED."name".prompt
 
         /*assertNull sdeModelDeleted.USERDEFINED."3"*/
     }
@@ -230,19 +233,19 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         def model = ZipTest.findByCodeAndCity("02186", "Milton")
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
 
-        assertNull sdeModel.USERDEFINED."1".value
-        assertNull sdeModel.LANGUAGE."1".value
+        assertNull sdeModel.USERDEFINED."name".value
+        assertNull sdeModel.LANGUAGE."ENG".value
 
-        sdeModel.USERDEFINED."1".value = "USER DEFINED"
-        sdeModel.LANGUAGE."1".value = "LANGUAGE ONE"
+        sdeModel.USERDEFINED."name".value = "USER DEFINED"
+        sdeModel.LANGUAGE."ENG".value = "LANGUAGE ONE"
 
         supplementalDataService.persistSupplementalDataFor(model, sdeModel)
 
 
         def sdeModelUpdated = supplementalDataService.loadSupplementalDataForModel(model)
 
-        assertEquals "USER DEFINED", sdeModelUpdated.USERDEFINED."1".value
-        assertEquals "LANGUAGE ONE", sdeModelUpdated.LANGUAGE."1".value
+        assertEquals "USER DEFINED", sdeModelUpdated.USERDEFINED."name".value
+        assertEquals "LANGUAGE ONE", sdeModelUpdated.LANGUAGE."ENG".value
     }
 
     /**
@@ -262,9 +265,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 
             def model = ZipTest.findByCodeAndCity("BB", "BB")
             def zipFound = supplementalDataService.loadSupplementalDataForModel(model)
-
-            zipFound.USERDEFINED."1".value = "my comments"
-            zipFound.LANGUAGE."1".value = "my test"
+            zipFound."NUMBER"."1".value = "my comments"
 
             supplementalDataService.persistSupplementalDataFor(model, zipFound)
             fail("Should have received an error: Invalid Number")
@@ -272,8 +273,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         catch (ApplicationException e) {
             assertEquals "Invalid Number", e.wrappedException.message
         }
-        catch (AssertionError e) {
-            assertEquals "Should have received an error: Invalid Number", e.message
+        catch (Exception e) {
+            assertEquals "Invalid Number", e.message
         }
     }
 
@@ -295,16 +296,13 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 
 
             zipFound.dataOrigin = "foo"
-            zipFound.USERDEFINED."1".value = "my comments"
+            zipFound.USERDEFINED."name".value = "my comments"
 
-            zipFound.LANGUAGE."1".dataType = "DATE" // forced Date
-            zipFound.LANGUAGE."1".value = "15-Apr2010" // wrong format
+            zipFound.LANGUAGE."ENG".dataType = "DATE" // forced Date
+            zipFound.LANGUAGE."ENG".value = "15-Apr2010" // wrong format
 
             supplementalDataService.persistSupplementalDataFor(model, zipFound)
             fail("Should have received an error: Invalid Date")
-        }
-        catch (ApplicationException e) {
-            assertEquals "Invalid Date", e.wrappedException.message
         }
         catch (Exception e) {
             assertEquals "Invalid Date", e.message
@@ -321,23 +319,23 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
 
         assertNotNull sdeModel.USERDEFINED
-        assertNotNull sdeModel.USERDEFINED."1".prompt
-        assertNotNull sdeModel.USERDEFINED."1".prompt
-        assertNull sdeModel.USERDEFINED."1".value
+        assertNotNull sdeModel.USERDEFINED."name".prompt
+        assertNotNull sdeModel.USERDEFINED."name".prompt
+        assertNull sdeModel.USERDEFINED."name".value
 
         // adds new values for user-defined attributes
-        sdeModel.USERDEFINED."1".value = "my name 12"
+        sdeModel.USERDEFINED."name".value = "my name 12"
 
         supplementalDataService.persistSupplementalDataFor(model, sdeModel)
 
         def updatedSde = ZipTest.findByCodeAndCity("02186", "Milton")
         def sdeModelUpdated = supplementalDataService.loadSupplementalDataForModel(updatedSde)
 
-        assertEquals "my name 12", sdeModelUpdated.USERDEFINED."1".value
+        assertEquals "my name 12", sdeModelUpdated.USERDEFINED."name".value
 
         // deletes values for user-defined attributes
-        sdeModelUpdated.USERDEFINED."1".value = null
-        sdeModelUpdated.USERDEFINED."1".value = null
+        sdeModelUpdated.USERDEFINED."name".value = null
+        sdeModelUpdated.USERDEFINED."name".value = null
 
 
         supplementalDataService.persistSupplementalDataFor(model, sdeModelUpdated)
@@ -346,7 +344,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 
         def deletedSde = supplementalDataService.loadSupplementalDataForModel(deletedSdeModel)
 
-        assertNull deletedSde.USERDEFINED."1".value
+        assertNull deletedSde.USERDEFINED."name".value
     }
 
     /**
@@ -359,27 +357,27 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
 
         assertNotNull sdeModel.LANGUAGE
-        assertEquals "Language", sdeModel.LANGUAGE."1".prompt
+        assertEquals "Language", sdeModel.LANGUAGE."ENG".prompt
         //assertEquals "Language", sdeModel.LANGUAGE."RUS".prompt
         //assertEquals "Language", sdeModel.LANGUAGE."GRM".prompt
 
 
-        sdeModel.LANGUAGE."1".value = "ENGLISH"
+        sdeModel.LANGUAGE."ENG".value = "ENGLISH"
 
         supplementalDataService.persistSupplementalDataFor(model, sdeModel)
 
         ZipTest.findByCodeAndCity("02186", "Milton")
         def sdeModelUpdated = supplementalDataService.loadSupplementalDataForModel(model)
 
-        assertEquals "ENGLISH", sdeModelUpdated.LANGUAGE."1".value
+        assertEquals "ENGLISH", sdeModelUpdated.LANGUAGE."ENG".value
 
         // deletes values for user-defined attributes
-        sdeModelUpdated.LANGUAGE."1".value = null
+        sdeModelUpdated.LANGUAGE."ENG".value = null
 
         supplementalDataService.persistSupplementalDataFor(model, sdeModelUpdated)
         def sdeModelDeleted = supplementalDataService.loadSupplementalDataForModel(model)
 
-        assertNull sdeModelDeleted.LANGUAGE."1".value
+        assertNull sdeModelDeleted.LANGUAGE."ENG".value
 
     }
 
@@ -391,8 +389,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         def model = ZipTest.findByCodeAndCity("02186", "Milton")
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
 
-        sdeModel.USERDEFINED."1".value = "my comments"
-        sdeModel.LANGUAGE."1".value = "my test"
+        sdeModel.USERDEFINED."name".value = "my comments"
+        sdeModel.LANGUAGE."ENG".value = "my test"
 
         try {
             supplementalDataService.persistSupplementalDataFor(model, sdeModel)
@@ -400,15 +398,14 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         }
         catch (ApplicationException ae) {
             if (ae.wrappedException =~ /\*Error\* Invalid Number. Expected format: 999D99/)
-            log.debug("Found correct message code *Error* Invalid Number. Expected format: 999D99")
+                log.debug("Found correct message code *Error* Invalid Number. Expected format: 999D99")
             else
                 fail("Did not find expected error code *Error* Invalid Number. Expected format: 999D99, sdeModel: ${ae.wrappedException}")
         }
-        catch (AssertionError ae){
+        catch (AssertionError ae) {
             assertEquals "This should have failed", ae.message
         }
     }
-
 
     /**
      * Tests Validation LOV.
@@ -421,8 +418,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         def model = ZipTest.findByCodeAndCity("02186", "Milton")
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
 
-        sdeModel.USERDEFINED."1".value = "1234"
-        sdeModel.LANGUAGE."1".value = "my test"
+        sdeModel.USERDEFINED."name".value = "1234"
+        sdeModel.LANGUAGE."ENG".value = "my test"
 
         try {
             supplementalDataService.persistSupplementalDataFor(model, sdeModel)
@@ -434,11 +431,10 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
             else
                 fail("Did not find expected error code *Error* Value 1234 not found in validation table STVTERM., sdeModel: ${ae.wrappedException}")
         }
-        catch(AssertionError ae){
+        catch (AssertionError ae) {
             assertEquals "This should have failed", ae.message
         }
     }
-
 
     /**
      * Tests Mapped Domain for LOV.
