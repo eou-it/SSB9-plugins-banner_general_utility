@@ -181,41 +181,92 @@ class TextManagerService {
             sql.cacheStatements = false
             //Query fetching changed messages. Don't use message with status pending (11).
             def statement = """
-                 |WITH locales AS
-                 |(
-                 |  SELECT ( 1 + DECODE(gtvlang_code,:locale,0,1) -INSTR(:locale,gtvlang_code) ) AS distance
+                 |WITH
+                 |locales AS (
+                 |  SELECT 
+                 |  ( 1 + DECODE(gtvlang_code,:locale,0,1) -INSTR(:locale,gtvlang_code) ) AS distance
                  |  ,gtvlang_code AS lang_code
                  |  FROM gtvlang
                  |  WHERE gtvlang_code IN  (SUBSTR(:locale,1,2), :locale)
                  |),
-                 |props_with_changes AS
-                 |(
-                 |  SELECT DISTINCT
-                 |  gmrsprp_project,gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
-                 |  gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop
-                 |  FROM gmrsprp
-                 |  WHERE gmrsprp_project = :pc
-                 |  AND GMRSPRP_STAT_CODE=2
-                 |    AND gmrsprp_activity_date >= (SYSDATE - :days_ago)
-                 |    AND gmrsprp_lang_code IN (SELECT lang_code FROM locales) -- Only select relevant records
+                 |props AS (
+                 |    SELECT
+                 |      gmrsprp_project      proj
+                 |    , gmrsprp_lang_code    lang
+                 |    , gmrsprp_module_name  modname
+                 |    , gmrsprp_module_type  modtype
+                 |    , gmrsprp_parent_name  parname
+                 |    , gmrsprp_parent_type  partype
+                 |    , gmrsprp_object_name  objname
+                 |    , gmrsprp_object_type  objtype
+                 |    , gmrsprp_object_prop  objprop
+                 |    , gmrsprp_strcode      strcode
+                 |    , gmrsprp_activity_date modified
+                 |    , gmrsprp_pre_str      pre_str
+                 |    , gmrsprp_pst_str      pst_str
+                 |    FROM gmrsprp
+                 |    WHERE gmrsprp_project = :pc
+                 |      AND gmrsprp_stat_code = 2
+                 |      AND gmrsprp_lang_code in (select lang_code from locales)
+                 |),
+                 |hist AS (
+                 |    SELECT
+                 |      gmrshst_project      proj
+                 |    , gmrshst_lang_code    lang
+                 |    , gmrshst_module_name  modname
+                 |    , gmrshst_module_type  modtype
+                 |    , gmrshst_parent_name  parname
+                 |    , gmrshst_parent_type  partype
+                 |    , gmrshst_object_name  objname
+                 |    , gmrshst_object_type  objtype
+                 |    , gmrshst_object_prop  objprop
+                 |    , gmrshst_activity_date modified 
+                 |    FROM gmrshst
+                 |    WHERE gmrshst_project = :pc
+                 |      AND gmrshst_stat_code = 2
+                 |      AND gmrshst_lang_code in (select lang_code from locales)
+                 |),
+                 |fallback_selection AS ( -- selection without language 
+                 |   SELECT proj, modname,modtype,parname,partype,objname,objtype,objprop
+                 |   FROM props WHERE modified >= SYSDATE - :days_ago
+                 |   UNION
+                 |   SELECT proj, modname,modtype,parname,partype,objname,objtype,objprop
+                 |   FROM hist 
+                 |    WHERE modified >= SYSDATE - :days_ago
+                 |      AND :days_ago < 100 -- Don't use very old history
+                 |),
+                 |translation_selection AS (
+                 |  SELECT *
+                 |  FROM props
+                 |  WHERE (proj,modname,modtype,parname,partype,objname,objtype,objprop)
+                 |     IN (SELECT proj,modname,modtype,parname,partype,objname,objtype,objprop
+                 |         FROM fallback_selection)
+                 |),
+                 |uncache_selection AS (
+                 |  SELECT proj,modname,modtype,parname,partype,objname,objtype,objprop
+                 |  FROM fallback_selection
+                 |  MINUS 
+                 |  SELECT proj,modname,modtype,parname,partype,objname,objtype,objprop
+                 |  FROM translation_selection
+                 |),
+                 |propstr AS (
+                 |  SELECT 
+                 |     distance
+                 |    ,proj,lang,modname,modtype,parname,partype,objname,objtype,objprop
+                 |    ,strcode,pre_str,pst_str
+                 |  FROM translation_selection, locales
+                 |  WHERE lang_code=lang
                  |)
-                 |SELECT
-                 |:locale request_locale
-                 |,MIN(locales.distance) distance
-                 |,gmrsprp_project, gmrsprp_module_name
-                 |,SUBSTR(MIN( TO_CHAR(locales.distance)||locales.lang_code),2) AS lang_code
-                 |,SUBSTR(gmrsprp_parent_name,2)||gmrsprp_object_name AS key
-                 |,SUBSTR(MIN( TO_CHAR(locales.distance)||DECODE(gmrsprp_stat_code,11,'',gmrsprp_pre_str||gmbstrg_string||gmrsprp_pst_str)),2) AS string
-                 |FROM locales, gmrsprp p1, gmbstrg
-                 |WHERE locales.lang_code = gmrsprp_lang_code
-                 |  AND gmbstrg_strcode=gmrsprp_strcode
-                 |  AND GMRSPRP_STAT_CODE=2
-                 |  AND (gmrsprp_project, gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
-                 |       gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop)
-                 |       IN (SELECT * FROM props_with_changes)
-                 |GROUP BY
-                 |gmrsprp_project, gmrsprp_module_name, gmrsprp_module_type, gmrsprp_parent_name, gmrsprp_parent_type,
-                 |gmrsprp_object_name, gmrsprp_object_type, gmrsprp_object_prop
+                 |SELECT 1 srt, 10, :locale lang, SUBSTR(parname,2)||objname AS key, '' string
+                 |FROM uncache_selection
+                 |UNION
+                 |SELECT 2 srt, distance,lang, SUBSTR(parname,2)||objname, pre_str||gmbstrg_string||pst_str string
+                 |FROM propstr p, gmbstrg s
+                 |WHERE s.gmbstrg_strcode = p.strcode 
+                 |  AND p.distance = (SELECT MIN(distance) FROM propstr m
+                 |                    WHERE m.parname=p.parname
+                 |                     AND m.objname=p.objname)
+                 |ORDER BY 1
                  |""".stripMargin()
 
             //and parent_type = 10 and parent_name = :pn and object_type = 26 and object_name = :on and object_prop = 438
@@ -240,7 +291,10 @@ class TextManagerService {
             localeLoaded[locale] = t0
             msg = cacheMsg[key] ? cacheMsg[key][locale] : null
             def t2 = new Date()
-            log.debug "Reloaded ${rows?.size()} modified texts in ${t2.getTime() - t0.getTime()} ms . Query+Fetch time: //${t1.getTime() - t0.getTime()}"
+            log.debug "Reloaded ${rows?.size()} modified texts in ${t2.getTime() - t0.getTime()} ms . Query+Fetch time: ${t1.getTime() - t0.getTime()} ms"
+        }
+        if (msg && log.isDebugEnabled()) {
+            log.debug("Using Cached TextManager translation for $key: $msg")
         }
         msg
     }
