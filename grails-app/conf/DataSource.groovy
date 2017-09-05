@@ -19,11 +19,9 @@ dataSource {
 
 
 hibernate {
-    cache.use_second_level_cache = true
+    cache.use_second_level_cache = false
     cache.use_query_cache = false
-    cache.provider_class = 'net.sf.ehcache.hibernate.EhCacheProvider'
     cache.region.factory_class = 'net.sf.ehcache.hibernate.EhCacheRegionFactory'
-    net.sf.ehcache.configurationResourceName='configurationehcache.xml'
     config.location = [
             "classpath:hibernate-banner-general-utility.cfg.xml",
             "classpath:hibernate-banner-core.cfg.xml"

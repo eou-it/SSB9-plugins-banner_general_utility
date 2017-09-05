@@ -3,22 +3,22 @@
  ******************************************************************************/
 package net.hedtech.banner.textmanager
 
-import oracle.jdbc.*
+import grails.util.Holders as CH
+import groovy.sql.Sql
 import org.apache.log4j.Logger
-import java.sql.Connection
-import java.sql.DriverManager
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import java.sql.SQLException
-import net.hedtech.banner.textmanager.TextManagerUtil
 
 class TextManagerDB {
     def dataSource
+    Sql sql
     ObjectProperty defaultProp
 
-    String projectCode
+    /*String projectCode
     String langCodeSrc
     String langCodeTgt
     String moduleType
-    String moduleName
+    String moduleName*/
 
     private static final def log = Logger.getLogger(TextManagerDB.class.name)
 
@@ -42,18 +42,16 @@ class TextManagerDB {
         }
     }
 
-    public Connection conn
-
     public createConnection (){
-        DriverManager.registerDriver(new OracleDriver())
-        conn = DriverManager.getConnection(dataSource.underlyingSsbDataSource.url,
-                dataSource.underlyingSsbDataSource.username, dataSource.underlyingSsbDataSource.password)
+        def ctx = CH.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
+        def sessionFactory = ctx.sessionFactory
+        sql = new Sql(sessionFactory.getCurrentSession().connection())
     }
 
     public void closeConnection() throws SQLException {
-        if ( !conn.isClosed()) {
-            conn.commit();
-            conn.close();
+        if ( sql) {
+            sql.commit();
+            sql.close();
         }
     }
 
@@ -61,67 +59,39 @@ class TextManagerDB {
         return defaultProp
     }
 
-    void setDefaultProp(tmUtil){
+    void setDefaultProp(Map dbValues){
         defaultProp = new ObjectProperty()
-        if(tmUtil.dbValues.srcIndicator.equals("s"))
-            defaultProp.langCode = tmUtil.dbValues.srcLocale
+        if(dbValues.srcIndicator.equals("s"))
+            defaultProp.langCode = dbValues.srcLocale
         else
-            defaultProp.langCode = tmUtil.dbValues.tgtLocale
+            defaultProp.langCode = dbValues.tgtLocale
     }
 
-    String getModuleName(String fileName, String moduleName) {
-        int begin, end
-        if (moduleName != null)
-            return moduleName
-        begin = fileName.lastIndexOf("/")
-        end = fileName.lastIndexOf("\\")
-        if (end >= 0 && begin < end)
-            begin = end
-        if (begin < 0)
-            begin = 0
-        else
-            begin++
-        end = fileName.lastIndexOf(".")
-        return fileName.substring(begin, end).toUpperCase()
-    }
-
-    void setDBContext(TextManagerUtil tmUtil) throws SQLException {
+    void setDBContext(Map dbValues) throws SQLException {
         int defStatus = 1 //set to 1 for properties - assume translatable by default
         int sqlTrace = 0
         long timestamp = System.currentTimeMillis()
-        projectCode   = TextManagerUtil.dbValues.projectCode
-        langCodeSrc  = TextManagerUtil.dbValues.srcLocale
-        langCodeTgt  = TextManagerUtil.dbValues.tgtLocale
-        moduleType = "J"
-        moduleName = getModuleName(TextManagerUtil.dbValues.srcFile, TextManagerUtil.dbValues.moduleName)
+        String projectCode   = dbValues.projectCode
+        String langCodeSrc  = dbValues.srcLocale
+        String langCodeTgt  = dbValues.tgtLocale
+        String moduleType = 'J'
+        String moduleName = dbValues.moduleName
 
         //Reverse extract.
-        if (TextManagerUtil.dbValues.srcIndicator.equals("r")) {
+        if (dbValues.srcIndicator.equals("r")) {
             defStatus = 7 //set to Reverse extracted
         }
         try {
-            OracleCallableStatement stmt = null
-            stmt = conn.prepareCall(
-                    "Begin \n" +
-                            "   if :1>0 then \n" +
-                            "         DBMS_SESSION.SET_SQL_TRACE(TRUE); \n" +
-                            "   end if; \n" +
-                            "   GMKOBJI.P_SETCONTEXT( \n" +
-                            "             :2,\n" +
-                            "             :3,\n" +
-                            "             :4,\n" +
-                            "             :5,\n" +
-                            "             :6,\n" +
-                            "             :7);\n" +
-                            "End;")
-            stmt.setInt(1, sqlTrace)
-            stmt.setString(2, projectCode)
-            stmt.setString(3, langCodeSrc)
-            stmt.setString(4, langCodeTgt)
-            stmt.setString(5, moduleType)
-            stmt.setString(6, moduleName)
-            stmt.setInt(7, defStatus)
-            stmt.execute()
+            def params = [sqlTrace, projectCode, langCodeSrc, langCodeTgt, moduleType, moduleName, defStatus]
+            def stmt = """
+                          Begin
+                            if :1>0 then
+                                DBMS_SESSION.SET_SQL_TRACE(TRUE);
+                            end if;
+                            GMKOBJI.P_SETCONTEXT(:2, :3, :4, :5, :6, :7);
+                          End;
+                       """
+            sql.call(stmt, params)
         } catch (SQLException e) {
             log.error("Error in SetDBContext", e)
         }
@@ -130,65 +100,64 @@ class TextManagerDB {
     }
 
 
-    void setModuleRecord(TextManagerUtil tmUtil) throws SQLException {
-        String dataSrc=TextManagerUtil.dbValues.srcFile
-        String langCode=langCodeSrc
+    void setModuleRecord(Map dbValues) throws SQLException {
+        String dataSrc
+        String langCode
         String modDesc
+        String projectCode   = dbValues.projectCode
+        String langCodeSrc  = dbValues.srcLocale
+        String langCodeTgt  = dbValues.tgtLocale
+        String moduleType = 'J'
+        String moduleName = dbValues.moduleName
 
-
-        switch ( TextManagerUtil.dbValues.srcIndicator.charAt(0) ) {
+        switch (dbValues.srcIndicator.charAt(0) ) {
             case 's':
-                dataSrc=TextManagerUtil.dbValues.srcFile
-                langCode=langCodeSrc
-                modDesc="Properties batch extract"
+                dataSrc = dbValues.srcFile
+                langCode = dbValues.srcLocale
+                modDesc = "Properties batch extract"
                 break
             case 'r':
-                dataSrc=TextManagerUtil.dbValues.srcFile
-                langCode=langCodeTgt
-                modDesc="Properties batch reverse extract"
+                dataSrc = dbValues.srcFile
+                langCode = dbValues.tgtLocale
+                modDesc = "Properties batch reverse extract"
                 break
             default: //q and t both translate
-                dataSrc=TextManagerUtil.dbValues.tgtFile
-                langCode=langCodeTgt
-                modDesc="Properties batch translate"
+                dataSrc = dbValues.tgtFile
+                langCode = dbValues.tgtLocale
+                modDesc = "Properties batch translate"
         }
         try{
-            OracleCallableStatement stmt = null
-            stmt = conn.prepareCall(
-                    "Declare \n"+
-                            "   b1 GMRMDUL.GMRMDUL_PROJECT%type :=:1;\n"+
-                            "   b2 GMRMDUL.GMRMDUL_MODULE_NAME%type  :=:2;\n"+
-                            "   b3 GMRMDUL.GMRMDUL_MODULE_TYPE%type  :=:3;\n"+
-                            "   b4 GMRMDUL.GMRMDUL_LANG_CODE%type    :=:4;\n"+
-                            "   b5 GMRMDUL.GMRMDUL_SRC_LANG_CODE%type:=:5;\n"+
-                            "   b6 GMRMDUL.GMRMDUL_MOD_DESC%type     :=:6;\n"+
-                            "   b7 GMRMDUL.GMRMDUL_DATASOURCE%type   :=:7;\n"+
-                            "Begin \n" +
-                            "   insert into \n" +
-                            "   GMRMDUL (GMRMDUL_PROJECT,GMRMDUL_MODULE_NAME,GMRMDUL_MODULE_TYPE, \n" +
-                            "          GMRMDUL_LANG_CODE,GMRMDUL_SRC_LANG_CODE,GMRMDUL_MOD_DESC,GMRMDUL_DATASOURCE,\n" +
-                            "        GMRMDUL_USER_ID,GMRMDUL_ACTIVITY_DATE)\n" +
-                            "   values (b1,b2,b3,b4,b5,b6,b7,user,sysdate);\n"+
-                            "Exception when dup_val_on_index then\n"+
-                            "   update GMRMDUL \n"+
-                            "      set GMRMDUL_ACTIVITY_DATE = sysdate\n"+
-                            "         ,GMRMDUL_MOD_DESC  = b6 \n"+
-                            "         ,GMRMDUL_DATASOURCE= b7 \n"+
-                            "         ,GMRMDUL_USER_ID   = user\n"+
-                            "   where GMRMDUL_PROJECT = b1 \n"+
-                            "     and GMRMDUL_MODULE_NAME  = b2 \n"+
-                            "     and GMRMDUL_MODULE_TYPE  = b3 \n"+
-                            "     and GMRMDUL_LANG_CODE    = b4;\n"+
-                            "End;"   )
-            stmt.setString(1,projectCode)
-            stmt.setString(2,moduleName)
-            stmt.setString(3,moduleType)
-            stmt.setString(4,langCode)
-            stmt.setString(5,langCodeSrc)
-            stmt.setString(6,modDesc)
-            stmt.setString(7,dataSrc)
-            stmt.execute()
-            log.debug("setModuleRecord project: $projectCode, sourceName: $moduleName, langCode: $langCode, langCodeSrc: $langCodeSrc, modDesc: $modDesc, dataSource: $dataSrc")
+            def params = [projectCode, moduleName, moduleType, langCode, langCodeSrc, modDesc, dataSrc]
+            def stmt = """
+                          Declare
+                            b1 GMRMDUL.GMRMDUL_PROJECT%type :=:1;
+                            b2 GMRMDUL.GMRMDUL_MODULE_NAME%type  :=:2;
+                            b3 GMRMDUL.GMRMDUL_MODULE_TYPE%type  :=:3;
+                            b4 GMRMDUL.GMRMDUL_LANG_CODE%type    :=:4;
+                            b5 GMRMDUL.GMRMDUL_SRC_LANG_CODE%type:=:5;
+                            b6 GMRMDUL.GMRMDUL_MOD_DESC%type     :=:6;
+                            b7 GMRMDUL.GMRMDUL_DATASOURCE%type   :=:7;
+                          Begin
+                            insert into
+                            GMRMDUL (GMRMDUL_PROJECT,GMRMDUL_MODULE_NAME,GMRMDUL_MODULE_TYPE,
+                                     GMRMDUL_LANG_CODE,GMRMDUL_SRC_LANG_CODE,GMRMDUL_MOD_DESC,GMRMDUL_DATASOURCE,
+                                     GMRMDUL_USER_ID,GMRMDUL_ACTIVITY_DATE
+                                    )
+                            values (b1,b2,b3,b4,b5,b6,b7,user,sysdate);
+                            Exception when dup_val_on_index then
+                            update GMRMDUL
+                            set GMRMDUL_ACTIVITY_DATE = sysdate,
+                                GMRMDUL_MOD_DESC  = b6,
+                                GMRMDUL_DATASOURCE= b7,
+                                GMRMDUL_USER_ID   = user
+                            where GMRMDUL_PROJECT = b1 and
+                                  GMRMDUL_MODULE_NAME  = b2 and
+                                  GMRMDUL_MODULE_TYPE  = b3 and
+                                  GMRMDUL_LANG_CODE    = b4;
+                          End;
+                       """
+            sql.call(stmt, params)
+            log.debug "setModuleRecord project: $projectCode, sourceName: $moduleName, langCode: $langCode, langCodeSrc: $langCodeSrc, modDesc: $modDesc, dataSource: $dataSrc"
         } catch (SQLException e) {
             log.error("Error in setModuleRecord", e)
         }
@@ -196,63 +165,54 @@ class TextManagerDB {
 
     void setPropString(ObjectProperty op) throws SQLException {
         try {
-            OracleCallableStatement stmt = null
-            stmt = conn.prepareCall(
-                    "Begin\n" +
-                            "   :1  := GMKOBJI.F_SETPROPSTRINGX(\n" +
-                            "      pLang_Code    => :2,   \n" +
-                            "      pParent_type  => :3,   \n" +
-                            "      pParent_name  => :4,   \n" +
-                            "      pObject_type  => :5,   \n" +
-                            "      pObject_name  => :6,   \n" +
-                            "      pObject_prop  => :7,   \n" +
-                            "      pTransl_stat  => :8,   \n" +
-                            "      pProp_string  => :9    \n" +
-                            "   );\n" +
-                            "End;")
-            stmt.registerOutParameter(1, OracleTypes.VARCHAR)
-            stmt.registerOutParameter(8, OracleTypes.INTEGER)
-            stmt.setString(2, op.langCode)
-            stmt.setInt(3, op.parentType)
-            stmt.setString(4, op.parentName)
-            stmt.setInt(5, op.objectType)
-            stmt.setString(6, op.objectName)
-            stmt.setInt(7, op.propCode)
-            stmt.setInt(8, op.status)
-            stmt.setString(9, op.string)
-            stmt.execute()
-            op.statusX = stmt.getString(1)
-            op.status = stmt.getInt(8)
-            log.debug("  setPropString $op.statusX Text: $op.string")
+            def params = [Sql.VARCHAR, op.langCode, op.parentType, op.parentName, op.objectType, op.objectName, op.propCode, Sql.inout(Sql.INTEGER(op.status)), op.string]
+            def stmt = """
+                          Begin
+                            :1  := GMKOBJI.F_SETPROPSTRINGX(
+                                    pLang_Code    => :2,
+                                    pParent_type  => :3,
+                                    pParent_name  => :4,
+                                    pObject_type  => :5,
+                                    pObject_name  => :6,
+                                    pObject_prop  => :7,
+                                    pTransl_stat  => :8,
+                                    pProp_string  => :9
+                                   );
+                          End;
+                       """
+            sql.call(stmt, params){statusX, status ->
+                op.statusX = statusX
+                op.status = status
+                log.debug "setPropString $op.statusX Text: $op.string"
+            }
         } catch (SQLException e) {
-                log.error("Error in setPropString string=", e)
+            log.error("Error in setPropString", e)
         }
     }
 
-    void invalidateStrings() throws SQLException {
+    void invalidateStrings(Map dbValues) throws SQLException {
+        String projectCode   = dbValues.projectCode
+        String langCodeSrc  = dbValues.srcLocale
+        String moduleType = 'J'
+        String moduleName = dbValues.moduleName
         long timestamp = System.currentTimeMillis()
         try {
-            OracleCallableStatement stmt = null
-            stmt = conn.prepareCall(
-                    "Begin\n" +
-                            "  update GMRSPRP set GMRSPRP_STAT_CODE=-5\n" +
-                            "  where GMRSPRP_PROJECT=:1\n" +
-                            "    and GMRSPRP_LANG_CODE   =:2\n" +
-                            "    and GMRSPRP_MODULE_TYPE =:3\n" +
-                            "    and GMRSPRP_MODULE_NAME =:4\n" +
-                            "    and GMRSPRP_ACTIVITY_DATE<GMKOBJI.g_session_time;\n" +
-                            "  :5:=GMKOBJI.f_CleanUp(-5);\n" +
-                            "End;"
-            )
-
-            stmt.setString(1, projectCode)
-            stmt.setString(2, langCodeSrc)
-            stmt.setString(3, moduleType)
-            stmt.setString(4, moduleName)
-            stmt.registerOutParameter(5, OracleTypes.INTEGER)
-            stmt.execute()
-            timestamp = System.currentTimeMillis() - timestamp
-            log.debug("Obsoleted " + stmt.getString(5) + " properties in " + timestamp + " ms")
+            def params = [projectCode, langCodeSrc,moduleType, moduleName, Sql.INTEGER]
+            def stmt = """
+                          Begin
+                            update GMRSPRP set GMRSPRP_STAT_CODE=-5
+                            where GMRSPRP_PROJECT=:1
+                                and GMRSPRP_LANG_CODE   =:2
+                                and GMRSPRP_MODULE_TYPE =:3
+                                and GMRSPRP_MODULE_NAME =:4
+                                and GMRSPRP_ACTIVITY_DATE<GMKOBJI.g_session_time;
+                            :5:=GMKOBJI.f_CleanUp(-5);
+                          End;
+                       """
+            sql.call(stmt, params){
+                timestamp = System.currentTimeMillis() - timestamp
+                log.debug "Obsoleted " + it + " properties in " + timestamp + " ms"
+            }
         } catch (SQLException e) {
             log.error("Error in dbif.invalidateStrings", e)
         }

@@ -3,6 +3,8 @@
  ****************************************************************************** */
 
 import grails.util.Environment
+import grails.util.Holders
+import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
 import net.hedtech.banner.utility.GeneralMenu
 import org.apache.log4j.Logger
 
@@ -19,6 +21,8 @@ class BannerGeneralUtilityBootStrap {
 
     def menuService
     def configPropertiesService
+    def generalPageRoleMappingService
+    def springSecurityService
 
     def init = { servletContext ->
 
@@ -26,10 +30,20 @@ class BannerGeneralUtilityBootStrap {
             def dbInstanceName = menuService.getInstitutionDBInstanceName()
             servletContext.setAttribute("dbInstanceName", dbInstanceName)
         }
-        if(Environment.current != Environment.TEST){
+        if (Environment.current != Environment.TEST) {
             configPropertiesService.seedDataToDBFromConfig()
+            // Seed the data for InterceptUrlMap at server startup.
+            ArrayList seedDataKey = Holders.config.ssconfig.app.seeddata.keys
+            if (seedDataKey && seedDataKey.contains(['grails.plugin.springsecurity.interceptUrlMap'])) {
+                generalPageRoleMappingService.seedInterceptUrlMapAtServerStartup()
+                springSecurityService.clearCachedRequestmaps()
+            }
         }
         configPropertiesService.setConfigFromDb()
+        configPropertiesService.setTransactionTimeOut()
+        configPropertiesService.setLoginEndPointUrl()
+        configPropertiesService.setLogOutEndPointUrl()
+        configPropertiesService.setGuestLoginEnabled()
     }
 
     def destroy = {
