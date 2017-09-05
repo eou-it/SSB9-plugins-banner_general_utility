@@ -3,14 +3,22 @@
  *******************************************************************************/
 package net.hedtech.banner.i18n
 
-import grails.test.spock.IntegrationSpec
+import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 
-class BannerMessageSourceIntegrationSpec extends IntegrationSpec {
+
+class BannerMessageSourceIntegrationTests extends BaseIntegrationTestCase {
 
     def messageSource
     def externalLocation = 'target/i18n'
 
-    def setup() {
+
+    @Before
+    public void setUp() {
+        formContext = ['GUAGMNU']
+        super.setUp()
         def subDir = new File(externalLocation)
         subDir.mkdirs()
         new File(externalLocation+"/test.properties").write("key = Text")
@@ -22,21 +30,22 @@ class BannerMessageSourceIntegrationSpec extends IntegrationSpec {
         messageSource?.setExternalMessageSource(externalMessageSource)
     }
 
-    def cleanup() {
+    @After
+    public void tearDown() {
+        super.tearDown()
         def subDir = new File(externalLocation)
         subDir.deleteDir()
     }
 
-    void "test message source"() {
-        when:
+    @Test
+    void testMessageSource() {
         def names = messageSource.getNormalizedNames()
         def properties = []
         names.each { name ->
             properties << messageSource.getPropertiesByNormalizedName(name, new Locale('en'))
         }
-        then:
-        names.size > 0
-        properties.size  > 0
+        assert names.size > 0
+        assert properties.size  > 0
     }
 
 }
