@@ -70,7 +70,7 @@ class ConfigPropertiesService extends ServiceBase {
                 value = value ? value?.toInteger() : 0
             else if ('string' == it.configType)
                 value = value ? value?.toString() : ''
-            else if('encrypted_text' == it.configType){
+            else if('encryptedtext' == it.configType){
                 decryptedValue = getDecryptedValue(value)
                 value = decryptedValue ? decryptedValue : ''
             }

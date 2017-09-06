@@ -19,7 +19,7 @@ import javax.persistence.*
                 query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId'''),
         @NamedQuery(name = 'ConfigProperties.fetchSimpleConfigByAppId',
                 query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId
-                           and cp.configType in ('boolean','string','integer','encrypted_text')''')
+                           and cp.configType in ('boolean','string','integer','encryptedtext')''')
 ])
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 10009L
