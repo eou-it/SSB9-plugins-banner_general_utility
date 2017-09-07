@@ -9,6 +9,13 @@ import org.junit.Before
 import org.junit.Test
 
 
+class StubbyTextManagerService {
+    public final static String MOCK_PREFIX = "MOCK "
+    def findMessage(key, locale) {
+        MOCK_PREFIX + "${locale}-${key})"
+    }
+}
+
 class BannerMessageSourceIntegrationTests extends BaseIntegrationTestCase {
 
     def messageSource
@@ -28,6 +35,8 @@ class BannerMessageSourceIntegrationTests extends BaseIntegrationTestCase {
                 externalLocation, 'integrationTest',
                 "Setting up external message for integration test")
         messageSource?.setExternalMessageSource(externalMessageSource)
+
+        messageSource?.textManagerService = new StubbyTextManagerService()
     }
 
     @After
@@ -46,6 +55,16 @@ class BannerMessageSourceIntegrationTests extends BaseIntegrationTestCase {
         }
         assert names.size > 0
         assert properties.size  > 0
+    }
+
+    void "test getMergedPluginProperties"() {
+        when:
+        def properties = messageSource.getMergedPluginProperties(new Locale('en')).properties
+        def count = properties.size()
+
+        then:
+        count > 0
+        count == properties.count( { _, value -> value.startsWith( StubbyTextManagerService.MOCK_PREFIX )})
     }
 
 }
