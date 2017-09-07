@@ -49,13 +49,14 @@ class BannerMessageSourceIntegrationSpec extends IntegrationSpec {
         properties.size  > 0
     }
 
-    void "test getAllProperties"() {
+    void "test getMergedPluginProperties"() {
         when:
-        def properties = messageSource.getAllProperties(new Locale('en')).properties
+        def properties = messageSource.getMergedPluginProperties(new Locale('en')).properties
+        def count = properties.size()
 
         then:
-        properties.size()
-        0 == properties.count( { _, value -> !value.startsWith( StubbyTextManagerService.MOCK_PREFIX )})
+        count > 0
+        count == properties.count( { _, value -> value.startsWith( StubbyTextManagerService.MOCK_PREFIX )})
     }
 
 }

@@ -13,20 +13,31 @@ import org.springframework.context.i18n.LocaleContextHolder
 class BannerMessagesTagLib {
 
     /**
-     * Use bannerMessages instead
+     * Use bannerMessages to get TextManager message updates.
+     *
+     * Note that i18n_setup must be contained within a
+     * <script></script> tag, which is not a usual place for a tag...
      */
     @Deprecated
     def i18n_setup = { attrs ->
-        bannerMessages( attrs )
+        out << "\nwindow.i18n = ${getMessages()};\n"
     }
 
     /**
      * Future: May move to using separate downloaded files instead of inline.
      */
     def bannerMessages = { attrs ->
-        def map = grailsApplication.mainContext.getBean('messageSource').getAllProperties( LocaleContextHolder.getLocale() )
+        out << "\n<script>\nwindow.i18n = ${getMessages()};\n</script>"
+    }
+
+    def String getMessages() {
+        def map = [:]
+        grailsApplication.mainContext.getBean('messageSource').getMergedPluginProperties(LocaleContextHolder.getLocale()).properties.each { key ->
+            map.put key.key, key.value
+        }
+
         String json = "${map as JSON}"
-        log.debug( "BannerMessagesTaglib map: ${map.size()} Text length: ${json.length()}")
-        out << "window.i18n = ${json};\n"
+        log.debug( "BannerMessagesTagLib map: ${map.size()} Text length: ${json.length()}")
+        return json
     }
 }

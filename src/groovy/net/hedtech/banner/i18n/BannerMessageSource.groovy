@@ -10,6 +10,16 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 
 import java.text.MessageFormat
+
+import grails.util.CacheEntry
+import java.util.List;
+import grails.util.Pair;
+import org.springframework.core.io.Resource;
+import java.util.concurrent.Callable
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import org.codehaus.groovy.grails.context.support.ReloadableResourceBundleMessageSource.PropertiesHolder
+
 class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 
     static final String APPLICATION_PATH = 'WEB-INF/grails-app/i18n/'
@@ -17,6 +27,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     ExternalMessageSource externalMessageSource
 
     protected def basenamesExposed
+    private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> bannerCachedMergedPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
 
     LinkedHashMap normalizedNamesIndex
 
@@ -150,32 +161,64 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     }
 
     /**
-     * Get all strings for locale, both from properties files and TextManager.
+     * Base method implementation taken from PluginAwareResourceBundleMessageSource in grails 2.5.x
      *
-     * Mimics getMergedProperties and getMergedPluginProperties
-     * without using the protected inner class PropertiesHolder,
-     * because it appears inaccessible from groovy.
+     * Added functionality to have application messages override plugin messages.
      *
-     * @return Map of timestamp, properties, like PropertiesHolder
+     * Added functionality to have TextManager messages override all others.
      */
-    public Map getAllProperties( Locale locale ) {
-        Map propertiesFromFiles = [:]
-        Map finalProperties
-        long start = System.nanoTime()
+    @Override
+    protected PropertiesHolder getMergedPluginProperties(final Locale locale) {
+        log.debug "getMergedPluginProperties"
+        PluginAwareResourceBundleMessageSource self = this
+        def entry = CacheEntry.getValue(bannerCachedMergedPluginProperties, locale, cacheMillis, new Callable<PropertiesHolder>() {
+            @Override
+            public PropertiesHolder call() throws Exception {
+                log.debug "PropertiesHolder call"
+                Properties mergedProps = new Properties();
+                PropertiesHolder mergedHolder = new PropertiesHolder(self, mergedProps);
+                mergeBinaryPluginProperties(locale, mergedProps);
+                log.debug "After mergeBinary: ${mergedProps.size()}"
 
-        // plugin properties, then application properties so app properties overide plugin defaults
-        propertiesFromFiles.putAll( getMergedPluginProperties( locale ).properties )
-        propertiesFromFiles.putAll( getMergedProperties( locale ).properties )
+                for (String basename : pluginBaseNames) {
+                    List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(basename, locale);
+                    for (int j = filenamesAndResources.size() - 1; j >= 0; j--) {
+                        Pair<String, Resource> filenameAndResource = filenamesAndResources.get(j);
+                        if(filenameAndResource.getbValue() != null) {
+                            PropertiesHolder propHolder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue());
+                            mergedProps.putAll(propHolder.getProperties());
+                        }
+                    }
+                }
+                log.debug "After get resources loop: ${mergedProps.size()}"
 
-        // this loop seems like it would be very inefficient, but only takes tens of milliseconds
-        // for banner_employee_ssb_app
-        finalProperties = propertiesFromFiles.collectEntries { key, _ ->
-            [key, textManagerService.findMessage(key, locale)]
+                // override plugin messages with application messages
+                getMergedProperties(locale).properties.each { key ->
+                    mergedProps.put key.key, key.value
+                }
+                log.debug "After get application resources loop: ${mergedProps.size()}"
+
+
+                mergeTextManagerProperties(locale, mergedProps);
+                log.debug "After mergeTextManager: ${mergedProps.size()}}"
+                return mergedHolder;
+            }
+        });
+        return entry
+    }
+
+    /**
+     * Merge all text manager properties for this locale into props
+     */
+    public void mergeTextManagerProperties( Locale locale, Properties props ) {
+        Map entries = new LinkedHashMap()
+        props.each  { key, _ ->
+            String value = textManagerService.findMessage(key, locale)
+            if ( value != null ) {
+                entries[key] = value
+            }
         }
-
-        log.debug "getAllProperties returning ${finalProperties.size()} in time: ${(System.nanoTime() - start)/1e6}ms"
-
-        // timeout should really be based on textManageService.cacheTime
-        [ 'timeout':System.currentTimeMillis(), 'properties': finalProperties ];
+        log.debug "mergeTextManagerProperties returning ${entries.size()}"
+        props.putAll( entries )
     }
 }
