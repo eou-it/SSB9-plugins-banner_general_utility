@@ -11,7 +11,7 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-
+import groovy.sql.Sql
 /**
  * ConfigPropertiesServiceIntegrationTest.
  */
@@ -20,13 +20,13 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     def configPropertiesService
     def configApplicationService
     def grailsApplication
-
     private def appName
     private def appId
     private static final String CONFIG_NAME = 'TEST_CONFIG'
     private static final String CONFIG_VALUE = 'TEST_VALUE'
     private static final String CONFIG_TYPE_STRING = 'string'
     private static final String CONFIG_TYPE_INTEGER = 'integer'
+    private static final String CONFIG_TYPE_CLEAR_TEXT = 'encryptedtext'
     private static final String CONFIG_NAME_TRANSACTION_TIMEOUT = 'banner.transactionTimeout'
     private static final String CONFIG_NAME_LOGIN_ENDPOINT_URL = 'loginEndpoint'
     private static final String CONFIG_NAME_LOGOUT_ENDPOINT_URL = 'logoutEndpoint'
@@ -37,6 +37,9 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private static final String TESTAPP = 'TESTAPP'
     private static String ACTUALAPPNAME = ''
     private static String ACTUALAPPID = ''
+    private static final String CONFIG_NAME_TESTAPP_PASSWORD = 'testapppassword'
+    private static String CONFIG_VALUE_TESTAPP_PASSWORD = "111111"
+
 
     @Before
     public void setUp() {
@@ -306,6 +309,21 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         assertEquals newDefaultWebSessionTimeout, result
         CH.config.defaultWebSessionTimeout = oldDefaultWebSessionTimeout
     }
+
+
+    @Test
+    public void testGetDecryptedValue() {
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_TESTAPP_PASSWORD, configPropertiesService.getEncryptedValue(CONFIG_VALUE_TESTAPP_PASSWORD), CONFIG_TYPE_CLEAR_TEXT)
+        configPropertiesService.setConfigFromDb()
+        assertEquals CONFIG_VALUE_TESTAPP_PASSWORD, CH.config.get(CONFIG_NAME_TESTAPP_PASSWORD)
+    }
+
+
+     @Test
+     public void testGetEncryptedValueWithNoClearText() {
+        assertEquals null, configPropertiesService.getEncryptedValue(null)
+     }
 
 
     private void createNewGlobalConfigProps() {
