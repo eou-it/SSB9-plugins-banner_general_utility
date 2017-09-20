@@ -17,6 +17,11 @@ import javax.persistence.*
 @NamedQueries(value = [
         @NamedQuery(name = 'ConfigProperties.fetchByAppId',
                 query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId'''),
+        @NamedQuery(name = 'ConfigProperties.fetchByConfigNameAndAppId',
+                query = '''FROM ConfigProperties cp
+                           WHERE cp.configApplication = :appId
+                           AND cp.configName = :configName
+                           AND cp.configType in ('boolean','string','integer','encryptedtext')'''),
         @NamedQuery(name = 'ConfigProperties.fetchSimpleConfigByAppId',
                 query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId
                            and cp.configType in ('boolean','string','integer','encryptedtext')''')
@@ -150,11 +155,24 @@ public class ConfigProperties implements Serializable {
 
     public static List fetchSimpleConfigByAppId(String appId) {
         List configProperties = []
-
         configProperties = ConfigProperties.withSession { session ->
             configProperties = session.getNamedQuery('ConfigProperties.fetchSimpleConfigByAppId')
                     .setString('appId', appId).list()
         }
         return configProperties
     }
+
+
+    public static ConfigProperties fetchByConfigNameAndAppId(String configName, String appId) {
+        ConfigProperties configProperties
+        configProperties = ConfigProperties.withSession { session ->
+            configProperties = session.getNamedQuery('ConfigProperties.fetchByConfigNameAndAppId')
+                    .setString('configName', configName)
+                    .setString('appId', appId)
+                    .uniqueResult()
+        }
+        return configProperties
+    }
+
+
 }

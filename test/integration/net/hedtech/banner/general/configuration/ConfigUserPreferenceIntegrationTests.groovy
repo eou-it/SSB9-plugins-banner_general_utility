@@ -19,8 +19,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
     def sql
     def conn
     Integer pidm
-    final private static def APP_NAME = Holders.grailsApplication.metadata['app.name']
-    private def appName
+    private String appName
     private def appId
 
     @Before
@@ -113,6 +112,32 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
 
     @Test
+    public void testfetchByValidPidmAndConfig() {
+        ConfigUserPreference configUserPreference = createConfigUserPreference()
+
+        assertNotNull configUserPreference.id
+        assertEquals 0L, configUserPreference.version
+
+        ConfigUserPreference configUserPreference2 = ConfigUserPreference.fetchByConfigNamePidmAndAppId('CONFIG_TEST', pidm, appId)
+        assertEquals configUserPreference, configUserPreference2
+        assertEquals appId, configUserPreference2.configApplication.appId
+        assertEquals pidm, configUserPreference2.pidm
+    }
+
+
+    @Test
+    public void testfetchByInValidPidmAndConfig() {
+        ConfigUserPreference configUserPreference = createConfigUserPreference()
+
+        assertNotNull configUserPreference.id
+        assertEquals 0L, configUserPreference.version
+
+        ConfigUserPreference configUserPreference2 = ConfigUserPreference.fetchByConfigNamePidmAndAppId('CONFIG_TEST', -99, "appId")
+        assertNull configUserPreference2
+    }
+
+
+    @Test
     public void testSerialization() {
         try {
             ConfigUserPreference newConfigUserPreference = createConfigUserPreference()
@@ -174,7 +199,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
     private ConfigUserPreference createConfigUserPreference() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
-        configApplication = configApplication.refresh()
+        configApplication.refresh()
 
         ConfigProperties configProperties = getConfigProperties()
         configProperties.setConfigApplication(configApplication)
@@ -215,7 +240,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
     private ConfigProperties getConfigProperties() {
         ConfigProperties configProperties = new ConfigProperties(
                 configName: 'CONFIG_TEST',
-                configType: 'TYPE_TEST',
+                configType: 'string',
                 configValue: 'TEST_VALUE'
         )
         return configProperties

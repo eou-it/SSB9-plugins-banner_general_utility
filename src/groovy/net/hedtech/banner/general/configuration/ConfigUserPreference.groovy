@@ -17,7 +17,14 @@ import javax.persistence.*
 
         @NamedQuery(name = 'ConfigUserPreference.fetchByPidm',
                 query = """ FROM ConfigUserPreference configUsrPref
-                WHERE configUsrPref.pidm = :pidm """)
+                WHERE configUsrPref.pidm = :pidm """),
+
+        @NamedQuery(name = 'ConfigUserPreference.fetchByConfigNamePidmAndAppId',
+                query = """ FROM ConfigUserPreference configUsrPref
+                WHERE configUsrPref.configName = :configName
+                and configUsrPref.configApplication = :appId
+                and configUsrPref.pidm = :pidm
+                """)
 ])
 
 public class ConfigUserPreference implements Serializable {
@@ -154,4 +161,22 @@ public class ConfigUserPreference implements Serializable {
         }
         return configUserPreferences
     }
+
+
+    public static ConfigUserPreference fetchByConfigNamePidmAndAppId(String configName, Integer pidm, String appId) {
+        ConfigUserPreference configUserPreference
+        if(pidm && appId && configName) {
+            configUserPreference = ConfigUserPreference.withSession { session ->
+                configUserPreference = session.getNamedQuery('ConfigUserPreference.fetchByConfigNamePidmAndAppId')
+                        .setString('configName', configName)
+                        .setInteger('pidm', pidm)
+                        .setString('appId', appId)
+                        .uniqueResult()
+            }
+        }
+        return configUserPreference
+    }
+
+
+
 }
