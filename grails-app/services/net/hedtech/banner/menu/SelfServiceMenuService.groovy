@@ -120,8 +120,10 @@ class SelfServiceMenuService {
                 " AND twgrwmrl_name = twgrmenu.twgrmenu_url "+
                 " AND twgrwmrl_source_ind = (select nvl( max(twgrwmrl_source_ind ),'B')" +
                 " FROM twgrwmrl WHERE  twgrwmrl_name = twgrmenu_url AND twgrwmrl_source_ind= 'L' )"
-        sqlQuery = roleCriteria ? sqlQuery +
-                            " AND twgrwmrl_role in " + roleCriteria : sqlQuery + " AND twgrwmrl_role in ('')"
+        sqlQuery = roleCriteria ? sqlQuery + " AND twgrwmrl_role in " + roleCriteria : sqlQuery + " AND twgrwmrl_role in ('') "
+        sqlQuery = sqlQuery + " AND twgrwmrl_name IN ( select TWGBWMNU_NAME from TWGBWMNU where TWGBWMNU_NAME = twgrwmrl_name " +
+                " AND TWGBWMNU_SOURCE_IND = (SELECT NVL( MAX(TWGBWMNU_source_ind ),'B') " +
+                " FROM TWGBWMNU WHERE TWGBWMNU_NAME = twgrwmrl_name ) and TWGBWMNU_ENABLED_IND = 'Y')"
         sqlQuery = sqlQuery +
                 " ))) ORDER BY twgrmenu_sequence"
 
