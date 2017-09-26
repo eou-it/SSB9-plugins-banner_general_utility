@@ -100,11 +100,32 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
     void testSSBSdeData() {
 
         def modelWithSdeData = ZipTest.findByCodeAndCity("02186", "Milton")
-        assertFalse supplementalDataSSBService.hasSdeData(modelWithSdeData)
+        assert supplementalDataSSBService.hasSdeData(modelWithSdeData)
 
-        def modelWithNoSdeData = ZipTest.findByCode("02186")
+        def modelWithNoSdeData = ZipTest.findByCode("98926")
         assertFalse supplementalDataSSBService.hasSdeData(modelWithNoSdeData)
-       }
+    }
+
+    @Test
+    void testfindAllLovs() {
+        def additionalParams = [:]
+        additionalParams.lovForm = 'GTVSDLV'
+        additionalParams.lovAttributeOverride = 'HEDM_CREDENTIAL_CATEGORY'
+        additionalParams.lovTableOverride='STVDEGC'
+        def result = supplementalDataSSBService.findAllLovs(additionalParams)
+        assert result.size() > 0
+    }
+
+    @Test
+    void testfindByLovs() {
+        def additionalParams = [:]
+        additionalParams.lovForm = 'GTVSDLV'
+        additionalParams.lovAttributeOverride = 'HEDM_CREDENTIAL_CATEGORY'
+        additionalParams.lovTableOverride='STVDEGC'
+        def result = supplementalDataSSBService.findByLov('certificate', additionalParams)
+        assertNotNull result
+    }
+
 
     /**
      * Tests loading the entity with SDE defined. (SDE data is not empty).
@@ -119,9 +140,9 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
 
         assertNull model.extensions[0].value
 
-        assertEquals "enter a numbere", model.extensions[0].prompt
-        assertEquals "NUMBER", model.extensions[0].datatype
-        assertEquals "with 2 decimal points", model.extensions[0].attrInfo
+        assertEquals "City", model.extensions[0].prompt
+        assertEquals "VARCHAR2", model.extensions[0].datatype
+        assertNull model.extensions[0].attrInfo
 
         assertEquals 5, model.extensions[0].size()
     }
@@ -148,28 +169,28 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
     @Test
     void testSaveNotEmptySdeDataForSSB() {
 
-        def model = ZipTest.findByCodeAndCity("00001", "newcity")
+        def model = ZipTest.findByCodeAndCity("02186", "Milton")
 
         //load sde
         supplementalDataSSBService.getModelExtensionData('GTVZIPC', model.id, model)
 
-        assertNotNull  model.extensions
-        assertEquals  "number" , model.extensions[0].name.toString()
-        assertNull  "value" ,model.extensions[0].value
-        assertEquals  "NUMBER" ,model.extensions[0].datatype
+        assertNotNull model.extensions
+        assertEquals "city" , model.extensions[0].name.toString()
+        assertNull model.extensions[0].value
+        assertEquals "VARCHAR2" ,model.extensions[0].datatype
 
 
         //update the field
-        model.extensions[0].value = 1
+        model.extensions[0].value = "My City"
         //save the field
         supplementalDataSSBService.saveSdeFromUiRequest('GTVZIPC', model)
         //load sde again
         supplementalDataSSBService.getModelExtensionData('GTVZIPC', model.id, model)
 
         assertNotNull  model.extensions
-        assertEquals  "number" , model.extensions[0].name.toString()
-        assertEquals   1 ,model.extensions[0].value
-        assertEquals  "NUMBER" ,model.extensions[0].datatype
+        assertEquals "city" , model.extensions[0].name.toString()
+        assertEquals "My City", model.extensions[0].value
+        assertEquals "VARCHAR2" ,model.extensions[0].datatype
 
     }
 
@@ -183,9 +204,9 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
         def model = ZipTest.findByCodeAndCity("02186", "Milton")
         supplementalDataSSBService.getModelExtensionData('GTVZIPC', model.id, model)
 
-        assertEquals "enter a numbere", model.extensions[0].prompt
-        assertEquals "NUMBER", model.extensions[0].datatype
-        assertEquals "with 2 decimal points", model.extensions[0].attrInfo
+        assertEquals "City", model.extensions[0].prompt
+        assertEquals "VARCHAR2", model.extensions[0].datatype
+        assertNull model.extensions[0].attrInfo
 
         assertEquals 5, model.extensions[0].size()
 
@@ -236,9 +257,11 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
             def model = ZipTest.findByCodeAndCity("BB", "BB")
             supplementalDataSSBService.getModelExtensionData('GTVZIPC', model.id, model)
 
-            model.extensions[0].value = "My Comments"
+            def sdeModel = supplementalDataSSBService.loadSupplementalDataForTable('GTVZIPC', model.id)
+            sdeModel."CITY"."1".dataType="NUMBER"
+            sdeModel."CITY"."1".value = "My Comments"
 
-            supplementalDataSSBService.saveSdeFromUiRequest('GTVZIPC', model)
+            supplementalDataSSBService.persistSupplementalDataForTable('GTVZIPC', model.id, sdeModel)
             fail("Should have received an error: Invalid Number")
         }
         catch (ApplicationException e) {
