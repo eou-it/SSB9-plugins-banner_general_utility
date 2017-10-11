@@ -4,6 +4,7 @@
 package net.hedtech.banner.general.configuration
 
 import org.apache.log4j.Logger
+import org.hibernate.annotations.Type
 
 import javax.persistence.*
 
@@ -20,6 +21,12 @@ import javax.persistence.*
         @NamedQuery(name = 'ConfigProperties.fetchByConfigNameAndAppId',
                 query = '''FROM ConfigProperties cp
                            WHERE cp.configApplication = :appId
+                           AND cp.configName = :configName
+                           AND cp.configType in ('boolean','string','integer','encryptedtext')'''),
+        @NamedQuery(name = 'ConfigProperties.fetchUserConfigurationByConfigNameAndAppId',
+                query = '''FROM ConfigProperties cp
+                           WHERE cp.configApplication = :appId
+                           AND cp.userPreferenceIndicator = true
                            AND cp.configName = :configName
                            AND cp.configType in ('boolean','string','integer','encryptedtext')'''),
         @NamedQuery(name = 'ConfigProperties.fetchSimpleConfigByAppId',
@@ -78,6 +85,16 @@ public class ConfigProperties implements Serializable {
     Long version
 
 
+    @Lob
+    @Column(name = 'GUROCFG_COMMENTS')
+    String configComment
+
+
+    @Type(type = "yes_no")
+    @Column(name = 'GUROCFG_USERPREF_IND')
+    Boolean userPreferenceIndicator = false
+
+
     static constraints = {
         lastModified(nullable: true)
         configType(maxSize: 30)
@@ -85,6 +102,8 @@ public class ConfigProperties implements Serializable {
         dataOrigin(maxSize: 30, nullable: true)
         configApplication(nullable: true)
         lastModifiedBy(maxSize: 30, nullable: true)
+        userPreferenceIndicator(nullable: true, maxSize:1)
+        configComment(nullable: true)
     }
 
     boolean equals(o) {
@@ -102,6 +121,8 @@ public class ConfigProperties implements Serializable {
         if (id != gurocfg.id) return false
         if (lastModifiedBy != gurocfg.lastModifiedBy) return false
         if (version != gurocfg.version) return false
+        if (userPreferenceIndicator != gurocfg.userPreferenceIndicator) return false
+        if (configComment != gurocfg.configComment) return false
 
         return true
     }
@@ -117,6 +138,8 @@ public class ConfigProperties implements Serializable {
         result = 31 * result + (configApplication != null ? configApplication.hashCode() : 0)
         result = 31 * result + (lastModifiedBy != null ? lastModifiedBy.hashCode() : 0)
         result = 31 * result + (version != null ? version.hashCode() : 0)
+        result = 31 * result + (userPreferenceIndicator != null ? userPreferenceIndicator.hashCode() : 0)
+        result = 31 * result + (configComment != null ? configComment.hashCode() : 0)
         return result
     }
 
@@ -132,6 +155,8 @@ public class ConfigProperties implements Serializable {
                 configValue='$configValue',
                 dataOrigin='$dataOrigin',
                 configApplication=$configApplication,
+                userPreferenceIndicator=$userPreferenceIndicator,
+                configComment=$configComment,
                 userId='$lastModifiedBy',
                 version=$version
             }"""
@@ -167,6 +192,18 @@ public class ConfigProperties implements Serializable {
         ConfigProperties configProperties
         configProperties = ConfigProperties.withSession { session ->
             configProperties = session.getNamedQuery('ConfigProperties.fetchByConfigNameAndAppId')
+                    .setString('configName', configName)
+                    .setString('appId', appId)
+                    .uniqueResult()
+        }
+        return configProperties
+    }
+
+
+    public static ConfigProperties fetchUserConfigurationByConfigNameAndAppId(String configName, String appId) {
+        ConfigProperties configProperties
+        configProperties = ConfigProperties.withSession { session ->
+            configProperties = session.getNamedQuery('ConfigProperties.fetchUserConfigurationByConfigNameAndAppId')
                     .setString('configName', configName)
                     .setString('appId', appId)
                     .uniqueResult()

@@ -52,6 +52,33 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
 
     @Test
+    void testSuccessCreateLongConfigName() {
+        ConfigUserPreference configUserPreference = createConfigUserPreference()
+        assertNotNull configUserPreference.id
+        assertEquals 0L, configUserPreference.version
+
+        ConfigProperties configProperties = getConfigProperties()
+        configProperties.setConfigApplication(configApplication)
+        configProperties.configName = "Y" * 256
+        configProperties.save(failOnError: true, flush: true)
+
+        assertNotNull configProperties.id
+        assertEquals 1L, configProperties.version
+        assertEquals "Y" * 256 , configProperties.configName
+        assertEquals "string", configProperties.configType
+        assertEquals "TEST_VALUE", configProperties.configValue
+
+
+        configUserPreference.configName = "Y" * 256
+        configUserPreference.save(failOnError: true, flush: true)
+        assertNotNull configUserPreference.id
+        assertEquals 1L, configUserPreference.version
+        assertEquals "Y" * 256 , configUserPreference.configName
+        assertEquals "string", configUserPreference.configType
+        assertEquals "TEST_VALUE", configUserPreference.configValue
+    }
+
+    @Test
     void testDeleteConfigUserPreference() {
         ConfigUserPreference configUserPreference = createConfigUserPreference()
 
@@ -108,6 +135,10 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
         List list = ConfigUserPreference.fetchByPidm(-99)
         assertEquals 0, list.size()
+
+        list = ConfigUserPreference.fetchByPidm(null)
+        list = ConfigUserPreference.fetchByPidm(null)
+        assertEquals 0, list.size()
     }
 
 
@@ -133,6 +164,15 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 0L, configUserPreference.version
 
         ConfigUserPreference configUserPreference2 = ConfigUserPreference.fetchByConfigNamePidmAndAppId('CONFIG_TEST', -99, "appId")
+        assertNull configUserPreference2
+
+        configUserPreference2 = ConfigUserPreference.fetchByConfigNamePidmAndAppId(null,null,null)
+        assertNull configUserPreference2
+
+        configUserPreference2 = ConfigUserPreference.fetchByConfigNamePidmAndAppId(null,pidm,"appId")
+        assertNull configUserPreference2
+
+        configUserPreference2 = ConfigUserPreference.fetchByConfigNamePidmAndAppId('CONFIG_TEST',pidm,null)
         assertNull configUserPreference2
     }
 

@@ -41,8 +41,10 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull configProperties.id
         assertEquals 0L, configProperties.version
         assertEquals "TEST_CONFIG", configProperties.configName
-        assertEquals "TEST_CONFIG_TYPE", configProperties.configType
+        assertEquals "string", configProperties.configType
         assertEquals "TEST_VALUE", configProperties.configValue
+        assertEquals "TEST_COMMENT", configProperties.configComment
+        assertEquals false, configProperties.userPreferenceIndicator
     }
 
 
@@ -60,7 +62,7 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull configProperties.id
         assertEquals 0L, configProperties.version
         assertEquals "Y" * 256 , configProperties.configName
-        assertEquals "TEST_CONFIG_TYPE", configProperties.configType
+        assertEquals "string", configProperties.configType
         assertEquals "TEST_VALUE", configProperties.configValue
     }
 
@@ -180,6 +182,9 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         String appID = 'invalidApp'
         def list = ConfigProperties.fetchByAppId(appID)
         assertTrue list.size() == 0
+
+        list = ConfigProperties.fetchByAppId(null)
+        assertTrue list.size() == 0
     }
 
     @Test
@@ -188,9 +193,42 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
 
         def list = ConfigProperties.fetchSimpleConfigByAppId(configProperties.configApplication.appId)
         list.each { ConfigProperties configProp ->
-            assertTrue(configProp.configType?.appId == 'boolean' || configProp.configType == 'string' || configProp.configType == 'integer')
+            assertTrue(configProp.configType == 'boolean' || configProp.configType == 'string' || configProp.configType == 'integer')
         }
     }
+
+
+    @Test
+    void testFetchUserConfigurationByConfigNameAndAppId() {
+        ConfigProperties configProperties = createNewConfigProperties()
+        def userConfigList = ConfigProperties.fetchUserConfigurationByConfigNameAndAppId('TEST_CONFIG', configProperties.configApplication.appId)
+        assertNull userConfigList
+
+        configProperties.setUserPreferenceIndicator(true)
+        configProperties.save(failOnError: true, flush: true)
+
+        def userConfigList2 = ConfigProperties.fetchUserConfigurationByConfigNameAndAppId('TEST_CONFIG', configProperties.configApplication.appId)
+        assertNotNull userConfigList2
+        userConfigList2.each { ConfigProperties configProp ->
+            assertTrue(configProp.configType == 'boolean' || configProp.configType == 'string' || configProp.configType == 'integer')
+            assertTrue configProp.userPreferenceIndicator
+        }
+    }
+
+
+    @Test
+    void testFetchByConfigNameAndAppId() {
+        ConfigProperties configProperties = createNewConfigProperties()
+        def userConfigList = ConfigProperties.fetchByConfigNameAndAppId('TEST_CONFIG', configProperties.configApplication.appId)
+        assertNull userConfigList
+        userConfigList.each { ConfigProperties configProp ->
+            assertTrue(configProp.configType == 'boolean' || configProp.configType == 'string' || configProp.configType == 'integer')
+            assertEquals configProp.configApplication.appId, "TESTAPP"
+            assertEquals configProp.configName, "TEST_CONFIG"
+        }
+
+    }
+
 
     private ConfigProperties createNewConfigProperties() {
         ConfigApplication configApplication = getConfigApplication()
@@ -210,8 +248,9 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
     private ConfigProperties getConfigProperties() {
         ConfigProperties configProperties = new ConfigProperties(
                 configName: 'TEST_CONFIG',
-                configType: 'TEST_CONFIG_TYPE',
-                configValue: 'TEST_VALUE'
+                configType: 'string',
+                configValue: 'TEST_VALUE',
+                configComment: 'TEST_COMMENT'
         )
         return configProperties
     }

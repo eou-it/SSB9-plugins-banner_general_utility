@@ -77,7 +77,7 @@ public class ConfigUserPreference implements Serializable {
 
 
     static constraints = {
-        configName(maxSize: 50)
+        configName(maxSize: 256)
         lastModified(nullable: true)
         configType(maxSize: 30)
         dataOrigin(maxSize: 30, nullable: true)
