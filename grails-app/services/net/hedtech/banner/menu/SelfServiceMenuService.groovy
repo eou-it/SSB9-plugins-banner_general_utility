@@ -313,6 +313,11 @@ class SelfServiceMenuService {
             if (it.govrole_finaid_ind == "Y") govroles.add("FINAID")
             if (it.govrole_friend_ind == "Y") govroles.add("FRIEND")
         }
+
+        if(pidm) {
+            govroles.add("WEBUSER")
+        }
+
         return govroles;
 
     }
