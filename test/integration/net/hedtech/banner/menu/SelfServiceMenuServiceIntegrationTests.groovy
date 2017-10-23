@@ -21,7 +21,6 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
     def sql
     private static final def BANNER_ID_WITH_STUDENT_ROLE = 'ESSREG02'
     private static final def BANNER_ID_WITH_OUT_STUDENT_ROLE = 'HOSS001'
-    private static final def BANNER_MENU_APP_CONCEPT_WITHOUT_ROLE = 'HOS00010'
     private final String AR = "ar"
     private final String EN = "en"
     private final String ZH = "zh"
@@ -215,56 +214,6 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
         }
 
-    }
-
-
-    @Test
-    void testSSLinks() {
-
-        def ss = ["a", "B"]
-        grailsApplication.config.seamless.selfServiceApps = ss
-
-        assertEquals "A", selfServiceMenuService.getSSLinks()[0]
-    }
-
-
-    @Test
-    void testSearchMenuAppConceptWithStudentRole() {
-        def map
-        def pidm
-        pidm = getPidm(BANNER_ID_WITH_STUDENT_ROLE)
-        map = selfServiceMenuService.searchMenuAppConcept("", pidm, false)
-        assert map?.size() > 0
-    }
-
-
-    @Test
-    void TestSearchMenuAppConceptWithNoGovrole() {
-        def map
-        def pidm
-        pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
-        map = selfServiceMenuService.searchMenuAppConcept("", pidm, false)
-        assert map?.size() == 0
-    }
-
-
-    @Test
-    void testBannerMenuAppConceptWithStudentRole() {
-        def map
-        def pidm
-        pidm = getPidm(BANNER_ID_WITH_STUDENT_ROLE)
-        map = selfServiceMenuService.bannerMenuAppConcept(pidm)
-        assert map?.size() > 0
-    }
-
-
-    @Test
-    void TestBannerMenuAppConceptWithNoGovrole() {
-        def map
-        def pidm
-        pidm = getPidm(BANNER_MENU_APP_CONCEPT_WITHOUT_ROLE)
-        map = selfServiceMenuService.bannerMenuAppConcept(pidm)
-        assert map?.size() == 0
     }
 
 
