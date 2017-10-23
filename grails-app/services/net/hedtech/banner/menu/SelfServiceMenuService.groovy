@@ -158,28 +158,6 @@ class SelfServiceMenuService {
         stringText = stringText.contains(oldSeparator) ? stringText.replaceAll(oldSeparator, newSeparator) : stringText.replaceAll(newSeparator, oldSeparator)
     }
 
-    private def getGovRole(String pidm) {
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        def govroles = []
-        sql.eachRow("select govrole_student_ind, govrole_alumni_ind, govrole_employee_ind, govrole_faculty_ind, govrole_finance_ind ," +
-                "govrole_friend_ind ,govrole_finaid_ind, govrole_bsac_ind from govrole where govrole_pidm = ? ", [pidm]) {
-            if (it.govrole_student_ind == "Y") govroles.add("STUDENT")
-            if (it.govrole_faculty_ind == "Y") govroles.add("FACULTY")
-            if (it.govrole_employee_ind == "Y") govroles.add("EMPLOYEE")
-            if (it.govrole_alumni_ind == "Y") govroles.add("ALUMNI")
-            if (it.govrole_finance_ind == "Y") govroles.add("FINANCE")
-            if (it.govrole_finaid_ind == "Y") govroles.add("FINAID")
-            if (it.govrole_friend_ind == "Y") govroles.add("FRIEND")
-        }
-
-        if(pidm) {
-            govroles.add("WEBUSER")
-        }
-
-        return govroles;
-
-    }
-
 
     /**
      * TO RETURN A LIST OF ALL ROLES AVAILABLE FOR THE PARTICULAR PIDM BASED ON GOVROLE AND TWGRROLE TABLE.
