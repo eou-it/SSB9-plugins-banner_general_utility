@@ -5,7 +5,6 @@ package net.hedtech.banner.menu
 
 import grails.util.Holders
 import groovy.sql.Sql
-import org.apache.commons.collections.ListUtils
 import org.apache.commons.lang.math.RandomUtils
 import org.apache.log4j.Logger
 import org.springframework.web.context.request.RequestContextHolder
@@ -20,6 +19,7 @@ class SelfServiceMenuService {
     def sessionFactory
     def grailsApplication
     private static final Logger log = Logger.getLogger(getClass())
+    static final String FETCH_ROLES = "{? = call TWBKSLIB.F_CASCADEFETCHROLE(?)}"
 
     /**
      * This is returns map of all menu items based on user access
@@ -180,20 +180,6 @@ class SelfServiceMenuService {
 
     }
 
-    /**
-     * To find the ROLES from TWGRROLE TABLE based on PIDM
-     * @param pidm
-     * @return
-     */
-    private def getTwgrRole(String pidm) {
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        def twgrroles = []
-        sql.eachRow("Select TWGRROLE_ROLE from TWGRROLE Where TWGRROLE_PIDM= ? ", [pidm]) {
-            twgrroles.add(it.TWGRROLE_ROLE)
-        }
-        return twgrroles;
-
-    }
 
     /**
      * TO RETURN A LIST OF ALL ROLES AVAILABLE FOR THE PARTICULAR PIDM BASED ON GOVROLE AND TWGRROLE TABLE.
@@ -201,9 +187,7 @@ class SelfServiceMenuService {
      * @return
      */
     private def getRoleCriteria(String pidm) {
-        def govroles = getGovRole(pidm)
-        def twgrroles = getTwgrRole(pidm)
-        def allRoles = ListUtils.union(govroles, twgrroles)
+        def allRoles = getAllRoles(pidm)
         def allRoleCriteria
         if (allRoles.size() > 0) {
 
@@ -216,6 +200,17 @@ class SelfServiceMenuService {
             allRoleCriteria = allRoleCriteria + ")"
         }
         return allRoleCriteria;
+    }
+
+
+    private def getAllRoles(String pidm) {
+        Sql sql
+        def rolesArray
+        sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.call(FETCH_ROLES, [Sql.VARCHAR, pidm]) { result->
+            rolesArray = result?.substring(1)?.split(":")
+        }
+        return rolesArray
     }
 
 
