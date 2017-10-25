@@ -15,9 +15,6 @@ import org.junit.Test
  */
 class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
-    def dataSource
-    def sql
-    def conn
     Integer pidm
     private String appName
     private def appId
@@ -26,8 +23,6 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        conn = dataSource.getSsbConnection()
-        sql = new Sql(conn)
         pidm = getPidmBySpridenId("HOSH00001")
         appName = Holders.grailsApplication.metadata['app.name']
         appId = 'TESTAPP'
@@ -36,8 +31,6 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
     @After
     public void tearDown() {
-        conn?.close()
-        sql?.close()
         super.tearDown()
     }
 
@@ -75,7 +68,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 1L, configUserPreference.version
         assertEquals "Y" * 256 , configUserPreference.configName
         assertEquals "string", configUserPreference.configType
-        assertEquals "TEST_VALUE", configUserPreference.configValue
+        assertEquals "USER_TEST_VALUE", configUserPreference.configValue
     }
 
     @Test
@@ -100,14 +93,14 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
         def list = ConfigUserPreference.fetchAll()
         assert (list.size() >= 1)
-        assert (list.getAt(0).configValue == 'TEST_VALUE')
+        assert (list.getAt(0).configValue == 'USER_TEST_VALUE')
 
         //Update
-        configUserPreference.setConfigValue('NEW_TEST_VALUE')
+        configUserPreference.setConfigValue('NEW_USER_TEST_VALUE')
         configUserPreference.save(failOnError: true, flush: true)
         list = configUserPreference.fetchAll()
         assert (list.size() >= 1)
-        assert (list.getAt(0).configValue == 'NEW_TEST_VALUE')
+        assert (list.getAt(0).configValue == 'NEW_USER_TEST_VALUE')
     }
 
 
@@ -260,7 +253,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
     private ConfigUserPreference getConfigUserPreference() {
         ConfigUserPreference configUserPreference = new ConfigUserPreference(
                 pidm: pidm,
-                configValue: 'TEST_VALUE'
+                configValue: 'USER_TEST_VALUE'
         )
         return configUserPreference
     }
@@ -286,9 +279,17 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         return configProperties
     }
 
+
     private Integer getPidmBySpridenId(def spridenId) {
-        def query = "SELECT SPRIDEN_PIDM pidm FROM SPRIDEN WHERE SPRIDEN_ID=$spridenId"
-        Integer pidmValue = sql?.firstRow(query)?.pidm
+        Sql sqlObj
+        Integer pidmValue
+        try{
+            sqlObj = new Sql(sessionFactory.getCurrentSession().connection())
+            def query = "SELECT SPRIDEN_PIDM pidm FROM SPRIDEN WHERE SPRIDEN_ID=$spridenId"
+            pidmValue = sqlObj?.firstRow(query)?.pidm
+        } catch(Exception e){
+            e.printStackTrace()
+        }
         return pidmValue
     }
 }
