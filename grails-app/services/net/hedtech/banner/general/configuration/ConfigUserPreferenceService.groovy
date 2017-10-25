@@ -24,7 +24,7 @@ class ConfigUserPreferenceService extends ServiceBase {
         def currentLocale = LocaleContextHolder.getLocale()
 
         def userConfig = getUserPreferenceByConfigNameAppIdAndPidm(configName, appId, pidm)
-        if (userConfig){
+        if (userConfig && userConfig.configValue){
             userLocale = new Locale(userConfig.configValue)
         } else {
             userLocale = currentLocale

@@ -31,12 +31,11 @@ import javax.persistence.*
                            AND cp.configType in ('boolean','string','integer','encryptedtext')'''),
         @NamedQuery(name = 'ConfigProperties.fetchSimpleConfigByAppId',
                 query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId
-                           and cp.configType in ('boolean','string','integer','encryptedtext')''')
+                           and cp.configType in ('boolean','string','integer','encryptedtext')
+                           and (cp.userPreferenceIndicator = false or cp.userPreferenceIndicator IS NULL)''')
 ])
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 10009L
-
-    private static Logger logger = Logger.getLogger(ConfigProperties.getClass().getName())
 
     @Id
     @SequenceGenerator(name = 'GUROCFG_SEQ_GENERATOR', allocationSize = 1, sequenceName = 'GUROCFG_SURROGATE_ID_SEQUENCE')
