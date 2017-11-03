@@ -5,6 +5,7 @@
 package net.hedtech.banner.general.configuration
 
 import grails.util.Holders as CH
+import groovy.sql.Sql
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
@@ -23,9 +24,12 @@ class ConfigPropertiesService extends ServiceBase {
     private static final String GLOBAL = "GLOBAL"
     private static String localLogoutEnable="saml/logout?local=true"
     private static String globalLogoutEnable="saml/logout"
+    private static final String DECRYPT_TEXT_FUNCTION = "{?= call GSKDSEC.decrypt_string(?)}"
+    private static final String ENCRYPT_TEXT_FUNCTION = '{call  GSPCRPT.p_apply(?,?)}'
     def grailsApplication
     def configApplicationService
     ConfigSlurper configSlurper = new ConfigSlurper()
+    def dataSource
 
 
     /**
@@ -59,13 +63,17 @@ class ConfigPropertiesService extends ServiceBase {
             Properties property = new Properties()
             def key = it?.configName
             def value = it?.configValue
-
+            def decryptedValue
             if ('boolean' == it.configType)
                 value = value ? value?.toBoolean() : false
             else if ('integer' == it.configType)
                 value = value ? value?.toInteger() : 0
             else if ('string' == it.configType)
                 value = value ? value?.toString() : ''
+            else if('encryptedtext' == it.configType){
+                decryptedValue = getDecryptedValue(value)
+                value = decryptedValue ? decryptedValue : ''
+            }
 
             property.put(key, value)
             CH.config.merge(configSlurper.parse(property))
@@ -190,5 +198,48 @@ class ConfigPropertiesService extends ServiceBase {
                 AuthenticationProviderUtility.defaultWebSessionTimeout = defaultWebSessionTimeoutFromConfig
             }
         }
+    }
+
+    /**
+     * This Method will used to decrypt the encrypted value.
+     * @Param encryptedValue
+     * */
+    public String getDecryptedValue(def encryptedValue) {
+        def conn
+        String decryptedValue
+        try {
+            if(encryptedValue) {
+                conn = dataSource.getSsbConnection()
+                Sql db = new Sql(conn)
+                db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
+                    decryptedValue = y_string
+                }
+            }
+        } finally {
+            conn?.close()
+        }
+        return decryptedValue
+    }
+
+
+    /**
+     * This Method will used to encrypt the clear text .
+     * @Param clearText of type String
+     * */
+    public String getEncryptedValue(String clearText ) {
+        def conn
+        String encryptedValue
+        try {
+            conn = dataSource.getSsbConnection()
+            Sql db = new Sql(conn)
+            if(clearText) {
+                db.call(ENCRYPT_TEXT_FUNCTION, [clearText, Sql.VARCHAR]) { v_bdmPasswd ->
+                encryptedValue = v_bdmPasswd
+            }
+        }
+        }finally {
+            conn?.close()
+        }
+        return encryptedValue
     }
 }
