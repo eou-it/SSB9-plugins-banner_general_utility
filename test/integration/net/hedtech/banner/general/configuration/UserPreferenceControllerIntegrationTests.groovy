@@ -47,8 +47,18 @@ class UserPreferenceControllerIntegrationTests extends BaseIntegrationTestCase {
         def result = JSON.parse(controller.response.contentAsString)
         assertEquals(200, controller.response.status)
         assertNotNull result
+        assertNotNull result.selectedLocale
         assertTrue(result.locales.size() > 0)
 
+    }
+
+    @Test
+    void testSaveLocale() {
+        loginSSB('HOFH00010', '111111')
+        controller.saveLocale()
+        def result = JSON.parse(controller.response.contentAsString)
+        assertEquals(200, controller.response.status)
+        assertNotNull result.status
     }
 
 }
