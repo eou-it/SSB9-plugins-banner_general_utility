@@ -34,9 +34,8 @@ class UserPreferenceController {
     def saveLocale() {
         def response = configUserPreferenceService.saveLocale(map)
         def model = [
-                status     : response.status,
-                message       : response.message,
-
+                status          : response.status,
+                message     : response.message
         ]
         render model as JSON
 
@@ -45,12 +44,6 @@ class UserPreferenceController {
 
     def getAllLocales() {
         def list = [
-               /* { id:"AL", name:"Alabama"},
-                { localecode : 'ar'   ,  language  : 'Arabic'},
-                { localecode : 'ar_SA',  language  : 'Arabic'},
-                { localecode : 'en_AU',  language  : 'Arabic'},
-                { localecode : 'en_GB',  language  : 'Arabic'},*/
-
                 ar_SA: 'Arabic (Saudi Arabia)',
                 en_AU: 'English Australia',
                 en_GB: 'English United Kingdom',
