@@ -74,6 +74,9 @@ class ConfigPropertiesService extends ServiceBase {
                 decryptedValue = getDecryptedValue(value)
                 value = decryptedValue ? decryptedValue : ''
             }
+            if('locale' == key){
+                property.put('locale_userPreferenceEnable', it.userPreferenceIndicator)
+            }
 
             property.put(key, value)
             CH.config.merge(configSlurper.parse(property))
