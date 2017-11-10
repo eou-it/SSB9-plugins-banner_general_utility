@@ -10,8 +10,6 @@ import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
-import org.springframework.context.i18n.LocaleContextHolder
-import org.springframework.web.context.request.RequestContextHolder
 
 class ConfigUserPreferenceService extends ServiceBase {
 
@@ -30,18 +28,15 @@ class ConfigUserPreferenceService extends ServiceBase {
         String userLocale
         Locale selcetedUserLocale
         Integer pidm = BannerGrantedAuthorityService.getPidm()
-        def currentLocale = LocaleContextHolder.getLocale()
         def userConfig = getUserPreferenceByConfigNameAppIdAndPidm(CONFIGNAME_LOCALE, APPID_GLOBAL, pidm)
         if (userConfig && userConfig.configValue) {
             userLocale = userConfig.configValue
-        } else {
-            userLocale = currentLocale
-        }
-        if (userLocale.contains("_") || userLocale.contains("-")) {
-            String[] tokens = userLocale.split("-|\\_")
-            selcetedUserLocale = new Locale(tokens[0], tokens[1].toUpperCase())
-        } else {
-            selcetedUserLocale = new Locale(userLocale)
+            if (userLocale.contains("_") || userLocale.contains("-")) {
+                String[] tokens = userLocale.split("-|\\_")
+                selcetedUserLocale = new Locale(tokens[0], tokens[1].toUpperCase())
+            } else {
+                selcetedUserLocale = new Locale(userLocale)
+            }
         }
         return selcetedUserLocale
     }
@@ -80,13 +75,14 @@ class ConfigUserPreferenceService extends ServiceBase {
         if (configUserPreference && configUserPreference.id) {
             configUserPreference.setConfigValue(map.locale)
         } else {
-            ConfigApplication configApp = ConfigApplication.fetchByAppId(APPID_GLOBAL)
             ConfigProperties configProperties = ConfigProperties.fetchByConfigNameAndAppId(CONFIGNAME_LOCALE, APPID_GLOBAL)
-            configUserPreference.setConfigApplication(configApp)
+            configUserPreference = new ConfigUserPreference(
+                    pidm: pidm,
+                    configApplication: configProperties.getConfigApplication()
+            )
             configUserPreference.setConfigName(configProperties?.getConfigName())
             configUserPreference.setConfigType(configProperties?.getConfigType())
             configUserPreference.setConfigValue(map.locale)
-            configUserPreference.setPidm(pidm)
         }
         String status
         try {
@@ -94,15 +90,16 @@ class ConfigUserPreferenceService extends ServiceBase {
             status = 'success'
         }
         catch (ApplicationException ae) {
+            LOGGER.error(ae)
             status = 'failure'
         }
-        return [status : status]
+        return [status: status]
     }
 
 
     public List getAllBannerSupportedLocales() {
-        List supportedLocales =[]
-        List localeListFromDB =[]
+        List supportedLocales = []
+        List localeListFromDB = []
         def newlocale
         String localeDisplayName
 
@@ -112,7 +109,7 @@ class ConfigUserPreferenceService extends ServiceBase {
         //Sql sql = new Sql(conn)
 
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        sql.eachRow("Select LOCALE from NLSUSER.JLOC2ORA where LOCALE <> '00-00'") {it ->
+        sql.eachRow("Select LOCALE from NLSUSER.JLOC2ORA where LOCALE <> '00-00'") { it ->
             localeListFromDB.add(it.LOCALE)
         }
         localeListFromDB.each { eachLocale ->
@@ -124,7 +121,7 @@ class ConfigUserPreferenceService extends ServiceBase {
             }
             localeDisplayName = newlocale.getDisplayName()
             //if(!localeDisplayName !=newlocale)){
-                supportedLocales.add ([locale : newlocale, description : localeDisplayName])
+            supportedLocales.add([locale: newlocale, description: localeDisplayName])
             //}
         }
         return supportedLocales
