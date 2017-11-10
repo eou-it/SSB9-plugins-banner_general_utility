@@ -4,6 +4,8 @@
 
 package net.hedtech.banner.general.configuration
 
+import groovy.sql.Sql
+import net.hedtech.banner.db.BannerConnection
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.service.ServiceBase
@@ -25,16 +27,23 @@ class ConfigUserPreferenceService extends ServiceBase {
 
 
     public static Locale getUserLocale() {
-        Locale userLocale
+        String userLocale
+        Locale selcetedUserLocale
         Integer pidm = BannerGrantedAuthorityService.getPidm()
         def currentLocale = LocaleContextHolder.getLocale()
         def userConfig = getUserPreferenceByConfigNameAppIdAndPidm(CONFIGNAME_LOCALE, APPID_GLOBAL, pidm)
         if (userConfig && userConfig.configValue) {
-            userLocale = new Locale(userConfig.configValue)
+            userLocale = userConfig.configValue
         } else {
             userLocale = currentLocale
         }
-        return userLocale
+        if (userLocale.contains("_") || userLocale.contains("-")) {
+            String[] tokens = userLocale.split("-|\\_")
+            selcetedUserLocale = new Locale(tokens[0], tokens[1].toUpperCase())
+        } else {
+            selcetedUserLocale = new Locale(userLocale)
+        }
+        return selcetedUserLocale
     }
 
 
@@ -65,7 +74,6 @@ class ConfigUserPreferenceService extends ServiceBase {
 
 
     public def saveLocale(map) {
-        println map
         Integer pidm = BannerGrantedAuthorityService.getPidm()
         ConfigUserPreference configUserPreference = ConfigUserPreference.fetchByConfigNamePidmAndAppId(CONFIGNAME_LOCALE, pidm, APPID_GLOBAL)
 
@@ -82,7 +90,7 @@ class ConfigUserPreferenceService extends ServiceBase {
         }
         String status
         try {
-            configUserPreferenceService.create(configUserPreference)
+            this.create(configUserPreference)
             status = 'success'
         }
         catch (ApplicationException ae) {
@@ -90,4 +98,36 @@ class ConfigUserPreferenceService extends ServiceBase {
         }
         return [status : status]
     }
+
+
+    public List getAllBannerSupportedLocales() {
+        List supportedLocales =[]
+        List localeListFromDB =[]
+        def newlocale
+        String localeDisplayName
+
+        //Connection conn
+        //BannerConnection bannerConnection
+        //conn = underlyingDataSource.getConnection()
+        //Sql sql = new Sql(conn)
+
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.eachRow("Select LOCALE from NLSUSER.JLOC2ORA where LOCALE <> '00-00'") {it ->
+            localeListFromDB.add(it.LOCALE)
+        }
+        localeListFromDB.each { eachLocale ->
+            if (eachLocale.contains("_") || eachLocale.contains("-")) {
+                String[] tokens = eachLocale.split("-|\\_")
+                newlocale = new Locale(tokens[0], tokens[1].toUpperCase())
+            } else {
+                newlocale = new Locale(eachLocale)
+            }
+            localeDisplayName = newlocale.getDisplayName()
+            //if(!localeDisplayName !=newlocale)){
+                supportedLocales.add ([locale : newlocale, description : localeDisplayName])
+            //}
+        }
+        return supportedLocales
+    }
+
 }

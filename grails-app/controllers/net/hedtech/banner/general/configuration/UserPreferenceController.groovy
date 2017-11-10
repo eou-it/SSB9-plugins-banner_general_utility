@@ -18,14 +18,12 @@ class UserPreferenceController {
     def locales() {
         def locales = getAllLocales()
         def userLocale = configUserPreferenceService.getUserLocale()
-        String userLocaleDescription = userLocale.getDisplayName(Locale.ENGLISH)
+        String userLocaleDescription = userLocale.getDisplayName()
 
         Map returnMap = [
                 locales: locales,
                 selectedLocale : [locale :userLocale, description : userLocaleDescription ]
         ]
-        session['org.springframework.web.servlet.i18n.SessionLocaleResolver.LOCALE'] = userLocale
-        RCU.getLocaleResolver(request).setLocale(request, response, userLocale)
         render returnMap as JSON
     }
 

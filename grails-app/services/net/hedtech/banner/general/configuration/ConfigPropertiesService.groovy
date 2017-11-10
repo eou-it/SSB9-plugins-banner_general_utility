@@ -75,7 +75,7 @@ class ConfigPropertiesService extends ServiceBase {
                 value = decryptedValue ? decryptedValue : ''
             }
             if('locale' == key){
-                property.put('locale_userPreferenceEnable', it.userPreferenceIndicator)
+                property.put('locale_userPreferenceEnable', it.userPreferenceIndicator ?: false)
             }
 
             property.put(key, value)
