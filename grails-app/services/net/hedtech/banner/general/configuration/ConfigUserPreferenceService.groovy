@@ -102,12 +102,6 @@ class ConfigUserPreferenceService extends ServiceBase {
         List localeListFromDB = []
         def newlocale
         String localeDisplayName
-
-        //Connection conn
-        //BannerConnection bannerConnection
-        //conn = underlyingDataSource.getConnection()
-        //Sql sql = new Sql(conn)
-
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         sql.eachRow("Select LOCALE from NLSUSER.JLOC2ORA where LOCALE <> '00-00'") { it ->
             localeListFromDB.add(it.LOCALE)
@@ -120,10 +114,12 @@ class ConfigUserPreferenceService extends ServiceBase {
                 newlocale = new Locale(eachLocale)
             }
             localeDisplayName = newlocale.getDisplayName()
-            //if(!localeDisplayName !=newlocale)){
-            supportedLocales.add([locale: newlocale, description: localeDisplayName])
-            //}
+            if (localeDisplayName && (!localeDisplayName.equalsIgnoreCase(newlocale.toString())) ) {
+                supportedLocales.add([locale: newlocale, description: localeDisplayName])
+                supportedLocales = supportedLocales.toUnique { it.locale }
+            }
         }
+        LOGGER.debug("Banner Supported Locales are = ${supportedLocales}")
         return supportedLocales
     }
 

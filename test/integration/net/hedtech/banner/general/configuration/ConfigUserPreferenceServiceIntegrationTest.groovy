@@ -98,6 +98,13 @@ class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase
     }
 
 
+    @Test
+    public void testGetAllBannerSupportedLocales(){
+        def userLocale = configUserPreferenceService.getAllBannerSupportedLocales()
+        assertNotNull userLocale
+    }
+
+
 
     private def createNewConfigProperties() {
         ConfigApplication configApplication = getConfigApplication()

@@ -18,8 +18,8 @@ class UserPreferenceController {
 
 
     def locales() {
-        def locales = getAllLocales()
-        def userLocale = configUserPreferenceService.getUserLocale()
+        List locales = configUserPreferenceService.getAllBannerSupportedLocales()
+        Locale userLocale = configUserPreferenceService.getUserLocale()
         Map returnMap = [
                 locales       : locales
         ]

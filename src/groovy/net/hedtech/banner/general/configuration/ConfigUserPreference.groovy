@@ -81,7 +81,7 @@ public class ConfigUserPreference implements Serializable {
         lastModified(nullable: true)
         configType(maxSize: 30)
         dataOrigin(maxSize: 30, nullable: true)
-        configApplication(unique: true, nullable: false)
+        configApplication(nullable: false)
         lastModifiedBy(maxSize: 30, nullable: true)
     }
 

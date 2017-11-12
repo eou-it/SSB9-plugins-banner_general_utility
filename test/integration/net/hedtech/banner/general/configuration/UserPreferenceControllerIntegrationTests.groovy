@@ -31,23 +31,25 @@ class UserPreferenceControllerIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testUserLocale() {
-        loginSSB('HOFH00010', '111111')
+        loginSSB('HOSH00001', '111111')
         controller.fetchUserLocale()
         def result = JSON.parse(controller.response.contentAsString)
         assertEquals(200, controller.response.status)
         assertNotNull result
-        assertEquals 'en_US', result.userLocale
+        assertNotNull result.userLocale
+        assertEquals 'en_us', result.userLocale
     }
 
 
     @Test
     void testLocales() {
-        loginSSB('HOFH00010', '111111')
+        loginSSB('HOSH00001', '111111')
         controller.locales()
         def result = JSON.parse(controller.response.contentAsString)
         assertEquals(200, controller.response.status)
         assertNotNull result
         assertNotNull result.selectedLocale
+        assertNotNull result.locales
         assertTrue(result.locales.size() > 0)
 
     }
@@ -55,6 +57,13 @@ class UserPreferenceControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testSaveLocale() {
         loginSSB('HOFH00010', '111111')
+        controller.request.contentType = "application/json"
+        params = [
+                locale                 : "EN_AU"
+
+        ]
+        controller.request.parameters = params
+        //controller.params.locale = 'EN_AU'
         controller.saveLocale()
         def result = JSON.parse(controller.response.contentAsString)
         assertEquals(200, controller.response.status)

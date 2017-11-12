@@ -98,7 +98,7 @@ public class ConfigProperties implements Serializable {
         configType(maxSize: 30)
         configValue(nullable: true)
         dataOrigin(maxSize: 30, nullable: true)
-        configApplication(nullable: true)
+        configApplication(nullable: false)
         lastModifiedBy(maxSize: 30, nullable: true)
         userPreferenceIndicator(nullable: true, maxSize:1)
         configComment(nullable: true)

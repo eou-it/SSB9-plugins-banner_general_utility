@@ -21,23 +21,33 @@ class ConfigPropertiesService extends ServiceBase {
     static transactional = true
 
     private static final LOGGER = Logger.getLogger(ConfigPropertiesService.class.name)
-    private static final String GLOBAL = "GLOBAL"
-    private static String localLogoutEnable="saml/logout?local=true"
-    private static String globalLogoutEnable="saml/logout"
-    private static final String DECRYPT_TEXT_FUNCTION = "{?= call GSKDSEC.decrypt_string(?)}"
-    private static final String ENCRYPT_TEXT_FUNCTION = '{call  GSPCRPT.p_apply(?,?)}'
-    def grailsApplication
-    def configApplicationService
-    ConfigSlurper configSlurper = new ConfigSlurper()
-    def dataSource
 
+    private static final String GLOBAL = "GLOBAL"
+
+    private static String CONFIGNAME_LOCALE = "locale"
+
+    private static String localLogoutEnable = "saml/logout?local=true"
+
+    private static String globalLogoutEnable = "saml/logout"
+
+    private static final String DECRYPT_TEXT_FUNCTION = "{?= call GSKDSEC.decrypt_string(?)}"
+
+    private static final String ENCRYPT_TEXT_FUNCTION = '{call  GSPCRPT.p_apply(?,?)}'
+
+    def grailsApplication
+
+    def configApplicationService
+
+    ConfigSlurper configSlurper = new ConfigSlurper()
+
+    def dataSource
 
     /**
      * This method will be get called in bootstrap to load all the config properties from the DB.
      */
     public void setConfigFromDb() {
         String appId = grailsApplication.metadata['app.appId']
-        LOGGER.info("Fetching config from DB for appId = ${appId}")
+        LOGGER.info("Fetching config from DB for appId = ${ appId }")
         try {
             ArrayList configProp = ConfigProperties.fetchSimpleConfigByAppId(GLOBAL)
             mergeConfigProperties(configProp)
@@ -58,7 +68,7 @@ class ConfigPropertiesService extends ServiceBase {
      * @param configProp Data type is ArrayList, this list will hold the config properties.
      */
     private void mergeConfigProperties(ArrayList configProp) {
-        LOGGER.info('Config fetched from DB' + configProp)
+        LOGGER.debug('Config fetched from DB' + configProp)
         configProp?.each {
             Properties property = new Properties()
             def key = it?.configName
@@ -70,18 +80,18 @@ class ConfigPropertiesService extends ServiceBase {
                 value = value ? value?.toInteger() : 0
             else if ('string' == it.configType)
                 value = value ? value?.toString() : ''
-            else if('encryptedtext' == it.configType){
+            else if ('encryptedtext' == it.configType) {
                 decryptedValue = getDecryptedValue(value)
                 value = decryptedValue ? decryptedValue : ''
             }
-            if('locale' == key){
+            if ('locale' == key) {
                 property.put('locale_userPreferenceEnable', it.userPreferenceIndicator ?: false)
             }
 
             property.put(key, value)
             CH.config.merge(configSlurper.parse(property))
         }
-        LOGGER.info('Setting config from DB')
+        LOGGER.debug('Setting config from DB')
     }
 
 
@@ -111,6 +121,28 @@ class ConfigPropertiesService extends ServiceBase {
             }
         } else {
             LOGGER.error("No App Id Specified in application.properties");
+        }
+    }
+
+
+    public void seedUserPreferenceConfig() {
+        ConfigProperties configProperties = ConfigProperties.fetchByConfigNameAndAppId(CONFIGNAME_LOCALE, GLOBAL)
+        if (!configProperties) {
+            try {
+                ConfigApplication configApp = ConfigApplication.fetchByAppId(GLOBAL)
+                ConfigProperties cp = new ConfigProperties()
+                cp.setConfigName(CONFIGNAME_LOCALE)
+                cp.setConfigValue('en')
+                cp.setConfigApplication(configApp)
+                cp.setConfigType('string')
+                cp.setLastModifiedBy('BANNER')
+                cp.setUserPreferenceIndicator(true)
+                cp.setLastModified(new Date())
+                this.create(cp)
+            }
+            catch (InvalidDataAccessResourceUsageException ex) {
+                LOGGER.error("Exception occured while executing seedUserPreferenceConfig " + ex.getMessage())
+            }
         }
     }
 
@@ -194,9 +226,9 @@ class ConfigPropertiesService extends ServiceBase {
     }
 
 
-    public void updateDefaultWebSessionTimeout(){
-        def defaultWebSessionTimeoutFromConfig= CH.config.defaultWebSessionTimeout
-        if(!(defaultWebSessionTimeoutFromConfig instanceof Map)) {
+    public void updateDefaultWebSessionTimeout() {
+        def defaultWebSessionTimeoutFromConfig = CH.config.defaultWebSessionTimeout
+        if (!(defaultWebSessionTimeoutFromConfig instanceof Map)) {
             if (AuthenticationProviderUtility.defaultWebSessionTimeout != defaultWebSessionTimeoutFromConfig) {
                 AuthenticationProviderUtility.defaultWebSessionTimeout = defaultWebSessionTimeoutFromConfig
             }
@@ -211,7 +243,7 @@ class ConfigPropertiesService extends ServiceBase {
         def conn
         String decryptedValue
         try {
-            if(encryptedValue) {
+            if (encryptedValue) {
                 conn = dataSource.getSsbConnection()
                 Sql db = new Sql(conn)
                 db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
@@ -224,23 +256,22 @@ class ConfigPropertiesService extends ServiceBase {
         return decryptedValue
     }
 
-
     /**
      * This Method will used to encrypt the clear text .
      * @Param clearText of type String
      * */
-    public String getEncryptedValue(String clearText ) {
+    public String getEncryptedValue(String clearText) {
         def conn
         String encryptedValue
         try {
             conn = dataSource.getSsbConnection()
             Sql db = new Sql(conn)
-            if(clearText) {
+            if (clearText) {
                 db.call(ENCRYPT_TEXT_FUNCTION, [clearText, Sql.VARCHAR]) { v_bdmPasswd ->
-                encryptedValue = v_bdmPasswd
+                    encryptedValue = v_bdmPasswd
+                }
             }
-        }
-        }finally {
+        } finally {
             conn?.close()
         }
         return encryptedValue
