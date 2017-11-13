@@ -212,6 +212,9 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
      */
     public void mergeTextManagerProperties( Locale locale, Properties props ) {
         Map entries = new LinkedHashMap()
+        if (!textManagerService) {
+            textManagerService = ServletContextHolder.getServletContext()?.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)?.getBean("textManagerService")
+        }
         props.each  { key, _ ->
             String value = textManagerService.findMessage(key, locale)
             if ( value != null ) {
