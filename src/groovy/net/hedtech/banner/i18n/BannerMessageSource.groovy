@@ -216,7 +216,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
             textManagerService = ServletContextHolder.getServletContext()?.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)?.getBean("textManagerService")
         }
         props.each  { key, _ ->
-            String value = textManagerService.findMessage(key, locale)
+            String value = textManagerService?.findMessage(key, locale)
             if ( value != null ) {
                 entries[key] = value
             }
