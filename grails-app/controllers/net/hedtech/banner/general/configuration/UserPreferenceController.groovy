@@ -10,7 +10,6 @@ import org.apache.log4j.Logger
 
 class UserPreferenceController {
 
-    static defaultAction = "locales"
 
     def configUserPreferenceService
 
@@ -42,40 +41,12 @@ class UserPreferenceController {
 
 
     def saveLocale() {
+        LOGGER.debug("User seleceted locale is = ${request.JSON}")
         def data = request.JSON
         String locale = data.locale
         String description = data.description
         def requestMap = [locale: locale, description: description]
         def response = configUserPreferenceService.saveLocale(requestMap)
         render response as JSON
-    }
-
-
-    def getAllLocales() {
-        def localeList = [
-                [locale: "ar", description: "Arabic"],
-                [locale: "en_AU", description: "English Australia"],
-                [locale: "en_GB", description: "English United Kingdom"],
-                [locale: "en_IE", description: "English Ireland"],
-                [locale: "en_IN", description: "English India"],
-                [locale: "es", description: "Spanish"],
-                [locale: "fr", description: "French"],
-                [locale: "fr_CA", description: "French Canada"],
-                [locale: "pt", description: "Portuguese"],
-                [locale: "es_MX", description: "Spanish (Mexico)"],
-                [locale: "es_PE", description: "Spanish (Peru)"],
-                [locale: "es_CO", description: "Spanish (Colombia)"],
-                [locale: "es_DO", description: "Spanish (Dominican Republic)"],
-                [locale: "es_PR", description: "Spanish (Puerto Rico)"],
-                [locale: "es_VE", description: "Spanish (Venezuela)"],
-                [locale: "es_CL", description: "Spanish (Canary Islands)"],
-                [locale: "es_EC", description: "Spanish (Ecuador)"],
-                [locale: "es_CR", description: "Spanish (Costa Rica)"],
-                [locale: "es_PA", description: "Spanish (Panama)"],
-                [locale: "es_GT", description: "Spanish (Guatemala)"],
-                [locale: "es_AR", description: "Spanish (Argentina)"],
-                [locale: "ar_SA", description: "Arabic (Saudi Arabia)"]
-        ]
-        return localeList
     }
 }

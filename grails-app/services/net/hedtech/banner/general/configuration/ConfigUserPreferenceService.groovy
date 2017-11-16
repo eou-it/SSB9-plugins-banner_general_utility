@@ -5,7 +5,6 @@
 package net.hedtech.banner.general.configuration
 
 import groovy.sql.Sql
-import net.hedtech.banner.db.BannerConnection
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.service.ServiceBase
@@ -26,19 +25,20 @@ class ConfigUserPreferenceService extends ServiceBase {
 
     public static Locale getUserLocale() {
         String userLocale
-        Locale selcetedUserLocale
+        Locale selectedUserLocale
         Integer pidm = BannerGrantedAuthorityService.getPidm()
         def userConfig = getUserPreferenceByConfigNameAppIdAndPidm(CONFIGNAME_LOCALE, APPID_GLOBAL, pidm)
         if (userConfig && userConfig.configValue) {
             userLocale = userConfig.configValue
             if (userLocale.contains("_") || userLocale.contains("-")) {
                 String[] tokens = userLocale.split("-|\\_")
-                selcetedUserLocale = new Locale(tokens[0], tokens[1].toUpperCase())
+                selectedUserLocale = new Locale(tokens[0], tokens[1].toUpperCase())
             } else {
-                selcetedUserLocale = new Locale(userLocale)
+                selectedUserLocale = new Locale(userLocale)
             }
         }
-        return selcetedUserLocale
+        LOGGER.debug("User locale is = ${selectedUserLocale}")
+        return selectedUserLocale
     }
 
 
@@ -64,6 +64,7 @@ class ConfigUserPreferenceService extends ServiceBase {
         } else {                                                     // GUROCFG_USERPREF_IND = 'N"
             userConfiguration = configProperties
         }
+        LOGGER.debug("Fetched config with config name = ${ configName } and value = ${ userConfiguration?.configValue }")
         return userConfiguration
     }
 
@@ -90,7 +91,7 @@ class ConfigUserPreferenceService extends ServiceBase {
             status = 'success'
         }
         catch (ApplicationException ae) {
-            LOGGER.error(ae)
+            LOGGER.error('SaveLocale failed with error ', ae)
             status = 'failure'
         }
         return [status: status]

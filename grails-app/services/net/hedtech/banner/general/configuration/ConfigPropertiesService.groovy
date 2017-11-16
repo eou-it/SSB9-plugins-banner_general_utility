@@ -132,7 +132,6 @@ class ConfigPropertiesService extends ServiceBase {
                 ConfigApplication configApp = ConfigApplication.fetchByAppId(GLOBAL)
                 ConfigProperties cp = new ConfigProperties()
                 cp.setConfigName(CONFIGNAME_LOCALE)
-                cp.setConfigValue('en')
                 cp.setConfigApplication(configApp)
                 cp.setConfigType('string')
                 cp.setLastModifiedBy('BANNER')
