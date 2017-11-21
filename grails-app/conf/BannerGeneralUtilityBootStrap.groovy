@@ -32,6 +32,8 @@ class BannerGeneralUtilityBootStrap {
         }
         if (Environment.current != Environment.TEST) {
             configPropertiesService.seedDataToDBFromConfig()
+            configPropertiesService.seedUserPreferenceConfig()
+
             // Seed the data for InterceptUrlMap at server startup.
             ArrayList seedDataKey = Holders.config.ssconfig.app.seeddata.keys
             if (seedDataKey && seedDataKey.contains(['grails.plugin.springsecurity.interceptUrlMap'])) {
