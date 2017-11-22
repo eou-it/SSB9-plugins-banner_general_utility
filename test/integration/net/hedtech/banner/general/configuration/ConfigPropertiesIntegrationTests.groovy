@@ -218,15 +218,13 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testFetchByConfigNameAndAppId() {
-        ConfigProperties configProperties = createNewConfigProperties()
-        def userConfigList = ConfigProperties.fetchByConfigNameAndAppId('TEST_CONFIG', configProperties.configApplication.appId)
-        assertNull userConfigList
-        userConfigList.each { ConfigProperties configProp ->
-            assertTrue(configProp.configType == 'boolean' || configProp.configType == 'string' || configProp.configType == 'integer')
-            assertEquals configProp.configApplication.appId, "TESTAPP"
-            assertEquals configProp.configName, "TEST_CONFIG"
-        }
+        ConfigProperties newConfigProperties = createNewConfigProperties()
+        ConfigProperties configProperties = ConfigProperties.fetchByConfigNameAndAppId('TEST_CONFIG', newConfigProperties.configApplication.appId)
+        assertNotNull configProperties
 
+        assertTrue(configProperties.configType == 'boolean' || configProperties.configType == 'string' || configProperties.configType == 'integer' || configProperties.configType == 'encryptedtext')
+        assertEquals configProperties.configApplication.appId, "TESTAPP"
+        assertEquals configProperties.configName, "TEST_CONFIG"
     }
 
 
