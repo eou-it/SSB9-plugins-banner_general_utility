@@ -144,6 +144,13 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 
     @Override
     protected MessageFormat resolveCode(String code, Locale locale) {
+        if (!textManagerService) {
+            textManagerService = ServletContextHolder.getServletContext()?.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)?.getBean("textManagerService")
+            }
+        String msg = textManagerService?.findMessage(code,getLocale(locale.toString()))
+        if(msg != null) {
+            return new MessageFormat( msg )
+        }
         MessageFormat mf = externalMessageSource?.resolveCode(code, locale)
         if(mf == null) {
             return super.resolveCode(code, getLocale(locale))    //To change body of overridden methods use File | Settings | File Templates.
