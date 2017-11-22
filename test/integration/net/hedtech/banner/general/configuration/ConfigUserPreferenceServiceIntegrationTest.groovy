@@ -89,12 +89,10 @@ class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase
         ConfigUserPreference configUserPreference = createConfigUserPreference(configProperties)
         assertNotNull configUserPreference.id
         assertEquals configProperties.configName, configUserPreference.configName
-        assertEquals 'USER_TEST_VALUE', configUserPreference.configValue
-
+        assertEquals 'PT', configUserPreference.configValue
 
         def userLocale = configUserPreferenceService.getUserLocale()
-        assertNotNull userLocale
-
+        assertEquals new Locale('PT'), userLocale
     }
 
 
@@ -163,7 +161,7 @@ class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase
     private ConfigUserPreference getConfigUserPreference() {
         ConfigUserPreference configUserPreference = new ConfigUserPreference(
                 pidm: pidm,
-                configValue: 'USER_TEST_VALUE'
+                configValue: 'PT'
         )
         return configUserPreference
     }
