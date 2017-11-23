@@ -11,6 +11,7 @@ import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 
 import java.text.ParseException
@@ -93,6 +94,7 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
      * Tests if there is any SDE data for the model
      * */
 
+    @Ignore
     @Test
     void testSdeData() {
 
@@ -107,6 +109,7 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
      * Tests loading the entity with SDE defined. (SDE data is not empty).
      * */
 
+    @Ignore
     @Test
     void testLoadNotEmptySdeData() {
         def model = ZipTest.findByCodeAndCity("02186", "Milton")
@@ -277,7 +280,8 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
      * 1. SDE data already exists
      * 2. Remove SDE data from the attribute
      * */
-    @Test
+     @Ignore
+     @Test
     void testSaveDeleteNotEmptySdeData() {
         def model = ZipTest.findByCodeAndCity("02186", "Milton")
         def sdeModel = supplementalDataService.loadSupplementalDataForModel(model)
@@ -351,7 +355,8 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
      * 1. No SDE data
      * 2. Add SDE data to these attributes with wrong Number format
      * */
-    @Test
+     @Ignore
+     @Test
     void testNumericValidationSdeData() {
 
 
