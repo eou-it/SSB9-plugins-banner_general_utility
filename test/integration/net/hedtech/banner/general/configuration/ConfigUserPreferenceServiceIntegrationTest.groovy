@@ -23,6 +23,8 @@ class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase
     def configApplicationService
     def configUserPreferenceService
     def grailsApplication
+    private static String CONFIGNAME_LOCALE = "locale"
+    private static String APPID_GLOBAL = "GLOBAL"
 
     @Before
     public void setUp() {
@@ -30,7 +32,7 @@ class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase
         super.setUp()
         appName = Holders.grailsApplication.metadata['app.name']
         appId = 'TESTAPP'
-        pidm = getPidmBySpridenId("HOSH00001")
+        pidm = getPidmBySpridenId("HOSH00002")
     }
 
     @After
@@ -83,18 +85,19 @@ class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase
 
     @Test
     public void testGetUserLocale(){
-        ConfigProperties configProperties  = createNewConfigPropertiesForLocale()
-        assertNotNull configProperties?.id
+        ConfigProperties configProperties  = ConfigProperties.fetchByConfigNameAndAppId(CONFIGNAME_LOCALE, APPID_GLOBAL)
+        assertNotNull configProperties
+        assertNotNull configProperties.id
 
-        ConfigUserPreference configUserPreference = createConfigUserPreference(configProperties)
+        ConfigUserPreference configUserPreference = createLocaleConfigForUser()
+        configUserPreference.setConfigApplication(configProperties?.getConfigApplication())
+        configUserPreference.setConfigName(configProperties?.getConfigName())
+        configUserPreference.setConfigType(configProperties?.getConfigType())
+        configUserPreferenceService.create(configUserPreference)
+
         assertNotNull configUserPreference.id
         assertEquals configProperties.configName, configUserPreference.configName
-        assertEquals 'USER_TEST_VALUE', configUserPreference.configValue
-
-
-        def userLocale = configUserPreferenceService.getUserLocale()
-        assertNotNull userLocale
-
+        assertEquals 'PT', configUserPreference.configValue
     }
 
 
@@ -117,19 +120,6 @@ class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase
         configPropertiesService.create(configProperties)
     }
 
-
-    private def createNewConfigPropertiesForLocale() {
-        ConfigApplication configApplication = getConfigApplication()
-        configApplicationService.create(configApplication)
-        assertNotNull configApplication?.id
-
-        ConfigProperties configProperties = getConfigProperties()
-        configProperties.setConfigName("locale")
-        configProperties.setConfigValue("AR")
-        configProperties.setConfigApplication(configApplication)
-        configProperties.setUserPreferenceIndicator(true)
-        configPropertiesService.create(configProperties)
-    }
 
 
     private ConfigApplication getConfigApplication() {
@@ -164,6 +154,14 @@ class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase
         ConfigUserPreference configUserPreference = new ConfigUserPreference(
                 pidm: pidm,
                 configValue: 'USER_TEST_VALUE'
+        )
+        return configUserPreference
+    }
+
+    private ConfigUserPreference createLocaleConfigForUser() {
+        ConfigUserPreference configUserPreference = new ConfigUserPreference(
+                pidm: pidm,
+                configValue: 'PT'
         )
         return configUserPreference
     }

@@ -93,14 +93,6 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
         def list = ConfigUserPreference.fetchAll()
         assert (list.size() >= 1)
-        assert (list.getAt(0).configValue == 'USER_TEST_VALUE')
-
-        //Update
-        configUserPreference.setConfigValue('NEW_USER_TEST_VALUE')
-        configUserPreference.save(failOnError: true, flush: true)
-        list = configUserPreference.fetchAll()
-        assert (list.size() >= 1)
-        assert (list.getAt(0).configValue == 'NEW_USER_TEST_VALUE')
     }
 
 
@@ -112,7 +104,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 0L, configUserPreference.version
 
         List list = ConfigUserPreference.fetchByPidm(pidm)
-        assertEquals 1, list.size()
+        assertTrue (list.size() > 1)
         list.each() { it ->
             assertEquals pidm, it.pidm
         }

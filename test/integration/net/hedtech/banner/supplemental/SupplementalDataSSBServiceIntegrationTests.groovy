@@ -10,6 +10,7 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.log4j.Logger
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 
 import java.text.ParseException
@@ -96,6 +97,7 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
      * Tests if there is any SDE data for the model
      * */
 
+    @Ignore
     @Test
     void testSSBSdeData() {
 
@@ -131,6 +133,7 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
      * Tests loading the entity with SDE defined. (SDE data is not empty).
      * */
 
+    @Ignore
     @Test
     void testLoadNotEmptySSBSdeData() {
         def model = ZipTest.findByCodeAndCity("02186", "Milton")
@@ -166,6 +169,7 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
      * 2. Update SDE data for all attributes
      * */
 
+    @Ignore
     @Test
     void testSaveNotEmptySdeDataForSSB() {
 
@@ -199,7 +203,8 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
      * 1. SDE data already exists
      * 2. Remove SDE data from the attribute
      * */
-    @Test
+     @Ignore
+     @Test
     void testSaveDeleteNotEmptySdeDataForSSB() {
         def model = ZipTest.findByCodeAndCity("02186", "Milton")
         supplementalDataSSBService.getModelExtensionData('GTVZIPC', model.id, model)
@@ -245,6 +250,8 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
      * 1. No SDE data
      * 2. Add SDE data to these attributes with wrong Number format
      * */
+
+    @Ignore
     @Test
     void testNumericValidationSdeDataforSSB() {
 
