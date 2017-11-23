@@ -37,7 +37,7 @@ class UserPreferenceControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(200, controller.response.status)
         assertNotNull result
         assertNotNull result.userLocale
-        assertEquals 'en_us', result.userLocale
+        assertEquals 'ar_SA', result.userLocale
     }
 
 
