@@ -1,16 +1,35 @@
-/******************************************************************************
- *  Copyright 2017 Ellucian Company L.P. and its affiliates.                  *
- ******************************************************************************/
-package net.hedtech.banner.textmanager
+/*******************************************************************************
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
+package net.hedtech.banner.i18n
 
 import grails.util.Holders
 import groovy.sql.Sql
-import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertTrue
+import net.hedtech.banner.testing.BaseIntegrationTestCase
 
-class TextManagerServiceIntegrationTests extends BaseIntegrationTestCase {
+class ResourceBundleServiceIntegrationTests extends BaseIntegrationTestCase {
+
+    def messageSource
+    def resourceBundleService
+
+    def testLocales = ['en_GB','en']
+    def testLocalesSave =   [
+            [
+                "enabled": true,
+                "code": "en_GB"
+            ],
+            [
+                "enabled": true,
+                "code": "en"
+            ]
+    ]
+
     def textManagerService
 
     def underlyingDataSource
@@ -71,12 +90,11 @@ class TextManagerServiceIntegrationTests extends BaseIntegrationTestCase {
             }
         }
     }
-
     @Before
-    public void setUp(){
+    public void setUp() {
         formContext = ['GUAGMNU']
         Holders.config.ssbEnabled = true
-        super.setUp()
+        super.setUp();
         createProjectForApp('UNITTEST', 'Integration Test Banner General Utility')
     }
 
@@ -86,28 +104,50 @@ class TextManagerServiceIntegrationTests extends BaseIntegrationTestCase {
         super.tearDown()
     }
 
+    @Test
+    void testGetList() {
+        def resources = resourceBundleService.list()
+        assertTrue(resources.size() > 0)
+    }
 
     @Test
-    public void testSaveSuccess(){
-        def name = "integrationTest"
-        def srcProperties = new Properties()
-        def srcLocale = textManagerService.ROOT_LOCALE_APP
-        def tgtProperties = new Properties()
-        def tgtLocale = "enIN"
+    void testGetResourcesWithSingleLocale() {
+      def resources = resourceBundleService.list()
+      def resList =  []
+      testLocales.each { locale ->
+                resources.each { it ->
+                    resList << resourceBundleService.get(it.basename, locale)
+                }
+            }
+        assertTrue(resList.size()>0)
+    }
 
-        srcProperties.put("dummy.label1", "Dummy English text1")
-        srcProperties.put("dummy.label2", "Dummy English text2")
-        tgtProperties.put("dummy.label1", "Dummy French text1")
-        tgtProperties.put("dummy.label2", "Dummy French text2")
+    @Test
+    void testSave() {
+        def fr = resourceBundleService.get('testExternalResource/test', 'fr_FR')
+        def resources = resourceBundleService.list()
+        def data = resources[0]
+        data.enableTranslation = true
+        data.sourceLocale = 'root'
+        data.locales = testLocalesSave
+        def saveResult = resourceBundleService.save(data)
+        //assertTrue(saveResult.count > 0)
+        assertEquals(fr.locale,"fr_FR")
+    }
 
-        def srcStatus = textManagerService.save(srcProperties, name, srcLocale, srcLocale)
-        def tgtStatus = textManagerService.save(tgtProperties, name, srcLocale, tgtLocale)
-        def message = textManagerService.findMessage("dummy.label1",tgtLocale)
-
-        assertNull(srcStatus.error)
-        assertEquals(2, srcStatus.count)
-        assertNull(tgtStatus.error)
-        assertEquals(2, tgtStatus.count)
-       // assertNotNull(message)
+    @Test
+    void testSaveWithLocale() {
+        def ar = resourceBundleService.get('testExternalResource/test', 'ar_SA')
+        def resources = resourceBundleService.list()
+        def data = resources[0]
+        data.enableTranslation = true
+        data.sourceLocale = 'root'
+        data.locales = testLocalesSave
+      //  def saveResult = resourceBundleService.save(data)
+        //assertTrue(saveResult.count > 0)
+        assertEquals(ar.locale,"ar_SA")
     }
 }
+
+
+

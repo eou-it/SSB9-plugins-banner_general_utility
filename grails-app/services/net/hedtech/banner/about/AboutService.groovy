@@ -15,7 +15,6 @@ class AboutService {
     def grailsApplication
     def pluginManager
     def sessionFactory
-    def menuService
     def resourceProperties
     def messageSource
 
@@ -147,11 +146,7 @@ class AboutService {
         getMessage("net.hedtech.banner.login.copyright2")
     }
 
-/*    private String getDbInstanceName() {
-        menuService.getInstitutionDBInstanceName()
-    }
-
-    private String getUserName() {
+/*    private String getUserName() {
         String userName = ""
         try {
             userName = SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase()
