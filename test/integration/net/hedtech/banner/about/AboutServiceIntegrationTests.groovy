@@ -28,11 +28,12 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     @Test
     public void getAboutSuccess(){
         def aboutData = aboutService.getAbout()
+        println aboutData
         assertEquals(MessageHelper.message("about.banner.title"),aboutData.get("api.title"))
         assertEquals(MessageHelper.message("about.banner.close"),aboutData.get("api.close"))
         assertNotNull aboutData.get("about.banner.application.name")
         assertTrue((aboutService.getAbout().get("about.banner.application.name").toString().equalsIgnoreCase(grailsApplication.metadata['app.name'])) ||
-                    aboutService.getAbout().get("about.banner.application.name").toString().equalsIgnoreCase(MessageHelper.message("about.application.name")) )
+                    aboutService.getAbout().get("about.banner.application.name").toString().contains(MessageHelper.message("about.application.name")) )
         assertTrue(aboutData.get("about.banner.application.version").toString().contains("Version"))
         assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright1"),aboutData.get("about.banner.copyright"))
         assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright2"),aboutData.get("about.banner.copyrightLegalNotice"))
