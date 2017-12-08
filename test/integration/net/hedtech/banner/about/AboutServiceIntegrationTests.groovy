@@ -38,4 +38,14 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright1"),aboutData.get("about.banner.copyright"))
         assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright2"),aboutData.get("about.banner.copyrightLegalNotice"))
     }
+
+    @Test
+    void testFormatCamelCaseToEnglish() {
+        assertEquals("Banner", aboutService.formatCamelCaseToEnglish("banner"))
+    }
+
+    @Test
+    void testFormatCamelCaseToEnglishEmpty() {
+        assertEquals("", aboutService.formatCamelCaseToEnglish(""))
+    }
 }
