@@ -227,6 +227,108 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         assertEquals configProperties.configName, "TEST_CONFIG"
     }
 
+    @Test
+    void testEqualsConfigName() {
+        ConfigProperties configProperties1 = new ConfigProperties(configName: "TestName")
+        ConfigProperties configProperties2 = new ConfigProperties(configName: "TestName1")
+        assertFalse configProperties2==configProperties1
+    }
+
+    @Test
+    void testEqualsConfigType() {
+        ConfigProperties configProperties1 = new ConfigProperties(configType: "String")
+        ConfigProperties configProperties2 = new ConfigProperties(configType: "Integer")
+        assertFalse configProperties2==configProperties1
+    }
+
+    @Test
+    void testEqualsConfigValue() {
+        ConfigProperties configProperties1 = new ConfigProperties(configValue: "200")
+        ConfigProperties configProperties2 = new ConfigProperties(configValue: "300")
+        assertFalse configProperties2==configProperties1
+    }
+
+    @Test
+    void testEqualsLastModifiedEqual() {
+        ConfigProperties configProperties1 = new ConfigProperties(lastModified: new Date(12,2,12))
+        ConfigProperties configProperties2 = new ConfigProperties(lastModified: new Date(12,2,14))
+        assertFalse configProperties2==configProperties1
+    }
+
+
+   @Test
+    void testEqualsDataOriginNotEqual() {
+        ConfigProperties configProperties1 = new ConfigProperties(dataOrigin: "GENERAL")
+        ConfigProperties configProperties2 = new ConfigProperties(dataOrigin: "BANNER")
+        assertFalse configProperties2==configProperties1
+    }
+
+
+    @Test
+    void testEqualsAppIdNotEqual() {
+        ConfigProperties configProperties1 = new ConfigProperties(id: 1234)
+        ConfigProperties configProperties2 = new ConfigProperties(id:12345)
+        assertFalse configProperties2==configProperties1
+    }
+
+
+    @Test
+    void testEqualsLastModifiedByNotEqual() {
+        ConfigProperties configProperties1 = new ConfigProperties(lastModifiedBy: "TestUser")
+        ConfigProperties configProperties2 = new ConfigProperties(lastModifiedBy: "GRAILS")
+        assertFalse configProperties2==configProperties1
+    }
+
+
+    @Test
+    void testEqualsVersionNotEqual() {
+        ConfigProperties configProperties1 = new ConfigProperties(version: 1)
+        ConfigProperties configProperties2 = new ConfigProperties(version: 2)
+        assertFalse configProperties2==configProperties1
+    }
+
+
+    @Test
+    void testEqualsConfigCommentNotEqual() {
+        ConfigProperties configProperties1 = new ConfigProperties(configComment: "Config Value Column")
+        ConfigProperties configProperties2 = new ConfigProperties(configComment: "Config Name Column")
+        assertFalse configProperties2==configProperties1
+    }
+
+
+    @Test
+    void testEqualsUserPreferenceIndicatorNotEqual() {
+        ConfigProperties configProperties1 = new ConfigProperties(userPreferenceIndicator: true)
+        ConfigProperties configProperties2 = new ConfigProperties(userPreferenceIndicator: false)
+        assertFalse configProperties2==configProperties1
+    }
+
+
+    @Test
+    void testEqualsConfigApplication() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId")
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName1",
+                appId: "TestId1")
+        ConfigProperties configProperties1 = new ConfigProperties(configApplication: configApplication1)
+        ConfigProperties configProperties2 = new ConfigProperties(configApplication: configApplication2)
+        assertFalse configProperties1 == configProperties2
+    }
+
+
+   @Test
+    void testEqualsIs() {
+        ConfigProperties configProperties1 = new ConfigProperties()
+        assertTrue configProperties1.equals(configProperties1)
+    }
+
+
+    @Test
+    void testEqualsClass() {
+        ConfigApplication configApplication = new ConfigApplication()
+        ConfigProperties configProperties=new ConfigProperties()
+        assertFalse configProperties.equals(configApplication)
+    }
 
     private ConfigProperties createNewConfigProperties() {
         ConfigApplication configApplication = getConfigApplication()
