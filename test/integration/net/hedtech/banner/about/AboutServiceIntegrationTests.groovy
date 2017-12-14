@@ -9,6 +9,7 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.context.i18n.LocaleContextHolder
 
 class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     def aboutService
@@ -27,6 +28,8 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void getAboutSuccess(){
+        def oldLocale= LocaleContextHolder.getLocale()
+        LocaleContextHolder.setLocale(new Locale("en","IN"))
         def aboutData = aboutService.getAbout()
         println aboutData
         assertEquals(MessageHelper.message("about.banner.title"),aboutData.get("api.title"))
@@ -37,6 +40,7 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         assertTrue(aboutData.get("about.banner.application.version").toString().contains("Version"))
         assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright1"),aboutData.get("about.banner.copyright"))
         assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright2"),aboutData.get("about.banner.copyrightLegalNotice"))
+        LocaleContextHolder.setLocale(oldLocale)
     }
 
     @Test
