@@ -1,5 +1,5 @@
 /******************************************************************************
- *  Copyright 2017 Ellucian Company L.P. and its affiliates.                  *
+ *  Copyright 2017-2018 Ellucian Company L.P. and its affiliates.                  *
  ******************************************************************************/
 
 package net.hedtech.banner.textmanager
@@ -156,7 +156,7 @@ class TextManagerService {
 
     def cacheMsg = [:]
     def localeLoaded = [:]
-    def timeOut = 60 * 1000 as long //milli seconds
+    def timeOut = 60 * 1000 * 5 as long //milli seconds
 
     def findMessage(key, locale) {
         if (!tmEnabled) {
@@ -173,8 +173,10 @@ class TextManagerService {
             if (!tmEnabled) {
                 return null
             }
+			def days = (cacheAgeMilis+timeOut)/1000/24/3600;
+            days= (days>=1)?days:1;
             // Add timeOut to the cacheAge to be sure no updates in TextManager are missed
-            def params = [locale: tmLocale, pc: tmProject, days_ago: (cacheAgeMilis+timeOut)/1000/24/3600 , max_distance: 1]
+            def params = [locale: tmLocale, pc: tmProject, days_ago: days , max_distance: 1]
             //max_distance: 1 means use strings with a matching locale, do not use a string from a different territory
             //max_distance: 2 means also use a string from a different territory (but just picks one if multiple territories exist)
             Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
