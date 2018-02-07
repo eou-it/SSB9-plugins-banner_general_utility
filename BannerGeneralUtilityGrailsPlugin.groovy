@@ -1,12 +1,12 @@
 /*******************************************************************************
- Copyright 2013-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2013-2018 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 import grails.plugin.springsecurity.SpringSecurityUtils
 import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
 import net.hedtech.banner.i18n.BannerMessageSource
 class BannerGeneralUtilityGrailsPlugin {
-    String version = "9.26"
+    String version = "9.26.1"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2.1 > *"
