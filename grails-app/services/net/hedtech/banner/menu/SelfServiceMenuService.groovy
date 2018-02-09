@@ -5,7 +5,6 @@ package net.hedtech.banner.menu
 
 import grails.util.Holders
 import groovy.sql.Sql
-import org.apache.commons.collections.ListUtils
 import org.apache.commons.lang.math.RandomUtils
 import org.apache.log4j.Logger
 import org.springframework.web.context.request.RequestContextHolder
@@ -20,7 +19,7 @@ class SelfServiceMenuService {
     def sessionFactory
     def grailsApplication
     private static final Logger log = Logger.getLogger(getClass())
-    static final String SS_APPS = "SS_APPS"
+    static final String FETCH_ROLES = "{? = call TWBKSLIB.F_CASCADEFETCHROLE(?)}"
 
     /**
      * This is returns map of all menu items based on user access
@@ -30,62 +29,6 @@ class SelfServiceMenuService {
     def bannerMenu(def menuName, def menuTrail, def pidm) {
 
         processMenu(menuName, menuTrail, pidm)
-    }
-
-    def bannerMenuAppConcept(def facultyPidm) {
-        processMenuAppConcept(facultyPidm)
-    }
-
-
-    private def processMenuAppConcept(def pidm) {
-
-        def dataMap = []
-        def firstMenu = "Banner";
-
-        Sql sql
-        sql = new Sql(sessionFactory.getCurrentSession().connection())
-        log.trace("SQL Connection:" + sql.useConnection.toString())
-
-        def govroleCriteria
-        def govroles = []
-        def sqlQuery;
-        String pidmCondition = "twgrrole_pidm is NULL"
-        if (pidm) {
-            pidmCondition = "twgrrole_pidm = " + pidm
-            govroles = getGovRole(""+pidm);
-            govroleCriteria = getGovRoleCriteria(govroles);
-        }
-
-        sqlQuery = "select DISTINCT TWGRMENU_URL_TEXT,TWGRMENU_URL," +
-                "TWGRMENU_URL_DESC" +
-                " from twgrmenu a " +
-                " where  twgrmenu_enabled = 'Y'" +
-                " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
-                " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
-                " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
-                " where govrole_pidm = " + pidm +
-                " and  twgrwmrl_role in " + govroleCriteria + ")) and TWGRMENU_URL_TEXT is not null" +
-                " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join("','") + "')"
-
-        sql.eachRow(sqlQuery) {
-
-            def mnu = new SelfServiceMenu()
-            mnu.formName = it.twgrmenu_url
-            mnu.pageName = it.twgrmenu_url
-            mnu.name = it.twgrmenu_url_text.toUpperCase()
-            mnu.caption = toggleSeparator(it.twgrmenu_url_text)
-            mnu.pageCaption = mnu.caption
-            mnu.type = 'FORM'
-            mnu.menu = firstMenu
-            mnu.parent = 'ss'
-            mnu.url = it.twgrmenu_url
-            mnu.captionProperty = false
-
-            dataMap.add(mnu)
-
-        };
-        return dataMap
-
     }
 
     /**
@@ -116,12 +59,14 @@ class SelfServiceMenuService {
                 " FROM twgrmenu   WHERE  twgrmenu_name = ? " +
                 " AND twgrmenu_enabled = 'Y'" +
                 " AND twgrmenu_source_ind =  (select nvl( max(twgrmenu_source_ind ),'B') FROM twgrmenu WHERE  twgrmenu_name = ? AND twgrmenu_source_ind='L')"+
-                " AND (twgrmenu_db_link_ind = 'N' OR ( twgrmenu_url IN (select twgrwmrl_name FROM twgrwmrl, twgrmenu WHERE twgrmenu.twgrmenu_name = ?"+
-                " AND twgrwmrl_name = twgrmenu.twgrmenu_url "+
+                " AND (twgrmenu_db_link_ind = 'N' OR ( REGEXP_SUBSTR(twgrmenu_url , '[^?]*') IN (select twgrwmrl_name FROM twgrwmrl, twgrmenu WHERE twgrmenu.twgrmenu_name = ?"+
+                " AND twgrwmrl_name = REGEXP_SUBSTR(twgrmenu.twgrmenu_url , '[^?]*') "+
                 " AND twgrwmrl_source_ind = (select nvl( max(twgrwmrl_source_ind ),'B')" +
-                " FROM twgrwmrl WHERE  twgrwmrl_name = twgrmenu_url AND twgrwmrl_source_ind= 'L' )"
-        sqlQuery = roleCriteria ? sqlQuery +
-                            " AND twgrwmrl_role in " + roleCriteria : sqlQuery + " AND twgrwmrl_role in ('')"
+                " FROM twgrwmrl WHERE  twgrwmrl_name = REGEXP_SUBSTR(twgrmenu_url , '[^?]*') AND twgrwmrl_source_ind= 'L' )"
+        sqlQuery = roleCriteria ? sqlQuery + " AND twgrwmrl_role in " + roleCriteria : sqlQuery + " AND twgrwmrl_role in ('') "
+        sqlQuery = sqlQuery + " AND twgrwmrl_name IN ( select TWGBWMNU_NAME from TWGBWMNU where TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*') " +
+                " AND TWGBWMNU_SOURCE_IND = (SELECT NVL( MAX(TWGBWMNU_source_ind ),'B') " +
+                " FROM TWGBWMNU WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*') ) and TWGBWMNU_ENABLED_IND = 'Y')"
         sqlQuery = sqlQuery +
                 " ))) ORDER BY twgrmenu_sequence"
 
@@ -213,138 +158,6 @@ class SelfServiceMenuService {
         stringText = stringText.contains(oldSeparator) ? stringText.replaceAll(oldSeparator, newSeparator) : stringText.replaceAll(newSeparator, oldSeparator)
     }
 
-    def searchMenuAppConcept(def searchVal, def pidm, def ui) {
-
-        def searchValWild = "\'%" + searchVal + "%\'"
-        def dataMap = []
-        def firstMenu = "Banner Self-Service";
-        Sql sql
-        log.trace("search Combined Menu started for value: " + searchValWild)
-        sql = new Sql(sessionFactory.getCurrentSession().connection())
-        log.trace("SQL Connection:" + sql.useConnection.toString())
-
-        def govroleCriteria
-        def govroles = []
-        def sqlQuery;
-        String pidmCondition = "twgrrole_pidm is NULL"
-        if (pidm) {
-            pidmCondition = "twgrrole_pidm = " + pidm
-            govroles = getGovRole(""+pidm);
-            govroleCriteria = getGovRoleCriteria(govroles);
-        }
-
-
-        if (govroles.size() > 0) {
-            if (ui) {
-                sqlQuery = "select DISTINCT TWGRMENU_URL_TEXT,TWGRMENU_URL," +
-                        "TWGRMENU_URL_DESC" +
-                        " from twgrmenu a " +
-                        " where  twgrmenu_enabled = 'Y'" +
-                        " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
-                        " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
-                        " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
-                        " where govrole_pidm = " + pidm +
-                        " and  twgrwmrl_role in " + govroleCriteria + ")) and TWGRMENU_URL_TEXT is not null" +
-                        " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join("','") + "')" +
-                        " and  (twgrmenu_name like  " + searchValWild + " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like " + searchValWild + ")"
-            } else {
-
-                sqlQuery = "select DISTINCT TWGRMENU_URL_TEXT,TWGRMENU_URL," +
-                        "TWGRMENU_URL_DESC" +
-                        " from twgrmenu a " +
-                        " where  twgrmenu_enabled = 'Y'" +
-                        " and (twgrmenu_name in (select twgrwmrl_name from twgrwmrl, twgrrole where " + pidmCondition +
-                        " and twgrrole_role = twgrwmrl_role and twgrwmrl_name = a.twgrmenu_name) " +
-                        " or twgrmenu_name in (select twgrwmrl_name from twgrwmrl, govrole " +
-                        " where govrole_pidm = " + pidm +
-                        " and  twgrwmrl_role in " + govroleCriteria + ")) and TWGRMENU_URL_TEXT is not null" +
-                        " and UPPER(twgrmenu_url) in ('" + getSSLinks()?.join("','") + "')" +
-                        " and  (twgrmenu_name like  " + searchValWild + " OR UPPER(twgrmenu_url_text) like " + searchValWild.toUpperCase() + " OR twgrmenu_url_desc like "+ searchValWild +
-                        " OR UPPER(twgrmenu_url) like " + searchValWild.toUpperCase() + ")";
-            }
-
-            sql.eachRow(sqlQuery) {
-                def mnu = new SelfServiceMenu()
-                mnu.formName = it.twgrmenu_url
-                mnu.pageName = it.twgrmenu_url
-                mnu.name = it.twgrmenu_url_text.toUpperCase()
-                mnu.caption = toggleSeparator(it.twgrmenu_url_text)
-                mnu.pageCaption = mnu.caption
-                mnu.type = 'FORM'
-                mnu.menu = firstMenu
-                mnu.parent = 'ss'
-                mnu.url = it.twgrmenu_url
-                mnu.captionProperty = false
-
-                dataMap.add(mnu)
-
-            };
-        }
-        log.trace("ProcessMenu executed for search criteria e:" + searchVal)
-        sql.connection.close()
-        return dataMap
-
-    }
-
-    public def getSSLinks() {
-        def ssbApps = []
-
-        def session = RequestContextHolder.currentRequestAttributes().getSession()
-
-        if (!session.getAttribute(SS_APPS)) {
-            grailsApplication.config?.seamless.selfServiceApps.each { ssbApps << (it.toUpperCase()) }
-            session.setAttribute(SS_APPS, ssbApps)
-        }
-
-        return session.getAttribute(SS_APPS)
-    }
-    private def getGovRole(String pidm) {
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        def govroles = []
-        sql.eachRow("select govrole_student_ind, govrole_alumni_ind, govrole_employee_ind, govrole_faculty_ind, govrole_finance_ind ," +
-                "govrole_friend_ind ,govrole_finaid_ind, govrole_bsac_ind from govrole where govrole_pidm = ? ", [pidm]) {
-            if (it.govrole_student_ind == "Y") govroles.add("STUDENT")
-            if (it.govrole_faculty_ind == "Y") govroles.add("FACULTY")
-            if (it.govrole_employee_ind == "Y") govroles.add("EMPLOYEE")
-            if (it.govrole_alumni_ind == "Y") govroles.add("ALUMNI")
-            if (it.govrole_finance_ind == "Y") govroles.add("FINANCE")
-            if (it.govrole_finaid_ind == "Y") govroles.add("FINAID")
-            if (it.govrole_friend_ind == "Y") govroles.add("FRIEND")
-        }
-        return govroles;
-
-    }
-
-    /**
-     * To find the ROLES from TWGRROLE TABLE based on PIDM
-     * @param pidm
-     * @return
-     */
-    private def getTwgrRole(String pidm) {
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        def twgrroles = []
-        sql.eachRow("Select TWGRROLE_ROLE from TWGRROLE Where TWGRROLE_PIDM= ? ", [pidm]) {
-            twgrroles.add(it.TWGRROLE_ROLE)
-        }
-        return twgrroles;
-
-    }
-
-    private def getGovRoleCriteria(def govroles) {
-        def govroleCriteria
-        if (govroles.size() > 0) {
-
-            govroles.each {
-                if (it == govroles.first())
-                    govroleCriteria = "('" + it.value + "'"
-                else
-                    govroleCriteria = govroleCriteria + " ,'" + it.value + "'"
-            }
-            govroleCriteria = govroleCriteria + ")"
-        }
-
-        return govroleCriteria;
-    }
 
     /**
      * TO RETURN A LIST OF ALL ROLES AVAILABLE FOR THE PARTICULAR PIDM BASED ON GOVROLE AND TWGRROLE TABLE.
@@ -352,9 +165,7 @@ class SelfServiceMenuService {
      * @return
      */
     private def getRoleCriteria(String pidm) {
-        def govroles = getGovRole(pidm)
-        def twgrroles = getTwgrRole(pidm)
-        def allRoles = ListUtils.union(govroles, twgrroles)
+        def allRoles = getAllRoles(pidm)
         def allRoleCriteria
         if (allRoles.size() > 0) {
 
@@ -367,6 +178,17 @@ class SelfServiceMenuService {
             allRoleCriteria = allRoleCriteria + ")"
         }
         return allRoleCriteria;
+    }
+
+
+    private def getAllRoles(String pidm) {
+        Sql sql
+        def rolesArray
+        sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.call(FETCH_ROLES, [Sql.VARCHAR, pidm]) { result->
+            rolesArray = result?.substring(1)?.split(":")
+        }
+        return rolesArray
     }
 
 
