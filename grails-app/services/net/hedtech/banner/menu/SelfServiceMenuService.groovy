@@ -49,7 +49,6 @@ class SelfServiceMenuService {
 
         menuName = menuName ?: "bmenu.P_MainMnu"
         def roleCriteria
-        def govroles = []
         def sqlQuery;
         if (pidm) {
             roleCriteria = getRoleCriteria(""+pidm)
@@ -173,8 +172,9 @@ class SelfServiceMenuService {
             allRoles.each {
                 if (it == allRoles.first())
                     allRoleCriteria = "('" + it.value + "'"
-                else
+                else {
                     allRoleCriteria = allRoleCriteria + " ,'" + it.value + "'"
+                }
             }
             allRoleCriteria = allRoleCriteria + ")"
         }

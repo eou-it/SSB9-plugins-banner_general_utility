@@ -230,6 +230,109 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         }
     }
 
+
+    @Test
+    void testEqualsIs() {
+        ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage()
+        assertTrue configControllerEndpointPage.equals(configControllerEndpointPage)
+    }
+
+
+    @Test
+    void testEqualsClass() {
+        ConfigApplication configApplication1 = new ConfigApplication()
+        ConfigControllerEndpointPage configControllerEndpointPage = new ConfigControllerEndpointPage()
+        assertFalse configControllerEndpointPage.equals(configApplication1)
+    }
+
+
+    @Test
+    void testEqualsId() {
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(id:1234)
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(id:12345)
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
+
+    @Test
+    void testEqualsLastModified() {
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(lastModified: new Date(12,2,10))
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(lastModified: new Date(12,2,13))
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
+
+    @Test
+    void testEqualsDataOrigin() {
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(dataOrigin: "GRAILS")
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(dataOrigin: "GENERAL")
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
+    @Test
+    void testEqualsDescription() {
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(description: "EndpointUrl")
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(description: "EndpointUrl1")
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
+
+    @Test
+    void testEqualsDisplaySequence() {
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(displaySequence: 1)
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(displaySequence: 2)
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
+
+    @Test
+    void testEqualsStatusIndicator() {
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(statusIndicator: true)
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(statusIndicator: false)
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
+
+    @Test
+    void testEqualsPageId() {
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(pageId: "userAgreement")
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(pageId: "surveyPage")
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
+
+    @Test
+    void testEqualsPageUrl() {
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(pageUrl: "ssb/userAgreement")
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(pageUrl: "ssb/surveyPage")
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
+    @Test
+    void testEqualsConfigApplication() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",   appId: "TestId")
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName1", appId: "TestId1")
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(configApplication: configApplication1)
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(configApplication: configApplication2)
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
+
+    @Test
+    void testEqualsLastModifiedBy() {
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(lastModifiedBy: "GRAILS_USER")
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(lastModifiedBy: "GENERAL")
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
+
+    @Test
+    void testEqualsVersion() {
+        ConfigControllerEndpointPage configControllerEndpointPage1 = new ConfigControllerEndpointPage(version: 1)
+        ConfigControllerEndpointPage configControllerEndpointPage2 = new ConfigControllerEndpointPage(version: 2)
+        assertFalse configControllerEndpointPage1 == configControllerEndpointPage2
+    }
+
     private ConfigControllerEndpointPage createConfigControllerEndPointPage() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication = configApplication.save(failOnError: true, flush: true)

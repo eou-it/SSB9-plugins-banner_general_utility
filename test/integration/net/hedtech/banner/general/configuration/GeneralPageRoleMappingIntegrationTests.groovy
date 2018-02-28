@@ -187,6 +187,36 @@ class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
         }
     }
 
+
+    @Test
+    void testEqualsClass() {
+        ConfigApplication configApplication = new ConfigApplication()
+        GeneralPageRoleMapping generalPageRoleMapping=new GeneralPageRoleMapping()
+        assertFalse generalPageRoleMapping.equals(configApplication)
+    }
+
+
+    @Test
+    void testStatusIndicatorEquals(){
+        GeneralPageRoleMapping generalPageRoleMapping1=new GeneralPageRoleMapping(statusIndicator: true)
+        GeneralPageRoleMapping generalPageRoleMapping2=new GeneralPageRoleMapping(statusIndicator: false)
+        assertFalse generalPageRoleMapping1 == generalPageRoleMapping2
+    }
+
+
+    @Test
+    void testIdEquals(){
+        GeneralPageRoleMapping generalPageRoleMapping1=new GeneralPageRoleMapping(id: 1234)
+        GeneralPageRoleMapping generalPageRoleMapping2=new GeneralPageRoleMapping(id: 12345)
+        assertFalse generalPageRoleMapping1 == generalPageRoleMapping2
+    }
+
+    @Test
+    void testEqualsIs() {
+        GeneralPageRoleMapping generalPageRoleMapping1 = new GeneralPageRoleMapping()
+        assertTrue generalPageRoleMapping1.equals(generalPageRoleMapping1)
+    }
+
     private ConfigApplication saveDomains() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)

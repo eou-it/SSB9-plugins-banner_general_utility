@@ -8,6 +8,7 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.context.i18n.LocaleContextHolder
 
 class UserPreferenceControllerIntegrationTests extends BaseIntegrationTestCase {
 
@@ -40,6 +41,42 @@ class UserPreferenceControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 'ar_SA', result.userLocale
     }
 
+
+    @Test
+    void testUserLocale1() {
+        loginSSB('HOSH00002', '111111')
+        controller.locales()
+        def result = JSON.parse(controller.response.contentAsString)
+        assertEquals(200, controller.response.status)
+        assertNotNull result
+        assertNull result.userLocale
+        assertTrue result.size() > 0
+    }
+
+
+    @Test
+    void testUserLocale2() {
+        loginSSB('HOSH00002', '111111')
+        controller.fetchUserLocale()
+        def result = JSON.parse(controller.response.contentAsString)
+        assertEquals(200, controller.response.status)
+        assertNotNull result
+        assertNotNull result.userLocale
+        assertTrue result.size() > 0
+    }
+
+
+    @Test
+    void testUserLocale3() {
+        loginSSB('HOSH00002', '111111')
+        LocaleContextHolder.setLocale(null)
+        controller.fetchUserLocale()
+        def result = JSON.parse(controller.response.contentAsString)
+        assertEquals(200, controller.response.status)
+        assertNotNull result
+        assertNotNull result.userLocale
+        assertTrue result.size() > 0
+    }
 
     @Test
     void testLocales() {

@@ -3,10 +3,6 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
-import org.apache.log4j.Logger
-import org.hibernate.exception.SQLGrammarException
-import org.springframework.dao.InvalidDataAccessResourceUsageException
-
 import javax.persistence.*
 
 /**

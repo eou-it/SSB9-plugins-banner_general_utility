@@ -6,6 +6,7 @@ package net.hedtech.banner.general.utility
 
 import grails.validation.ValidationException
 import groovy.sql.Sql
+import net.hedtech.banner.general.configuration.ConfigApplication
 import net.hedtech.banner.session.BannerUserSession
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -247,6 +248,82 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
         }
     }
 
+    @Test
+    void testEqualsInfoType() {
+        BannerUserSession bannerUserSession1 = new BannerUserSession(infoType: "TestInfoType")
+        BannerUserSession bannerUserSession2 = new BannerUserSession(infoType: "TestInfoType1")
+        assertFalse bannerUserSession2==bannerUserSession1
+    }
+
+
+     @Test
+    void testEqualsLastModifiedEqual() {
+        BannerUserSession bannerUserSession1 = new BannerUserSession(lastModified: new Date(12,2,12))
+        BannerUserSession bannerUserSession2 = new BannerUserSession(lastModified: new Date(12,2,14))
+        assertFalse bannerUserSession2==bannerUserSession1
+    }
+
+
+    @Test
+    void testEqualsDataOriginNotEqual() {
+        BannerUserSession bannerUserSession1 = new BannerUserSession(dataOrigin: "GENERAL")
+        BannerUserSession bannerUserSession2 = new BannerUserSession(dataOrigin: "BANNER")
+        assertFalse bannerUserSession2==bannerUserSession1
+    }
+
+
+    @Test
+    void testEqualsAppIdNotEqual() {
+        BannerUserSession bannerUserSession1 = new BannerUserSession(id: 1234)
+        BannerUserSession bannerUserSession2 = new BannerUserSession(id:12345)
+        assertFalse bannerUserSession2==bannerUserSession1
+    }
+
+
+    @Test
+    void testEqualsLastModifiedByNotEqual() {
+        BannerUserSession bannerUserSession1 = new BannerUserSession(lastModifiedBy: "TestUser")
+        BannerUserSession bannerUserSession2 = new BannerUserSession(lastModifiedBy: "GRAILS")
+        assertFalse bannerUserSession2==bannerUserSession1
+    }
+
+
+    @Test
+    void testEqualsVersionNotEqual() {
+        BannerUserSession bannerUserSession1 = new BannerUserSession(version: 1)
+        BannerUserSession bannerUserSession2 = new BannerUserSession(version: 2)
+        assertFalse bannerUserSession2==bannerUserSession1
+    }
+
+
+    @Test
+    void testEqualsSessionTokenNotEqual() {
+        BannerUserSession bannerUserSession1 = new BannerUserSession(sessionToken: "abcdf")
+        BannerUserSession bannerUserSession2 = new BannerUserSession(sessionToken: "efdf")
+        assertFalse bannerUserSession2==bannerUserSession1
+    }
+
+
+   @Test
+    void testEqualsIs() {
+        BannerUserSession bannerUserSession1 = new BannerUserSession()
+        assertTrue bannerUserSession1.equals(bannerUserSession1)
+    }
+
+
+    @Test
+    void testEqualsClass() {
+        ConfigApplication configApplication = new ConfigApplication()
+        BannerUserSession configUserPreference=new BannerUserSession()
+        assertFalse configUserPreference.equals(configApplication)
+    }
+
+    @Test
+    void testEqualsAll() {
+        BannerUserSession bannerUserSession1 = new BannerUserSession()
+        BannerUserSession bannerUserSession2 = new BannerUserSession()
+        assertTrue bannerUserSession2==bannerUserSession1
+    }
 
     private BannerUserSession newBannerUserSession() {
         def bannerUserSession = new BannerUserSession(

@@ -145,6 +145,99 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
         }
     }
 
+    @Test
+    void testEqualsLastModifiedEqual() {
+        ConfigRolePageMapping configRolePageMapping1 = new ConfigRolePageMapping(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12))
+        ConfigRolePageMapping configRolePageMapping2 = new ConfigRolePageMapping(appName: "TestName",
+                appId: "TestId1",lastModified: new Date(12,2,14))
+        assertFalse configRolePageMapping2==configRolePageMapping1
+    }
+
+    @Test
+    void testEqualsDataOriginNotEqual() {
+        ConfigRolePageMapping configRolePageMapping1 = new ConfigRolePageMapping(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "GENERAL")
+        ConfigRolePageMapping configRolePageMapping2 = new ConfigRolePageMapping(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER")
+        assertFalse configRolePageMapping2==configRolePageMapping1
+    }
+
+
+    @Test
+    void testEqualsAppIdNotEqual() {
+        ConfigRolePageMapping configRolePageMapping1 = new ConfigRolePageMapping(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id: 1234)
+        ConfigRolePageMapping configRolePageMapping2 = new ConfigRolePageMapping(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id:12345)
+        assertFalse configRolePageMapping2==configRolePageMapping1
+    }
+
+
+    @Test
+    void testEqualsLastModifiedByNotEqual() {
+        ConfigRolePageMapping configRolePageMapping1 = new ConfigRolePageMapping(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id: 1234,lastModifiedBy: "TestUser")
+        ConfigRolePageMapping configRolePageMapping2 = new ConfigRolePageMapping(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id:1234,lastModifiedBy: "GRAILS")
+        assertFalse configRolePageMapping2==configRolePageMapping1
+    }
+
+
+    @Test
+    void testEqualsVersionNotEqual() {
+        ConfigRolePageMapping configRolePageMapping1 = new ConfigRolePageMapping(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id: 1234,lastModifiedBy: "GRAILS",version: 1)
+        ConfigRolePageMapping configRolePageMapping2 = new ConfigRolePageMapping(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id:1234,lastModifiedBy: "GRAILS",version: 2)
+        assertFalse configRolePageMapping2==configRolePageMapping1
+    }
+
+
+    @Test
+    void testEqualsIs() {
+        ConfigRolePageMapping configRolePageMapping1 = new ConfigRolePageMapping()
+        assertTrue configRolePageMapping1.equals(configRolePageMapping1)
+    }
+
+
+    @Test
+    void testEqualsClass() {
+        ConfigRolePageMapping configRolePageMapping1 = new ConfigRolePageMapping()
+        ConfigProperties configProperties=new ConfigProperties()
+        assertFalse configRolePageMapping1.equals(configProperties)
+    }
+
+
+    @Test
+    void testEqualsRoleCode() {
+        ConfigRolePageMapping configRolePageMapping1 = new ConfigRolePageMapping(roleCode: "STUDENT")
+        ConfigRolePageMapping configRolePageMapping2 = new ConfigRolePageMapping(roleCode: "FACULTY")
+        assertFalse configRolePageMapping1 == configRolePageMapping2
+    }
+
+
+    @Test
+    void testEqualsConfigApplication() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId")
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName1",
+                appId: "TestId1")
+        ConfigRolePageMapping configRolePageMapping1 = new ConfigRolePageMapping(configApplication: configApplication1)
+        ConfigRolePageMapping configRolePageMapping2 = new ConfigRolePageMapping(configApplication: configApplication2)
+        assertFalse configRolePageMapping1 == configRolePageMapping2
+    }
+
+
+    @Test
+    void testEqualsEndpointPage() {
+        ConfigControllerEndpointPage configControllerEndpointPage1= new ConfigControllerEndpointPage(id: 1234)
+        ConfigControllerEndpointPage configControllerEndpointPage2= new ConfigControllerEndpointPage(id: 12345)
+        ConfigRolePageMapping configRolePageMapping1 = new ConfigRolePageMapping(endpointPage: configControllerEndpointPage1)
+        ConfigRolePageMapping configRolePageMapping2 = new ConfigRolePageMapping(endpointPage: configControllerEndpointPage2)
+        assertFalse configRolePageMapping1 == configRolePageMapping2
+    }
+
     private ConfigRolePageMapping newConfigRolePageMap() {
         ConfigRolePageMapping configRolePageMap = new ConfigRolePageMapping(
                 roleCode: '1'

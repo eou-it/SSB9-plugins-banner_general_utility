@@ -3,7 +3,6 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
-import org.apache.log4j.Logger
 import org.hibernate.annotations.Type
 
 import javax.persistence.*
