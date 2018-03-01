@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.menu
 
@@ -18,6 +18,7 @@ class SelfServiceMenuService {
     static transactional = true
     def sessionFactory
     def grailsApplication
+    def messageSource
     private static final Logger log = Logger.getLogger(getClass())
     static final String FETCH_ROLES = "{? = call TWBKSLIB.F_CASCADEFETCHROLE(?)}"
 
@@ -39,7 +40,7 @@ class SelfServiceMenuService {
     private def processMenu(def menuName, def menuTrail, def pidm) {
 
         def dataMap = []
-        def firstMenu = "Banner";
+        def firstMenu = messageSource.getMessage("selfService.first.menu", null, LocaleContextHolder.getLocale())
 
         Sql sql
         log.trace("Process Menu started for nenu:" + menuName)
@@ -48,7 +49,6 @@ class SelfServiceMenuService {
 
         menuName = menuName ?: "bmenu.P_MainMnu"
         def roleCriteria
-        def govroles = []
         def sqlQuery;
         if (pidm) {
             roleCriteria = getRoleCriteria(""+pidm)
@@ -172,8 +172,9 @@ class SelfServiceMenuService {
             allRoles.each {
                 if (it == allRoles.first())
                     allRoleCriteria = "('" + it.value + "'"
-                else
+                else {
                     allRoleCriteria = allRoleCriteria + " ,'" + it.value + "'"
+                }
             }
             allRoleCriteria = allRoleCriteria + ")"
         }

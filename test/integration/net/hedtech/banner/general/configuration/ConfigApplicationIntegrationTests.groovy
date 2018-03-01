@@ -155,6 +155,110 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase {
         assertTrue configApp.appName == appName
     }
 
+    @Test
+    void testEqualsApp() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId")
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName1",
+                appId: "TestId1")
+        assertFalse configApplication2==configApplication1
+    }
+
+    @Test
+    void testEqualsLastModifiedEqual() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12))
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName",
+                appId: "TestId1",lastModified: new Date(12,2,14))
+        assertFalse configApplication2==configApplication1
+    }
+
+    @Test
+    void testEqualsLastModifiedNotEqual() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12))
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName",
+                appId: "TestId1",lastModified: new Date(12,2,12))
+        assertFalse configApplication2==configApplication1
+    }
+
+    @Test
+    void testEqualsLastModifiedAppNameNotEqual() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12))
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName1",
+                appId: "TestId",lastModified: new Date(12,2,12))
+        assertFalse configApplication2==configApplication1
+    }
+
+    @Test
+    void testEqualsDataOriginNotEqual() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "GENERAL")
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER")
+        assertFalse configApplication2==configApplication1
+    }
+
+
+    @Test
+    void testEqualsAppIdNotEqual() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id: 1234)
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id:12345)
+        assertFalse configApplication2==configApplication1
+    }
+
+
+    @Test
+    void testEqualsLastModifiedByNotEqual() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id: 1234,lastModifiedBy: "TestUser")
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id:1234,lastModifiedBy: "GRAILS")
+        assertFalse configApplication2==configApplication1
+    }
+
+
+    @Test
+    void testEqualsVersionNotEqual() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id: 1234,lastModifiedBy: "GRAILS",version: 1)
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER",id:1234,lastModifiedBy: "GRAILS",version: 2)
+        assertFalse configApplication2==configApplication1
+    }
+
+
+    @Test
+    void testFetchByValidAppObject() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId",lastModified: new Date(12,2,15))
+        configApplication1 = configApplication1.save(failOnError: true, flush: true)
+        assertTrue configApplication1==configApplication1
+    }
+
+
+    @Test
+    void testEqualsIs() {
+        ConfigApplication configApplication1 = new ConfigApplication()
+        assertTrue configApplication1.equals(configApplication1)
+    }
+
+
+    @Test
+    void testEqualsClass() {
+        ConfigApplication configApplication1 = new ConfigApplication()
+        ConfigProperties configProperties=new ConfigProperties()
+        assertFalse configApplication1.equals(configProperties)
+    }
+
+
+    @Test
+    void testFetchByNullAppId() {
+        assertNull ConfigApplication.fetchByAppId(null)
+    }
 
     @Test
     void testFetchByInValidAppId() {
