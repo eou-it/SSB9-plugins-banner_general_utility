@@ -7,6 +7,8 @@ import org.apache.log4j.Logger
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.i18n.LocaleContextHolder
 
+import javax.servlet.ServletContext
+
 class ShortcutController {
 
     private static final LOGGER = Logger.getLogger(ShortcutController.class.name)
@@ -16,6 +18,14 @@ class ShortcutController {
     def data() {
         String filePath="";
         if (Environment.current == Environment.PRODUCTION || Environment.current ==Environment.TEST) {
+            ServletContext servletContext = request.getSession().getServletContext()
+            String relativeWebPath = "/web-app/js/shortcut-data/platform_shortcut_properties.json"
+            String absoluteDiskPath = servletContext.getRealPath(relativeWebPath);
+            println "relativeWebPath"+relativeWebPath
+            println "servletContext"+servletContext
+            println "absoluteDiskPath"+absoluteDiskPath
+            println "grailsApplication.mainContext.servletContext.getRealPath('/')"+grailsApplication.mainContext.servletContext.getRealPath('/')
+            println "grailsApplication.mainContext.servletContext.getRealPath('js')"+grailsApplication.mainContext.servletContext.getRealPath('js')
             def basePath = grailsApplication.mainContext.servletContext.getRealPath('js')
             filePath = basePath+"/shortcut-data/platform_shortcut_properties.json"
         } else if (Environment.current == Environment.DEVELOPMENT) {
