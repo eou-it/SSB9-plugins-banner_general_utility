@@ -1,9 +1,9 @@
 package net.hedtech.banner.general.configuration
 
-import grails.converters.JSON
+import grails.util.Environment
 import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.i18n.LocaleContextHolder
 
@@ -11,19 +11,24 @@ class ShortcutController {
 
     private static final LOGGER = Logger.getLogger(ShortcutController.class.name)
     def messageSource
+    def grailsApplication
 
     def data() {
-
-        def pluginDir = GrailsPluginUtils.pluginInfos.find { it.name.contains("banner-general-utility") }.pluginDir
-
-        String filePath = pluginDir.path + "/shortcut-data/keyboard-shortcut-data.json"
-        File jsonData = new File(filePath)
+        String filePath="";
+        if (Environment.current == Environment.PRODUCTION || Environment.current ==Environment.TEST) {
+            def basePath = grailsApplication.mainContext.servletContext.getRealPath('js')
+            filePath = basePath+"/shortcut-data/platform_shortcut_properties.json"
+        } else if (Environment.current == Environment.DEVELOPMENT) {
+            def baseDirPath = System.properties['base.dir']
+            filePath = baseDirPath + "/web-app/js/shortcut-data/platform_shortcut_properties.json"
+        }
+        def jsonSlurper = new JsonSlurper()
+        def jsonData = jsonSlurper.parseText(new File(filePath).text)
         def mainJson = new JsonBuilder()
         Map sectionHeadingWindowsMap = new HashMap();
         Map sectionHeadingMacMap = new HashMap();
-        def jsonTestData = JSON.parse(jsonData.text)
         try {
-            jsonTestData.windows.each
+            jsonData.windows.each
                     { sectionWindowsHeading ->
                         List tempList = new ArrayList();
                         for (int i = 0; i < sectionWindowsHeading.value.size(); i++) {
@@ -33,7 +38,7 @@ class ShortcutController {
                         }
                         sectionHeadingWindowsMap.put(getMessage(sectionWindowsHeading.key), tempList);
                     }
-            jsonTestData.mac.each
+            jsonData.mac.each
                     { sectionMacHeading ->
                         List tempList = new ArrayList();
                         for (int i = 0; i < sectionMacHeading.value.size(); i++) {
