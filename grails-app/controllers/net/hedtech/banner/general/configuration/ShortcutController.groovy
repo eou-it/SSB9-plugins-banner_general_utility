@@ -18,7 +18,7 @@ class ShortcutController {
     def data() {
         String filePath="";
         if (Environment.current == Environment.PRODUCTION || Environment.current ==Environment.TEST) {
-            String relativeWebPath = "/web-app/js/shortcut-data/platform_shortcut_properties.json"
+            String relativeWebPath = "/js/shortcut-data/platform_shortcut_properties.json"
             String absoluteDiskPath = servletContext.getRealPath(relativeWebPath);
             println "absoluteDiskPath "+absoluteDiskPath
             println "grailsApplication.mainContext.servletContext.getRealPath('/')"+grailsApplication.mainContext.servletContext.getRealPath('/')
