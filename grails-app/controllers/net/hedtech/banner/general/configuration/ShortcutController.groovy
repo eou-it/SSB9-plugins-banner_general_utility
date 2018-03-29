@@ -22,13 +22,14 @@ class ShortcutController {
             String absoluteDiskPath = servletContext.getRealPath(relativeWebPath);
             println "absoluteDiskPath "+absoluteDiskPath
             println "grailsApplication.mainContext.servletContext.getRealPath('/')"+grailsApplication.mainContext.servletContext.getRealPath('/')
-            def basePath = grailsApplication.mainContext.servletContext.getRealPath('/')+relativeWebPath
+          /*  def basePath = grailsApplication.mainContext.servletContext.getRealPath('/')+relativeWebPath
             println "BasePAth "+basePath
             String filePath1 = baseDirPath + "/web-app/js/shortcut-data/platform_shortcut_properties.json"
             def baseDirPath = System.properties['base.dir']
            println "BASE DIR PATH " + baseDirPath
             println "BASE DIR PATH  FILE PATH " + filePath1
-            filePath = baseDirPath+absoluteDiskPath
+            filePath = baseDirPath+absoluteDiskPath*/
+            filepath= absoluteDiskPath
         } else if (Environment.current == Environment.DEVELOPMENT) {
             def baseDirPath = System.properties['base.dir']
             filePath = baseDirPath + "/web-app/js/shortcut-data/platform_shortcut_properties.json"
