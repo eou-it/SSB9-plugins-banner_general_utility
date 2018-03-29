@@ -18,16 +18,13 @@ class ShortcutController {
     def data() {
         String filePath="";
         if (Environment.current == Environment.PRODUCTION || Environment.current ==Environment.TEST) {
-            ServletContext servletContext = request.getSession().getServletContext()
             String relativeWebPath = "/web-app/js/shortcut-data/platform_shortcut_properties.json"
             String absoluteDiskPath = servletContext.getRealPath(relativeWebPath);
-            println "relativeWebPath"+relativeWebPath
-            println "servletContext"+servletContext
-            println "absoluteDiskPath"+absoluteDiskPath
+            println "absoluteDiskPath "+absoluteDiskPath
             println "grailsApplication.mainContext.servletContext.getRealPath('/')"+grailsApplication.mainContext.servletContext.getRealPath('/')
-            println "grailsApplication.mainContext.servletContext.getRealPath('js')"+grailsApplication.mainContext.servletContext.getRealPath('js')
-            def basePath = grailsApplication.mainContext.servletContext.getRealPath('js')
-            filePath = basePath+"/shortcut-data/platform_shortcut_properties.json"
+            def basePath = grailsApplication.mainContext.servletContext.getRealPath('/')+relativeWebPath
+            println "BasePAth "+basePath
+            filePath = absoluteDiskPath
         } else if (Environment.current == Environment.DEVELOPMENT) {
             def baseDirPath = System.properties['base.dir']
             filePath = baseDirPath + "/web-app/js/shortcut-data/platform_shortcut_properties.json"
