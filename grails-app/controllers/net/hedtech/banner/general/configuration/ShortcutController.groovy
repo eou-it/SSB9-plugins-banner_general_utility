@@ -29,7 +29,7 @@ class ShortcutController {
            println "BASE DIR PATH " + baseDirPath
             println "BASE DIR PATH  FILE PATH " + filePath1
             filePath = baseDirPath+absoluteDiskPath*/
-            filepath= absoluteDiskPath
+            filePath= absoluteDiskPath
         } else if (Environment.current == Environment.DEVELOPMENT) {
             def baseDirPath = System.properties['base.dir']
             filePath = baseDirPath + "/web-app/js/shortcut-data/platform_shortcut_properties.json"
