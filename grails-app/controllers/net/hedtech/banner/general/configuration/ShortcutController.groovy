@@ -1,13 +1,11 @@
 package net.hedtech.banner.general.configuration
 
+import grails.converters.JSON
 import grails.util.Environment
 import groovy.json.JsonBuilder
-import groovy.json.JsonSlurper
 import org.apache.log4j.Logger
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.i18n.LocaleContextHolder
-
-import javax.servlet.ServletContext
 
 class ShortcutController {
 
@@ -16,50 +14,63 @@ class ShortcutController {
     def grailsApplication
 
     def data() {
-        String filePath="";
-        if (Environment.current == Environment.PRODUCTION || Environment.current ==Environment.TEST) {
-            String relativeWebPath = "/js/shortcut-data/platform_shortcut_properties.json"
-            String absoluteDiskPath = servletContext.getRealPath(relativeWebPath);
-            println "absoluteDiskPath "+absoluteDiskPath
-            println "grailsApplication.mainContext.servletContext.getRealPath('/')"+grailsApplication.mainContext.servletContext.getRealPath('/')
-          /*  def basePath = grailsApplication.mainContext.servletContext.getRealPath('/')+relativeWebPath
-            println "BasePAth "+basePath
-            String filePath1 = baseDirPath + "/web-app/js/shortcut-data/platform_shortcut_properties.json"
-            def baseDirPath = System.properties['base.dir']
-           println "BASE DIR PATH " + baseDirPath
-            println "BASE DIR PATH  FILE PATH " + filePath1
-            filePath = baseDirPath+absoluteDiskPath*/
-            filePath= absoluteDiskPath
+        def jsonFiles
+        def jsonData = []
+
+        if (Environment.current == Environment.PRODUCTION || Environment.current == Environment.TEST) {
+            String absoluteDiskPath = grailsApplication.mainContext.servletContext.getRealPath('/')
+            jsonFiles = new FileNameByRegexFinder().getFileNames(absoluteDiskPath, /.*shortcut_properties.json/)
         } else if (Environment.current == Environment.DEVELOPMENT) {
             def baseDirPath = System.properties['base.dir']
-            filePath = baseDirPath + "/web-app/js/shortcut-data/platform_shortcut_properties.json"
+            jsonFiles = new FileNameByRegexFinder().getFileNames(baseDirPath, /.*shortcut_properties.json/)
         }
-        def jsonSlurper = new JsonSlurper()
-        def jsonData = jsonSlurper.parseText(new File(filePath).text)
+
+        jsonFiles.each { jsonFile ->
+            jsonData << JSON.parse(new File(jsonFile).text)
+        }
+
+        List windowsList = new ArrayList();
+        List macList = new ArrayList();
+        jsonData.each { jsonItem ->
+            jsonItem.each { eachjson ->
+                if (eachjson.key == "windows") {
+                    windowsList.add(eachjson.value)
+                } else if (eachjson.key == "mac") {
+                    macList.add(eachjson.value)
+                }
+            }
+        }
+        def concatKeys = new HashMap()
+        concatKeys.put("windows", windowsList)
+        concatKeys.put("mac", macList)
         def mainJson = new JsonBuilder()
         Map sectionHeadingWindowsMap = new HashMap();
         Map sectionHeadingMacMap = new HashMap();
         try {
-            jsonData.windows.each
-                    { sectionWindowsHeading ->
-                        List tempList = new ArrayList();
-                        for (int i = 0; i < sectionWindowsHeading.value.size(); i++) {
-                            sectionWindowsHeading.value[i].combination = getMessage(sectionWindowsHeading.value[i].combination)
-                            sectionWindowsHeading.value[i].description = getMessage(sectionWindowsHeading.value[i].description)
-                            tempList.add(sectionWindowsHeading.value[i]);
+            concatKeys.windows.each { additionalWindowsList ->
+                additionalWindowsList.each
+                        { sectionWindowsHeading ->
+                            List tempList = new ArrayList();
+                            sectionWindowsHeading.value.each { windowsShortcut ->
+                                windowsShortcut.combination = getMessage(windowsShortcut.combination)
+                                windowsShortcut.description = getMessage(windowsShortcut.description)
+                                tempList.add(windowsShortcut);
+                            }
+                            sectionHeadingWindowsMap.put(getMessage(sectionWindowsHeading.key), tempList);
                         }
-                        sectionHeadingWindowsMap.put(getMessage(sectionWindowsHeading.key), tempList);
-                    }
-            jsonData.mac.each
-                    { sectionMacHeading ->
+            }
+            concatKeys.mac.each { additionalMacList ->
+                additionalMacList.each {
+                    sectionMacHeading ->
                         List tempList = new ArrayList();
-                        for (int i = 0; i < sectionMacHeading.value.size(); i++) {
-                            sectionMacHeading.value[i].combination = getMessage(sectionMacHeading.value[i].combination)
-                            sectionMacHeading.value[i].description = getMessage(sectionMacHeading.value[i].description)
-                            tempList.add(sectionMacHeading.value[i]);
+                        sectionMacHeading.value.each { macShortcut ->
+                            macShortcut.combination = getMessage(macShortcut.combination)
+                            macShortcut.description = getMessage(macShortcut.description)
+                            tempList.add(macShortcut);
                         }
                         sectionHeadingMacMap.put(getMessage(sectionMacHeading.key), tempList);
-                    }
+                }
+            }
             mainJson {
                 windows sectionHeadingWindowsMap
                 mac sectionHeadingMacMap
@@ -74,4 +85,5 @@ class ShortcutController {
     private String getMessage(String key) {
         messageSource.getMessage(key, null, LocaleContextHolder.getLocale())
     }
+
 }
