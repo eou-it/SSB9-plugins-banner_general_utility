@@ -2,12 +2,20 @@
   "windows": {
     "platform.heading.header": [
       {
-        "combination": "platform.shortcut.header.notification.windows.combination",
-        "description": "platform.shortcut.header.notification.description"
+        "combination": "platform.shortcut.header.dialogtoggle.windows.combination",
+        "description": "platform.shortcut.header.dialogtoggle.description"
+      },
+      {
+        "combination": "platform.shortcut.header.menu.windows.combination",
+        "description": "platform.shortcut.header.menu.description"
       },
       {
         "combination": "platform.shortcut.header.profilemenu.windows.combination",
         "description": "platform.shortcut.header.profilemenu.description"
+      },
+      {
+        "combination": "platform.shortcut.header.notification.windows.combination",
+        "description": "platform.shortcut.header.notification.description"
       },
       {
         "combination": "platform.shortcut.header.signin.windows.combination",
@@ -78,12 +86,20 @@
         "description": "platform.shortcut.datepicker.toggle.description"
       },
       {
-        "combination": "platform.shortcut.datepicker.moveupdown.windows.combination",
-        "description": "platform.shortcut.datepicker.moveupdown.description"
+        "combination": "platform.shortcut.datepicker.moveup.windows.combination",
+        "description": "platform.shortcut.datepicker.moveup.description"
       },
       {
-        "combination": "platform.shortcut.datepicker.moveleftright.windows.combination",
-        "description": "platform.shortcut.datepicker.moveleftright.description"
+        "combination": "platform.shortcut.datepicker.movedown.windows.combination",
+        "description": "platform.shortcut.datepicker.movedown.description"
+      },
+      {
+        "combination": "platform.shortcut.datepicker.moveleft.windows.combination",
+        "description": "platform.shortcut.datepicker.moveleft.description"
+      },
+      {
+        "combination": "platform.shortcut.datepicker.moveright.windows.combination",
+        "description": "platform.shortcut.datepicker.moveright.description"
       },
       {
         "combination": "platform.shortcut.datepicker.moveprevyear.windows.combination",
@@ -159,6 +175,14 @@
   },
   "mac": {
     "platform.heading.header": [
+      {
+        "combination": "platform.shortcut.header.dialogtoggle.mac.combination",
+        "description": "platform.shortcut.header.dialogtoggle.description"
+      },
+      {
+        "combination": "platform.shortcut.header.menu.mac.combination",
+        "description": "platform.shortcut.header.menu.description"
+      },
       {
         "combination": "platform.shortcut.header.notification.mac.combination",
         "description": "platform.shortcut.header.notification.description"
@@ -236,12 +260,20 @@
         "description": "platform.shortcut.datepicker.toggle.description"
       },
       {
-        "combination": "platform.shortcut.datepicker.moveupdown.mac.combination",
-        "description": "platform.shortcut.datepicker.moveupdown.description"
+        "combination": "platform.shortcut.datepicker.moveup.mac.combination",
+        "description": "platform.shortcut.datepicker.moveup.description"
       },
       {
-        "combination": "platform.shortcut.datepicker.moveleftright.mac.combination",
-        "description": "platform.shortcut.datepicker.moveleftright.description"
+        "combination": "platform.shortcut.datepicker.movedown.mac.combination",
+        "description": "platform.shortcut.datepicker.movedown.description"
+      },
+      {
+        "combination": "platform.shortcut.datepicker.moveleft.mac.combination",
+        "description": "platform.shortcut.datepicker.moveleft.description"
+      },
+      {
+        "combination": "platform.shortcut.datepicker.moveright.mac.combination",
+        "description": "platform.shortcut.datepicker.moveright.description"
       },
       {
         "combination": "platform.shortcut.datepicker.moveprevyear.mac.combination",
