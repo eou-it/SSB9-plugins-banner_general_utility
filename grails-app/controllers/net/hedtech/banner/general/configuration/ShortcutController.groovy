@@ -82,7 +82,7 @@ class ShortcutController {
                             macShortcut.description = getMessage(macShortcut.description)
                             tempList.add(macShortcut)
                         }
-                        sectionHeadingWindowsMap.put(getMessage(macShortcuts.key), tempList)
+                        sectionHeadingMacMap.put(getMessage(macShortcuts.key), tempList)
                     }
             }
         }
