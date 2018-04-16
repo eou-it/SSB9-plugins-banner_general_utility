@@ -83,7 +83,7 @@ class ShortcutController {
     }
 
     private String getMessage(String key) {
-        messageSource.getMessage(key, null, LocaleContextHolder.getLocale())
+        messageSource.getMessage(key, null,key, LocaleContextHolder.getLocale())
     }
 
 }
