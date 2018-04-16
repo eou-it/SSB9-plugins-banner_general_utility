@@ -1,10 +1,12 @@
+/*******************************************************************************
+ Copyright 2018 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
 import grails.converters.JSON
 import grails.util.Environment
 import groovy.json.JsonBuilder
 import org.apache.log4j.Logger
-import org.springframework.context.NoSuchMessageException
 import org.springframework.context.i18n.LocaleContextHolder
 
 class ShortcutController {
@@ -14,76 +16,86 @@ class ShortcutController {
     def grailsApplication
 
     def data() {
-        def jsonFiles
-        def jsonData = []
-
-        if (Environment.current == Environment.PRODUCTION || Environment.current == Environment.TEST) {
-            String absoluteDiskPath = grailsApplication.mainContext.servletContext.getRealPath('/')
-            jsonFiles = new FileNameByRegexFinder().getFileNames(absoluteDiskPath, /.*shortcut_properties.json/)
-        } else if (Environment.current == Environment.DEVELOPMENT) {
-            def baseDirPath = System.properties['base.dir']
-            jsonFiles = new FileNameByRegexFinder().getFileNames(baseDirPath, /.*shortcut_properties.json/)
-        }
-
-        jsonFiles.each { jsonFile ->
-            jsonData << JSON.parse(new File(jsonFile).text)
-        }
-
-        List windowsList = new ArrayList();
-        List macList = new ArrayList();
-        jsonData.each { jsonItem ->
-            jsonItem.each { eachjson ->
-                if (eachjson.key == "windows") {
-                    windowsList.add(eachjson.value)
-                } else if (eachjson.key == "mac") {
-                    macList.add(eachjson.value)
-                }
-            }
-        }
-        def concatKeys = new HashMap()
-        concatKeys.put("windows", windowsList)
-        concatKeys.put("mac", macList)
-        def mainJson = new JsonBuilder()
-        Map sectionHeadingWindowsMap = new HashMap();
-        Map sectionHeadingMacMap = new HashMap();
-        try {
-            concatKeys.windows.each { additionalWindowsList ->
-                additionalWindowsList.each
-                        { sectionWindowsHeading ->
-                            List tempList = new ArrayList();
-                            sectionWindowsHeading.value.each { windowsShortcut ->
-                                windowsShortcut.combination = getMessage(windowsShortcut.combination)
-                                windowsShortcut.description = getMessage(windowsShortcut.description)
-                                tempList.add(windowsShortcut);
-                            }
-                            sectionHeadingWindowsMap.put(getMessage(sectionWindowsHeading.key), tempList);
-                        }
-            }
-            concatKeys.mac.each { additionalMacList ->
-                additionalMacList.each {
-                    sectionMacHeading ->
-                        List tempList = new ArrayList();
-                        sectionMacHeading.value.each { macShortcut ->
-                            macShortcut.combination = getMessage(macShortcut.combination)
-                            macShortcut.description = getMessage(macShortcut.description)
-                            tempList.add(macShortcut);
-                        }
-                        sectionHeadingMacMap.put(getMessage(sectionMacHeading.key), tempList);
-                }
-            }
-            mainJson {
-                windows sectionHeadingWindowsMap
-                mac sectionHeadingMacMap
-            }
-        } catch (NoSuchMessageException exception) {
-            LOGGER.error("Couldn't get the message properties" + exception)
-        }
-
-        render mainJson
+        List jsonFiles = getShortcutJSONFiles()
+        LinkedHashMap shortcutKeys = populateShortcutFromJsonFiles(jsonFiles)
+        JsonBuilder outputJson = getMessageForShortcutKeys(shortcutKeys)
+        println "\n ******************** \n " + outputJson
+        render outputJson
     }
 
+    private List<String> getShortcutJSONFiles() {
+        List<String> jsonFiles = []
+        if (Environment.current == Environment.PRODUCTION || Environment.current == Environment.TEST) {
+            String absoluteDiskPath = grailsApplication.mainContext.servletContext.getRealPath('/')
+            jsonFiles = new FileNameFinder().getFileNames(absoluteDiskPath, '**/*shortcut_properties.json')
+        } else if (Environment.current == Environment.DEVELOPMENT) {
+            String baseDirPath = System.properties['base.dir']
+            jsonFiles = new FileNameFinder().getFileNames(baseDirPath, '**/*shortcut_properties.json')
+        }
+        jsonFiles
+    }
+
+
+    private LinkedHashMap populateShortcutFromJsonFiles(List<String> jsonFiles) {
+        List jsonData = []
+        List windowsList = []
+        List macList = []
+        jsonFiles.each { jsonFile ->
+            jsonData << JSON.parse(new File(jsonFile).text)
+            windowsList << jsonData.windows
+            macList << jsonData.mac
+        }
+        Map shortcutKeys = new LinkedHashMap()
+        shortcutKeys << [windows: windowsList]
+        shortcutKeys << [mac: macList]
+        shortcutKeys
+    }
+
+
+    private JsonBuilder getMessageForShortcutKeys(LinkedHashMap shortcutKeys) {
+        JsonBuilder outputJson = new JsonBuilder()
+        Map sectionHeadingWindowsMap = new LinkedHashMap()
+        Map sectionHeadingMacMap = new LinkedHashMap()
+
+        shortcutKeys.windows.each { additionalWindowsList ->
+            additionalWindowsList.each{ sectionWindowsHeading ->
+                        List tempList
+                        sectionWindowsHeading.each { windowsShortcuts ->
+                            tempList = new ArrayList()
+                            windowsShortcuts.value.each { windowsShortcut ->
+                                windowsShortcut.combination = getMessage(windowsShortcut.combination)
+                                windowsShortcut.description = getMessage(windowsShortcut.description)
+                                tempList.add(windowsShortcut)
+                            }
+                            sectionHeadingWindowsMap.put(getMessage(windowsShortcuts.key), tempList)
+                        }
+
+                    }
+        }
+        shortcutKeys.mac.each { additionalMacList ->
+            additionalMacList.each {sectionMacHeading ->
+                    List tempList
+                    sectionMacHeading.each { macShortcuts ->
+                        tempList = new ArrayList()
+                        macShortcuts.value.each { macShortcut ->
+                            macShortcut.combination = getMessage(macShortcut.combination)
+                            macShortcut.description = getMessage(macShortcut.description)
+                            tempList.add(macShortcut)
+                        }
+                        sectionHeadingWindowsMap.put(getMessage(macShortcuts.key), tempList)
+                    }
+            }
+        }
+        outputJson {
+            windows sectionHeadingWindowsMap
+            mac sectionHeadingMacMap
+        }
+        outputJson
+    }
+
+
     private String getMessage(String key) {
-        messageSource.getMessage(key, null,key, LocaleContextHolder.getLocale())
+        messageSource.getMessage(key, null, key, LocaleContextHolder.getLocale())
     }
 
 }
