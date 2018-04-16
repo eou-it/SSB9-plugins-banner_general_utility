@@ -146,35 +146,11 @@
       {
         "combination": "platform.shortcut.timepicker.toggle.windows.combination",
         "description": "platform.shortcut.timepicker.toggle.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.downarrow.windows.combination",
-        "description": "platform.shortcut.timepicker.downarrow.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.uparrow.windows.combination",
-        "description": "platform.shortcut.timepicker.uparrow.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.leftarrow.windows.combination",
-        "description": "platform.shortcut.timepicker.leftarrow.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.rightarrow.windows.combination",
-        "description": "platform.shortcut.timepicker.rightarrow.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.esc.windows.combination",
-        "description": "platform.shortcut.timepicker.esc.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.enter.windows.combination",
-        "description": "platform.shortcut.timepicker.enter.description"
       }
     ]
   },
   "mac": {
-    "platform.heading.header": [
+    "platform.heading.applicationheader": [
       {
         "combination": "platform.shortcut.header.dialogtoggle.mac.combination",
         "description": "platform.shortcut.header.dialogtoggle.description"
@@ -320,30 +296,6 @@
       {
         "combination": "platform.shortcut.timepicker.toggle.mac.combination",
         "description": "platform.shortcut.timepicker.toggle.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.downarrow.mac.combination",
-        "description": "platform.shortcut.timepicker.downarrow.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.uparrow.mac.combination",
-        "description": "platform.shortcut.timepicker.uparrow.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.leftarrow.mac.combination",
-        "description": "platform.shortcut.timepicker.leftarrow.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.rightarrow.mac.combination",
-        "description": "platform.shortcut.timepicker.rightarrow.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.esc.mac.combination",
-        "description": "platform.shortcut.timepicker.esc.description"
-      },
-      {
-        "combination": "platform.shortcut.timepicker.enter.mac.combination",
-        "description": "platform.shortcut.timepicker.enter.description"
       }
     ]
   }
