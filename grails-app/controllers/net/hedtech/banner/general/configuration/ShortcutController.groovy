@@ -19,7 +19,6 @@ class ShortcutController {
         List jsonFiles = getShortcutJSONFiles()
         LinkedHashMap shortcutKeys = populateShortcutFromJsonFiles(jsonFiles)
         JsonBuilder outputJson = getMessageForShortcutKeys(shortcutKeys)
-        println "\n ******************** \n " + outputJson
         render outputJson
     }
 
@@ -27,7 +26,8 @@ class ShortcutController {
         List<String> jsonFiles = []
         if (Environment.current == Environment.PRODUCTION || Environment.current == Environment.TEST) {
             String absoluteDiskPath = grailsApplication.mainContext.servletContext.getRealPath('/')
-            jsonFiles = new FileNameFinder().getFileNames(absoluteDiskPath, '**/*shortcut_properties.json')
+            //jsonFiles = new FileNameFinder().getFileNames(absoluteDiskPath, '**/*shortcut_properties.json')
+            jsonFiles = new FileNameByRegexFinder().getFileNames(absoluteDiskPath, /.*shortcut_properties.json/)
         } else if (Environment.current == Environment.DEVELOPMENT) {
             String baseDirPath = System.properties['base.dir']
             jsonFiles = new FileNameFinder().getFileNames(baseDirPath, '**/*shortcut_properties.json')
