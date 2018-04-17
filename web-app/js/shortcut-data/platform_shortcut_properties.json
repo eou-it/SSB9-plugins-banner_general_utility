@@ -150,7 +150,7 @@
     ]
   },
   "mac": {
-    "platform.heading.applicationheader": [
+    "platform.heading.header": [
       {
         "combination": "platform.shortcut.header.dialogtoggle.mac.combination",
         "description": "platform.shortcut.header.dialogtoggle.description"
