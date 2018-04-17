@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.converters.JSON
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
@@ -25,7 +26,9 @@ class ShortcutControllerIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void readJsonData(){
-        def fetchData = controller.data()
-        assertEquals controller.response.status, 200
+        controller.data()
+        def result = JSON.parse(controller.response.contentAsString)
+        assertEquals(200, controller.response.status)
+        assertNotNull result
     }
 }
