@@ -83,6 +83,11 @@ class ConfigPropertiesService extends ServiceBase {
             else if ('encryptedtext' == it.configType) {
                 decryptedValue = getDecryptedValue(value)
                 value = decryptedValue ? decryptedValue : ''
+            } else if ('map' == it.configType) {
+                value = Eval.me(value)
+            } else if ('closure' == it.configType) {
+                value = new ConfigSlurper().parse(key + """${value}""")
+                value = value.key
             }
             if ('locale' == key) {
                 property.put('locale_userPreferenceEnable', it.userPreferenceIndicator ?: false)

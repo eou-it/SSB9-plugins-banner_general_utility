@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -30,7 +30,7 @@ import javax.persistence.*
                            AND cp.configType in ('boolean','string','integer','encryptedtext')'''),
         @NamedQuery(name = 'ConfigProperties.fetchSimpleConfigByAppId',
                 query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId
-                           and cp.configType in ('boolean','string','integer','encryptedtext')''')
+                           and cp.configType in ('boolean','string','integer','encryptedtext','map','list','closure')''')
 ])
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 10009L
