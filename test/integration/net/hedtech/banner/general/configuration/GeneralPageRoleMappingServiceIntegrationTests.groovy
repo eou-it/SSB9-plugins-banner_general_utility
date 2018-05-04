@@ -67,6 +67,36 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
         }
     }
 
+
+    @Test
+    public void testInvalidInterceptUrlMap() {
+        try {
+            def properties = new Properties()
+            def originalInterceptUrlMap = getInterceptedURLMap()
+            assertTrue (originalInterceptUrlMap.size() >= 0)
+            String invalidEntry = '/ssb/invalid/**'
+            originalInterceptUrlMap.put(invalidEntry, [])
+            properties.put('grails.plugin.springsecurity.interceptUrlMap', originalInterceptUrlMap)
+            def configSlurper = new ConfigSlurper()
+            Holders.config.merge(configSlurper.parse(properties))
+
+            generalPageRoleMappingService.initialize()
+            assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
+            assertTrue (generalPageRoleMappingService.fetchCompiledValue()?.size()
+                    == Holders.config.grails.plugin.springsecurity.interceptUrlMap?.size())
+
+            def processedInterceptUrlMap = generalPageRoleMappingService.pageRoleMappingListFromDBAndConfig()
+            assertTrue processedInterceptUrlMap.size() >= 0
+
+            processedInterceptUrlMap.each { InterceptedUrl iu ->
+                assertNotEquals(iu.pattern, '/ssb/invalid/**')
+            }
+            assertEquals originalInterceptUrlMap.size() - 1, processedInterceptUrlMap.size()                    
+        } finally {
+            Holders.config.remove('grails.plugin.springsecurity.interceptUrlMap')
+        }
+    }
+
     @Test
     public void testInitializeWithoutSessionFactory() {
         def oldSessionFactory = generalPageRoleMappingService.sessionFactory
@@ -158,7 +188,6 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
      */
     private ConfigRolePageMapping getConfigRolePageMapping() {
         ConfigRolePageMapping configRolePageMapping = new ConfigRolePageMapping(
-                pageId: 'EndPointPageConfig',
                 roleCode: 'TEST_ROLE'
         )
         return configRolePageMapping
