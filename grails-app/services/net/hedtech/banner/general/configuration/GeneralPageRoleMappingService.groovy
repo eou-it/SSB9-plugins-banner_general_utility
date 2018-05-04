@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.general.configuration
@@ -13,6 +13,7 @@ import org.apache.commons.lang3.text.WordUtils
 import org.apache.log4j.Logger
 import org.hibernate.classic.Session
 import org.springframework.http.HttpMethod
+import org.springframework.util.StringUtils
 
 /**
  * The service class extends the InterceptUrlMapFilterInvocationDefinition to override the required methods to do the
@@ -102,9 +103,13 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         Holders.config.grails.plugin.springsecurity.interceptUrlMap = [:]
         interceptedUrlMapFromConfig.each { k, v ->
             HttpMethod method = null
-            InterceptedUrl iu = new InterceptedUrl(k, super.split(v?.join(',')), method)
-            Holders.config.grails.plugin.springsecurity.interceptUrlMap?.put(k, super.split(v?.join(',')))
-            data.add(iu)
+            if(StringUtils.hasText(k) && v?.size() > 0) {
+                InterceptedUrl iu = new InterceptedUrl(k, super.split(v?.join(',')), method)
+                Holders.config.grails.plugin.springsecurity.interceptUrlMap?.put(k, super.split(v?.join(',')))
+                data.add(iu)
+            }else {
+                logger.error("Key is =$k and Value is =$v in invalid for interceptUrlMap.")
+            }
         }
         data
     }
@@ -191,7 +196,11 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     def pageRoleMappingList = new ArrayList<GeneralPageRoleMapping>()
                     list.each { GeneralPageRoleMapping pageRoleMapping ->
                         if (pageRoleMapping.pageUrl == pageUrl) {
-                            pageRoleMappingList << pageRoleMapping
+                            if(StringUtils.hasText(pageRoleMapping.roleCode) && StringUtils.hasText(pageRoleMapping.pageId)) {
+                                pageRoleMappingList << pageRoleMapping
+                            } else {
+                                logger.error("Invalid interceptUrlMap = $pageRoleMapping" )
+                            }
                         }
                     }
                     generalPageRoleMapping.put(pageUrl, pageRoleMappingList)
