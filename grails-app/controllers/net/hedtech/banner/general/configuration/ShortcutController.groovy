@@ -19,7 +19,7 @@ class ShortcutController {
     def grailsApplication
 
     def data() {
-        if (JSONFILELIST.isEmpty() || OUTPUTJSON != null) {
+        if (JSONFILELIST.isEmpty() || OUTPUTJSON == null) {
             JSONFILELIST = getShortcutJSONFiles()
             LinkedHashMap shortcutKeys = populateOSSpecificShortcutFromJsonFiles()
             OUTPUTJSON = getMessageForShortcutKeys(shortcutKeys)
@@ -67,7 +67,7 @@ class ShortcutController {
     }
 
 
-    private static JsonBuilder getMessageForShortcutKeys(LinkedHashMap shortcutKeys) {
+    private JsonBuilder getMessageForShortcutKeys(LinkedHashMap shortcutKeys) {
         JsonBuilder outputJson = new JsonBuilder()
         Map sectionHeadingWindowsMap = new LinkedHashMap()
         Map sectionHeadingMacMap = new LinkedHashMap()
