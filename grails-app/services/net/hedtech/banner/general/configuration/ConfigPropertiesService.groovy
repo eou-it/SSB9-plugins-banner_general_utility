@@ -84,15 +84,20 @@ class ConfigPropertiesService extends ServiceBase {
                 decryptedValue = getDecryptedValue(value)
                 value = decryptedValue ? decryptedValue : ''
             } else if ('map' == it.configType) {
-                value = Eval.me(value)
-            } else if ('closure' == it.configType) {
-                value = new ConfigSlurper().parse(key + """${value}""")
-                value = value.key
+                value = value ? Eval.me(value) : [:]
+            } else if ('list' == it.configType) {
+                value = (value && value != "[]") ? value[1..-2].split(',') : []
+            }else if ('closure' == it.configType) {
+                if (value){
+                    value = new ConfigSlurper().parse(key + """${value}""")
+                    value = value.key
+                } else {
+                    value = '{}'
+                }
             }
             if ('locale' == key) {
                 property.put('locale_userPreferenceEnable', it.userPreferenceIndicator ?: false)
             }
-
             property.put(key, value)
             CH.config.merge(configSlurper.parse(property))
         }
