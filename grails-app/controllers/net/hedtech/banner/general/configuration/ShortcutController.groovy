@@ -8,51 +8,66 @@ import grails.util.Environment
 import groovy.json.JsonBuilder
 import org.apache.log4j.Logger
 import org.springframework.context.i18n.LocaleContextHolder
+import static groovy.io.FileType.FILES
 
 class ShortcutController {
 
     private static final LOGGER = Logger.getLogger(ShortcutController.class.name)
+    private static List<File> JSONFILELIST = []
+    private static JsonBuilder OUTPUTJSON
     def messageSource
     def grailsApplication
 
     def data() {
-        List jsonFiles = getShortcutJSONFiles()
-        LinkedHashMap shortcutKeys = populateShortcutFromJsonFiles(jsonFiles)
-        JsonBuilder outputJson = getMessageForShortcutKeys(shortcutKeys)
-        render outputJson
-    }
-
-    private List<String> getShortcutJSONFiles() {
-        List<String> jsonFiles = []
-        if (Environment.current == Environment.PRODUCTION || Environment.current == Environment.TEST) {
-            String absoluteDiskPath = grailsApplication.mainContext.servletContext.getRealPath('/')
-            //jsonFiles = new FileNameFinder().getFileNames(absoluteDiskPath, '**/*shortcut_properties.json')
-            jsonFiles = new FileNameByRegexFinder().getFileNames(absoluteDiskPath, /.*shortcut_properties.json/)
-        } else if (Environment.current == Environment.DEVELOPMENT) {
-            String baseDirPath = System.properties['base.dir']
-            jsonFiles = new FileNameFinder().getFileNames(baseDirPath, '**/*shortcut_properties.json')
+        if (JSONFILELIST.isEmpty() || OUTPUTJSON != null) {
+            JSONFILELIST = getShortcutJSONFiles()
+            LinkedHashMap shortcutKeys = populateOSSpecificShortcutFromJsonFiles()
+            OUTPUTJSON = getMessageForShortcutKeys(shortcutKeys)
         }
-        jsonFiles
+        render OUTPUTJSON
     }
 
 
-    private LinkedHashMap populateShortcutFromJsonFiles(List<String> jsonFiles) {
+    private List<File> getShortcutJSONFiles() {
+        String dirPath = ''
+        if (Environment.current == Environment.PRODUCTION || Environment.current == Environment.TEST) {
+            dirPath = grailsApplication.mainContext.servletContext.getRealPath('/')
+        } else if (Environment.current == Environment.DEVELOPMENT) {
+            dirPath = System.properties['base.dir']
+        }
+        List<File> jsonFiles = getJSONFilesFromDirectory(dirPath)
+        return jsonFiles
+    }
+
+
+    private static List<File> getJSONFilesFromDirectory(String dirPath){
+        List<File> jsonFiles = []
+        new File(dirPath).eachFileRecurse(FILES) {
+            if(it.name.endsWith('shortcut_properties.json')) {
+                jsonFiles << it
+            }
+        }
+        return jsonFiles
+    }
+
+
+    private static LinkedHashMap populateOSSpecificShortcutFromJsonFiles() {
         List jsonData = []
         List windowsList = []
         List macList = []
-        jsonFiles.each { jsonFile ->
-            jsonData << JSON.parse(new File(jsonFile).text)
+        JSONFILELIST?.each { jsonFile ->
+            jsonData << JSON.parse(jsonFile.text)
             windowsList << jsonData.windows
             macList << jsonData.mac
         }
-        Map shortcutKeys = new LinkedHashMap()
+        LinkedHashMap shortcutKeys = new LinkedHashMap()
         shortcutKeys << [windows: windowsList]
         shortcutKeys << [mac: macList]
-        shortcutKeys
+        return shortcutKeys
     }
 
 
-    private JsonBuilder getMessageForShortcutKeys(LinkedHashMap shortcutKeys) {
+    private static JsonBuilder getMessageForShortcutKeys(LinkedHashMap shortcutKeys) {
         JsonBuilder outputJson = new JsonBuilder()
         Map sectionHeadingWindowsMap = new LinkedHashMap()
         Map sectionHeadingMacMap = new LinkedHashMap()
