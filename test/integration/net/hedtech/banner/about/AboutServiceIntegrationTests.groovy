@@ -9,9 +9,11 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.context.i18n.LocaleContextHolder
 
 class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     def aboutService
+    def grailsApplication
 
     @Before
     public void setUp() {
@@ -26,12 +28,12 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void getAboutSuccess(){
-        assertEquals(MessageHelper.message("about.banner.title"),aboutService.getAbout().get("api.title"))
-        assertEquals(MessageHelper.message("about.banner.close"),aboutService.getAbout().get("api.close"))
-        assertEquals("banner_general_utility",aboutService.getAbout().get("about.banner.application.name"))
-        assertTrue(aboutService.getAbout().get("about.banner.application.version").toString().contains("Version"))
-        assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright1"),aboutService.getAbout().get("about.banner.copyright"))
-        assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright2"),aboutService.getAbout().get("about.banner.copyrightLegalNotice"))
+        def aboutData = aboutService.getAbout()
+        println aboutData
+        assertEquals(MessageHelper.message("about.banner.title"),aboutData.get("api.title"))
+        assertEquals(MessageHelper.message("about.banner.close"),aboutData.get("api.close"))
+        assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright1"),aboutData.get("about.banner.copyright"))
+        assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright2"),aboutData.get("about.banner.copyrightLegalNotice"))
     }
 
     @Test
