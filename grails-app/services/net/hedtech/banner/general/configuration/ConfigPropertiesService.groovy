@@ -65,43 +65,50 @@ class ConfigPropertiesService extends ServiceBase {
 
     /**
      * Method is used to merge all the properties in to Context Holder.
-     * @param configProp Data type is ArrayList, this list will hold the config properties.
+     * @param configProps Data type is ArrayList, this list will hold the config properties.
      */
-    private void mergeConfigProperties(ArrayList configProp) {
-        LOGGER.debug('Config fetched from DB' + configProp)
-        configProp?.each {
+    private void mergeConfigProperties(ArrayList configProps) {
+        LOGGER.debug('Config fetched from DB' + configProps)
+        configProps?.each {configProp ->
             Properties property = new Properties()
-            def key = it?.configName
-            def value = it?.configValue
-            def decryptedValue
-            if ('boolean' == it.configType)
-                value = value ? value?.toBoolean() : false
-            else if ('integer' == it.configType)
-                value = value ? value?.toInteger() : 0
-            else if ('string' == it.configType)
-                value = value ? value?.toString() : ''
-            else if ('encryptedtext' == it.configType) {
-                decryptedValue = getDecryptedValue(value)
-                value = decryptedValue ? decryptedValue : ''
-            } else if ('map' == it.configType) {
-                value = value ? Eval.me(value) : [:]
-            } else if ('list' == it.configType) {
-                value = (value && value != "[]") ? value[1..-2].split(',') : []
-            }else if ('closure' == it.configType) {
-                if (value){
-                    value = new ConfigSlurper().parse(key + """${value}""")
-                    value = value.key
-                } else {
-                    value = '{}'
-                }
+            def configKey   = configProp?.configName
+            def configValue = getConfigValueFromAppropriateConfigType(configProp)
+            if ('locale' == configKey) {
+                property.put('locale_userPreferenceEnable', configProp.userPreferenceIndicator ?: false)
             }
-            if ('locale' == key) {
-                property.put('locale_userPreferenceEnable', it.userPreferenceIndicator ?: false)
-            }
-            property.put(key, value)
+            property.put(configKey, configValue)
             CH.config.merge(configSlurper.parse(property))
         }
         LOGGER.debug('Setting config from DB')
+    }
+
+
+    private def getConfigValueFromAppropriateConfigType(configProp) {
+        def key = configProp?.configName
+        def value = configProp?.configValue
+        def decryptedValue
+        if ('boolean' == configProp.configType)
+            value = value ? value?.toBoolean() : false
+        else if ('integer' == configProp.configType)
+            value = value ? value?.toInteger() : 0
+        else if ('string' == configProp.configType)
+            value = value ? value?.toString() : ''
+        else if ('encryptedtext' == configProp.configType) {
+            decryptedValue = getDecryptedValue(value)
+            value = decryptedValue ? decryptedValue : ''
+        } else if ('map' == configProp.configType) {
+            value = value ? Eval.me(value) : [:]
+        } else if ('list' == configProp.configType) {
+            value = (value && value != "[]") ? value[1..-2].split(',') : []
+        } else if ('closure' == configProp.configType) {
+            if (value) {
+                def tempValue = new ConfigSlurper().parse(key + """${value}""")
+                value = tempValue.get(key)
+            } else {
+                value = '{}'
+            }
+        }
+        return value
     }
 
 

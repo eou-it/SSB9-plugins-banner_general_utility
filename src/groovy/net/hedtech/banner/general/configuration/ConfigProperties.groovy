@@ -21,13 +21,13 @@ import javax.persistence.*
                 query = '''FROM ConfigProperties cp
                            WHERE cp.configApplication = :appId
                            AND cp.configName = :configName
-                           AND cp.configType in ('boolean','string','integer','encryptedtext')'''),
+                           AND cp.configType in ('boolean','string','integer','encryptedtext','map','list','closure')'''),
         @NamedQuery(name = 'ConfigProperties.fetchUserConfigurationByConfigNameAndAppId',
                 query = '''FROM ConfigProperties cp
                            WHERE cp.configApplication = :appId
                            AND cp.userPreferenceIndicator = true
                            AND cp.configName = :configName
-                           AND cp.configType in ('boolean','string','integer','encryptedtext')'''),
+                           AND cp.configType in ('boolean','string','integer','encryptedtext','map','list','closure')'''),
         @NamedQuery(name = 'ConfigProperties.fetchSimpleConfigByAppId',
                 query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId
                            and cp.configType in ('boolean','string','integer','encryptedtext','map','list','closure')''')
