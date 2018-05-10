@@ -31,6 +31,7 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
     public void tearDown() {
         super.tearDown()
         generalPageRoleMappingService.initialized = false
+        generalPageRoleMappingService.isDataIsSeededForInterceptUrlMap = false
     }
 
     @Test
