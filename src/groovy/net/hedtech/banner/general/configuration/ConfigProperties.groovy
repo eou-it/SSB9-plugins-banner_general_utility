@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -21,16 +21,16 @@ import javax.persistence.*
                 query = '''FROM ConfigProperties cp
                            WHERE cp.configApplication = :appId
                            AND cp.configName = :configName
-                           AND cp.configType in ('boolean','string','integer','encryptedtext')'''),
+                           AND cp.configType in ('boolean','string','integer','encryptedtext','map','list','closure')'''),
         @NamedQuery(name = 'ConfigProperties.fetchUserConfigurationByConfigNameAndAppId',
                 query = '''FROM ConfigProperties cp
                            WHERE cp.configApplication = :appId
                            AND cp.userPreferenceIndicator = true
                            AND cp.configName = :configName
-                           AND cp.configType in ('boolean','string','integer','encryptedtext')'''),
+                           AND cp.configType in ('boolean','string','integer','encryptedtext','map','list','closure')'''),
         @NamedQuery(name = 'ConfigProperties.fetchSimpleConfigByAppId',
                 query = '''FROM ConfigProperties cp WHERE cp.configApplication = :appId
-                           and cp.configType in ('boolean','string','integer','encryptedtext')''')
+                           and cp.configType in ('boolean','string','integer','encryptedtext','map','list','closure')''')
 ])
 public class ConfigProperties implements Serializable {
     private static final long serialVersionUID = 10009L
