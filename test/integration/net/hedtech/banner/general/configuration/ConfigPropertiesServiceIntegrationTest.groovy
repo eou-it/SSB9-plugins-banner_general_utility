@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.general.configuration
@@ -154,6 +154,83 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
         configPropertiesService.setConfigFromDb()
         assertTrue CH.config.get(CONFIG_NAME + '-integer-null') == 0
+    }
+
+    @Test
+    public void testListValue() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplicationService.create(configApplication)
+        ConfigProperties configPropertiesListValue = getConfigProperties()
+        configPropertiesListValue.configType = 'list'
+        configPropertiesListValue.configName = CONFIG_NAME + '-list'
+        configPropertiesListValue.configValue = "[MA,BA]"
+        configPropertiesListValue.setConfigApplication(configApplication)
+
+        ConfigProperties configProp = configPropertiesService.create(configPropertiesListValue)
+        configProp.refresh()
+        assertNotNull configProp.configValue
+
+        configPropertiesService.setConfigFromDb()
+        assertTrue CH.config.get(CONFIG_NAME + '-list')[0] == "MA"
+        assertTrue CH.config.get(CONFIG_NAME + '-list')[1] == "BA"
+    }
+
+
+    @Test
+    public void testEmptyListValue() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplicationService.create(configApplication)
+        ConfigProperties configPropertiesListValue = getConfigProperties()
+        configPropertiesListValue.configType = 'list'
+        configPropertiesListValue.configName = CONFIG_NAME + '-list'
+        configPropertiesListValue.configValue = null
+        configPropertiesListValue.setConfigApplication(configApplication)
+
+        ConfigProperties configProp = configPropertiesService.create(configPropertiesListValue)
+        configProp.refresh()
+        assertNull configProp.configValue
+
+        configPropertiesService.setConfigFromDb()
+        assertTrue CH.config.get(CONFIG_NAME + '-list') == []
+    }
+
+
+    @Test
+    public void testMapValue() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplicationService.create(configApplication)
+        ConfigProperties configPropertiesMapValue = getConfigProperties()
+        configPropertiesMapValue.configType = 'map'
+        configPropertiesMapValue.configName = CONFIG_NAME + '-map'
+        configPropertiesMapValue.configValue = "[key1:'value1', key2:'value2']"
+        configPropertiesMapValue.setConfigApplication(configApplication)
+
+        ConfigProperties configProp = configPropertiesService.create(configPropertiesMapValue)
+        configProp.refresh()
+        assertNotNull configProp.configValue
+
+        configPropertiesService.setConfigFromDb()
+        assertTrue CH.config.get(CONFIG_NAME + '-map')['key1'] == "value1"
+        assertTrue CH.config.get(CONFIG_NAME + '-map')['key2'] == "value2"
+    }
+
+
+    @Test
+    public void testEmptyMapValue() {
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication = configApplicationService.create(configApplication)
+        ConfigProperties configPropertiesMapValue = getConfigProperties()
+        configPropertiesMapValue.configType = 'map'
+        configPropertiesMapValue.configName = CONFIG_NAME + '-map'
+        configPropertiesMapValue.configValue = "[:]"
+        configPropertiesMapValue.setConfigApplication(configApplication)
+
+        ConfigProperties configProp = configPropertiesService.create(configPropertiesMapValue)
+        configProp.refresh()
+        assertNotNull configProp.configValue
+
+        configPropertiesService.setConfigFromDb()
+        assertTrue CH.config.get(CONFIG_NAME + '-map') == [:]
     }
 
     @Test
