@@ -221,6 +221,105 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         }
     }
 
+
+    @Test
+    void testEqualsConfigName() {
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference(configName: "TestName")
+        ConfigUserPreference configUserPreference2 = new ConfigUserPreference(configName: "TestName1")
+        assertFalse configUserPreference2==configUserPreference1
+    }
+
+
+    @Test
+    void testEqualsConfigType() {
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference(configType: "String")
+        ConfigUserPreference configUserPreference2 = new ConfigUserPreference(configType: "Integer")
+        assertFalse configUserPreference2==configUserPreference1
+    }
+
+
+    @Test
+    void testEqualsConfigValue() {
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference(configValue: "200")
+        ConfigUserPreference configUserPreference2 = new ConfigUserPreference(configValue: "300")
+        assertFalse configUserPreference2==configUserPreference1
+    }
+
+
+    @Test
+    void testEqualsLastModifiedEqual() {
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference(lastModified: new Date(12,2,12))
+        ConfigUserPreference configUserPreference2 = new ConfigUserPreference(lastModified: new Date(12,2,14))
+        assertFalse configUserPreference2==configUserPreference1
+    }
+
+
+    @Test
+    void testEqualsDataOriginNotEqual() {
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference(dataOrigin: "GENERAL")
+        ConfigUserPreference configUserPreference2 = new ConfigUserPreference(dataOrigin: "BANNER")
+        assertFalse configUserPreference2==configUserPreference1
+    }
+
+
+    @Test
+    void testEqualsAppIdNotEqual() {
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference(id: 1234)
+        ConfigUserPreference configUserPreference2 = new ConfigUserPreference(id:12345)
+        assertFalse configUserPreference2==configUserPreference1
+    }
+
+
+    @Test
+    void testEqualsLastModifiedByNotEqual() {
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference(lastModifiedBy: "TestUser")
+        ConfigUserPreference configUserPreference2 = new ConfigUserPreference(lastModifiedBy: "GRAILS")
+        assertFalse configUserPreference2==configUserPreference1
+    }
+
+
+    @Test
+    void testEqualsVersionNotEqual() {
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference(version: 1)
+        ConfigUserPreference configUserPreference2 = new ConfigUserPreference(version: 2)
+        assertFalse configUserPreference2==configUserPreference1
+    }
+
+
+    @Test
+    void testEqualsPidmNotEqual() {
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference(pidm: 49627)
+        ConfigUserPreference configUserPreference2 = new ConfigUserPreference(pidm: 49628)
+        assertFalse configUserPreference2==configUserPreference1
+    }
+
+
+    @Test
+    void testEqualsConfigApplication() {
+        ConfigApplication configApplication1 = new ConfigApplication(appName: "TestName",
+                appId: "TestId")
+        ConfigApplication configApplication2 = new ConfigApplication(appName: "TestName1",
+                appId: "TestId1")
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference(configApplication: configApplication1)
+        ConfigUserPreference configUserPreference2 = new ConfigUserPreference(configApplication: configApplication2)
+        assertFalse configUserPreference1 == configUserPreference2
+    }
+
+
+    @Test
+    void testEqualsIs() {
+        ConfigUserPreference configUserPreference1 = new ConfigUserPreference()
+        assertTrue configUserPreference1.equals(configUserPreference1)
+    }
+
+
+    @Test
+    void testEqualsClass() {
+        ConfigApplication configApplication = new ConfigApplication()
+        ConfigUserPreference configUserPreference=new ConfigUserPreference()
+        assertFalse configUserPreference.equals(configApplication)
+    }
+
     private ConfigUserPreference createConfigUserPreference() {
         ConfigApplication configApplication = getConfigApplication()
         configApplication.save(failOnError: true, flush: true)
