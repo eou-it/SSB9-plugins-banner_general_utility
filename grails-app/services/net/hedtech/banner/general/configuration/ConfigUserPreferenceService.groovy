@@ -117,10 +117,11 @@ class ConfigUserPreferenceService extends ServiceBase {
             localeDisplayName = newlocale.getDisplayName()
             if (localeDisplayName && (!localeDisplayName.equalsIgnoreCase(newlocale.toString())) ) {
                 supportedLocales.add([locale: newlocale, description: localeDisplayName])
-                supportedLocales = supportedLocales.toUnique { it.locale }
             }
         }
-        LOGGER.debug("Banner Supported Locales are = ${supportedLocales}")
+        LOGGER.debug("Banner Supported Locales are before = ${supportedLocales}")
+        supportedLocales.unique()
+        LOGGER.debug("Banner Supported Locales are after = ${supportedLocales}")
         return supportedLocales
     }
 
