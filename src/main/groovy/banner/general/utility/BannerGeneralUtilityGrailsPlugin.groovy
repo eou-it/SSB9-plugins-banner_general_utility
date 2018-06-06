@@ -1,35 +1,27 @@
-/*******************************************************************************
- Copyright 2013-2018 Ellucian Company L.P. and its affiliates.
- ****************************************************************************** */
-import grails.plugin.springsecurity.SpringSecurityUtils
-import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
-import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
-import net.hedtech.banner.i18n.BannerMessageSource
-class BannerGeneralUtilityGrailsPlugin {
-    String version = "9.28.1"
+package banner.general.utility
+
+import grails.plugins.*
+
+class BannerGeneralUtilityGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "2.2.1 > *"
-
-    // the other plugins this plugin depends on
-    def dependsOn = ['springSecurityCore': '1.2.7.3 => *',
+    def grailsVersion = "3.3.2 > *"
+    // resources that are excluded from plugin packaging
+    def pluginExcludes = [
+        "grails-app/views/error.gsp"
     ]
 
-    // resources that are excluded from plugin packaging
-    def pluginExcludes = ["grails-app/views/error.gsp"]
-
-    def author = "ellucian"
+    // TODO Fill in these fields
+    def title = "Banner General Utility" // Headline display name of the plugin
+    def author = "Your name"
     def authorEmail = ""
-    def title = "Banner Core Framework Plugin"
-    def description = '''This plugin adds Spring Security (aka Acegi) and a custom
-                         |DataSource implementation (BannerDataSource) that together
-                         |provide for authentication and authorization based upon
-                         |Banner Security configuration. In addition, this plugin provides
-                         |additional framework support (e.g., injecting CRUD methods into
-                         |services, providing base test classes) to facilitate development of
-                         |Banner web applications.'''.stripMargin()
+    def description = '''\
+Brief summary/description of the plugin.
+'''
+    def profiles = ['web']
 
-    def documentation = ""
+    // URL to the plugin's documentation
+    def documentation = "http://grails.org/plugin/banner-general-utility"
 
     // Extra (optional) plugin metadata
 
@@ -47,15 +39,9 @@ class BannerGeneralUtilityGrailsPlugin {
 
     // Online location of the plugin's browseable source code.
 //    def scm = [ url: "http://svn.codehaus.org/grails-plugins/" ]
-    String securityConfigType = SpringSecurityUtils.securityConfigType
-    ConfigObject conf = SpringSecurityUtils.securityConfig
 
-    def doWithWebDescriptor = { xml ->
-        // TODO Implement additions to web.xml (optional), this event occurs before
-    }
-
-    def doWithSpring = {
-        // Reconfigure the messageSource to use BannerMessageSource
+    Closure doWithSpring() { {->
+             // Reconfigure the messageSource to use BannerMessageSource
         def beanConf = springConfig.getBeanConfig('messageSource')
         def beanDef = beanConf ? beanConf.beanDefinition : springConfig.getBeanDefinition('messageSource')
         if (beanDef?.beanClassName == PluginAwareResourceBundleMessageSource.class.canonicalName) {
@@ -75,28 +61,29 @@ class BannerGeneralUtilityGrailsPlugin {
                 }
             }
         }
+        }
     }
 
-    def doWithDynamicMethods = { ctx ->
+    void doWithDynamicMethods() {
         // TODO Implement registering dynamic methods to classes (optional)
     }
 
-    def doWithApplicationContext = { applicationContext ->
+    void doWithApplicationContext() {
         // TODO Implement post initialization spring config (optional)
     }
 
-    def onChange = { event ->
+    void onChange(Map<String, Object> event) {
         // TODO Implement code that is executed when any artefact that this plugin is
         // watching is modified and reloaded. The event contains: event.source,
         // event.application, event.manager, event.ctx, and event.plugin.
     }
 
-    def onConfigChange = { event ->
+    void onConfigChange(Map<String, Object> event) {
         // TODO Implement code that is executed when the project configuration changes.
         // The event is the same as for 'onChange'.
     }
 
-    def onShutdown = { event ->
+    void onShutdown(Map<String, Object> event) {
         // TODO Implement code that is executed when the application shuts down (optional)
     }
 }
