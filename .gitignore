@@ -174,3 +174,4 @@ build/
 *.ipr
 *.iml
 .idea
+gradle/wrapper/*
