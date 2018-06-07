@@ -4,7 +4,7 @@
 
 package net.hedtech.banner.about
 
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import grails.web.context.ServletContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.core.context.SecurityContextHolder
 import net.hedtech.banner.i18n.MessageHelper

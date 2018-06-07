@@ -3,12 +3,13 @@
  *******************************************************************************/
 package net.hedtech.banner.i18n
 
-import org.codehaus.groovy.grails.context.support.ReloadableResourceBundleMessageSource
+import grails.util.Holders as CH
+import org.grails.spring.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
-import grails.util.Holders as CH
+
 // Implements an external message source, which is used by BannerMessageSource
 class ExternalMessageSource extends ReloadableResourceBundleMessageSource {
 

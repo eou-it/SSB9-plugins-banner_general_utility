@@ -9,7 +9,7 @@ import grails.plugin.springsecurity.ReflectionUtils
 import grails.plugin.springsecurity.web.access.intercept.RequestmapFilterInvocationDefinition
 import grails.transaction.Transactional
 import grails.util.Holders
-import org.apache.commons.lang3.text.WordUtils
+import org.apache.commons.lang.WordUtils
 import org.apache.log4j.Logger
 import org.hibernate.classic.Session
 import org.springframework.http.HttpMethod
@@ -119,6 +119,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * @return Session     Classic hibernate session.
      */
     protected Session getHibernateSession() {
+        //TODO The session imports for HIBERNATE HAS BEEN MODIFIED.
         Session session
         try {
             def dataSource = Holders.grailsApplication.mainContext.getBean('dataSource')

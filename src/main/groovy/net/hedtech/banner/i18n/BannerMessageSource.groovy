@@ -3,22 +3,19 @@
  ******************************************************************************/
 package net.hedtech.banner.i18n
 
+import grails.util.CacheEntry
 import grails.util.Holders as CH
-import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import grails.util.Pair
+import grails.web.context.ServletContextHolder
+import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
+import org.grails.spring.context.support.ReloadableResourceBundleMessageSource.PropertiesHolder
+import org.grails.web.util.GrailsApplicationAttributes
+import org.springframework.core.io.Resource
 
 import java.text.MessageFormat
-
-import grails.util.CacheEntry
-import java.util.List;
-import grails.util.Pair;
-import org.springframework.core.io.Resource;
 import java.util.concurrent.Callable
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import org.codehaus.groovy.grails.context.support.ReloadableResourceBundleMessageSource.PropertiesHolder
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 
 class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 

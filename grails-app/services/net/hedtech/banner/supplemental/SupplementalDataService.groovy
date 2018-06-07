@@ -14,7 +14,7 @@ import java.text.ParseException
 import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
 import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import net.hedtech.banner.supplemental.SupplementalPropertyDiscriminatorContent
 import net.hedtech.banner.supplemental.SupplementalPropertyValue
 import org.hibernate.persister.entity.SingleTableEntityPersister

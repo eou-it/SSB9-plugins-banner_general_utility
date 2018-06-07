@@ -7,10 +7,10 @@ package net.hedtech.banner.supplemental
 import grails.util.Holders
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
-import net.hedtech.banner.configuration.SupplementalDataUtils
+import net.hedtech.banner.general.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.hibernate.MappingException
 import org.hibernate.persister.entity.SingleTableEntityPersister
 import org.springframework.context.ApplicationContext

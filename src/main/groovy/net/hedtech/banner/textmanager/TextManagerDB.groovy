@@ -6,7 +6,7 @@ package net.hedtech.banner.textmanager
 import grails.util.Holders as CH
 import groovy.sql.Sql
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import java.sql.SQLException
 
 class TextManagerDB {

@@ -1,9 +1,10 @@
 /*******************************************************************************
 Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 
-import org.apache.log4j.Logger
+import org.slf4j.Logger;
 import org.springframework.security.core.context.SecurityContextHolder
+
 
 /**
  * SelfService controller returns menu as XML format
@@ -14,7 +15,7 @@ class SelfServiceMenuController {
 
     def selfServiceMenuService
     def mnuLabel = "Banner"
-    private static final def log = Logger.getLogger(getClass())
+    //private static final def log = Logger.getLogger(getClass())
 
     def data = {
         def mnuParams
