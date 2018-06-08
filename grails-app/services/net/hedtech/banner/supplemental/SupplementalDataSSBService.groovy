@@ -7,7 +7,7 @@ package net.hedtech.banner.supplemental
 import grails.util.Holders
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
-import net.hedtech.banner.general.configuration.SupplementalDataUtils
+import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
 import org.apache.log4j.Logger
 import grails.core.GrailsApplication
@@ -30,7 +30,6 @@ class SupplementalDataSSBService {
     def grailsApplication        // injected by Spring
     private static String DEFAULT_DATE_FORMAT = "dd-MMM-yyyy"
 
-    private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(SupplementalDataSSBService.class)
 
     /**

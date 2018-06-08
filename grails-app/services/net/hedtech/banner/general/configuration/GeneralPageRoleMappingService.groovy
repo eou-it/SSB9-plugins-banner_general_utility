@@ -11,7 +11,9 @@ import grails.transaction.Transactional
 import grails.util.Holders
 import org.apache.commons.lang.WordUtils
 import org.apache.log4j.Logger
-import org.hibernate.classic.Session
+import org.hibernate.Session
+
+//import org.hibernate.classic.Session
 import org.springframework.http.HttpMethod
 import org.springframework.util.StringUtils
 

@@ -19,7 +19,6 @@ class SelfServiceMenuService {
     def sessionFactory
     def grailsApplication
     def messageSource
-    private static final Logger log = Logger.getLogger(getClass())
     static final String FETCH_ROLES = "{? = call TWBKSLIB.F_CASCADEFETCHROLE(?)}"
 
     /**
