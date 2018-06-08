@@ -51,20 +51,10 @@ dependencies {
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails:grails-web-testing-support"
 
-    //Adding XE-Plugin Dependencies
-    //Added for BannerXE
-    compile "org.grails.plugins:hibernate5"
-
-    compile "org.hibernate:hibernate-core:5.1.5.Final"
-    compile "org.hibernate:hibernate-ehcache:5.1.5.Final"
-
-    // Added for BannerXE - grails plugin used for spring security
-    compile 'org.grails.plugins:spring-security-core:3.2.1'
-
-    //For FileUtils and others
+    //Added for BannerXE For FileUtils and others
     compile 'commons-io:commons-io:2.6'
-
-    //compile project(":banner-core")
+    //Adding XE-Plugin Dependencies
+    compile project(":banner-core")
 }
 
 bootRun {
