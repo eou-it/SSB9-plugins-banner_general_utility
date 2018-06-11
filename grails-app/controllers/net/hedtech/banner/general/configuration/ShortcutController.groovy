@@ -6,17 +6,15 @@ package net.hedtech.banner.general.configuration
 import grails.converters.JSON
 import grails.util.Environment
 import groovy.json.JsonBuilder
-import org.apache.log4j.Logger
 import org.springframework.context.i18n.LocaleContextHolder
+
 import static groovy.io.FileType.FILES
 
 class ShortcutController {
 
-    private static final LOGGER = Logger.getLogger(ShortcutController.class.name)
     private static List<File> JSONFILELIST = []
     private static JsonBuilder OUTPUTJSON
     def messageSource
-    def grailsApplication
 
     def data() {
         if (JSONFILELIST.isEmpty() || OUTPUTJSON == null) {
