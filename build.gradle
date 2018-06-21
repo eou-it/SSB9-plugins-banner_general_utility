@@ -57,6 +57,13 @@ dependencies {
     compile project(":banner-core")
 }
 
+// Added for BannerXE - Internal plugin dependency
+grails {
+    plugins {
+        compile project(':banner-core')
+    }
+}
+
 bootRun {
     jvmArgs('-Dspring.output.ansi.enabled=always')
     addResources = true
