@@ -50,26 +50,44 @@ grails.views.default.codec="none" // none, html, base64
 grails.views.gsp.encoding="UTF-8"
 privacy.codes = "INT NAV UNI"
 
-// Uncomment and edit the following lines to start using Grails encoding & escaping improvements
+//TODO grailsAnnotationConfiguration to be imported and provided as configClass in datasource
+//import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration
 
-/* remove this line 
-// GSP settings
-grails {
-    views {
-        gsp {
-            encoding = 'UTF-8'
-            htmlcodec = 'xml' // use xml escaping instead of HTML4 escaping
-            codecs {
-                expression = 'html' // escapes values inside null
-                scriptlet = 'none' // escapes output from scriptlets in GSPs
-                taglib = 'none' // escapes output from taglibs
-                staticparts = 'none' // escapes output from static template parts
-            }
+
+
+// Note: Most of the dataSource configuration resides in resources.groovy and in the
+// installation-specific configuration file (see Config.groovy for the include).
+
+dataSource {
+    //TODO configClass - GrailsAnnotationConfiguration.Class in order to make use of annotation.
+    // TODO But Application.groovy (inside init) here by default extends GrailsAnnotationConfiguration So the configuration should go there somewhere.
+    //configClass = GrailsAnnotationConfiguration.class
+    dialect = "org.hibernate.dialect.Oracle10gDialect"
+    loggingSql = false
+}
+
+
+hibernate {
+    cache.use_second_level_cache = false
+    cache.use_query_cache = false
+    cache.region.factory_class = 'net.sf.ehcache.hibernate.EhCacheRegionFactory'
+    config.location = [
+            "classpath:hibernate-banner-general-utility.cfg.xml",
+            "classpath:hibernate-banner-core.cfg.xml"
+    ]
+}
+// environment specific settings
+environments {
+    development {
+        dataSource {
         }
-        // escapes all not-encoded output at final stage of outputting
-        filteringCodecForContentType {
-            //'text/html' = 'html'
+    }
+    test {
+        dataSource {
+        }
+    }
+    production {
+        dataSource {
         }
     }
 }
-remove this line */

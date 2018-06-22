@@ -56,8 +56,13 @@ dependencies {
 
     //Added for BannerXE For FileUtils and others
     compile 'commons-io:commons-io:2.6'
-    //Adding XE-Plugin Dependencies
-    compile project(":banner-core")
+}
+
+// Added for BannerXE - Internal plugin dependency
+grails {
+    plugins {
+        compile project(':banner-core')
+    }
 }
 
 bootRun {

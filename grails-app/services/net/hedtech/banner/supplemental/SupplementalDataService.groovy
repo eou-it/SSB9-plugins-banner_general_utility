@@ -32,7 +32,6 @@ class SupplementalDataService {
     def grailsApplication        // injected by Spring
     private static String DEFAULT_DATE_FORMAT = "dd-MMM-yyyy"
 
-    private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(SupplementalDataService.class)
     def public i = 0
 
