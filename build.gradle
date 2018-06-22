@@ -51,6 +51,9 @@ dependencies {
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails:grails-web-testing-support"
 
+    //Quartz
+    compile 'org.grails.plugins:quartz:2.0.13'
+
     //Added for BannerXE For FileUtils and others
     compile 'commons-io:commons-io:2.6'
     //Adding XE-Plugin Dependencies
