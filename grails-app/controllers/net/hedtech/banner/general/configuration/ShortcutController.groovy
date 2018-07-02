@@ -6,12 +6,13 @@ package net.hedtech.banner.general.configuration
 import grails.converters.JSON
 import grails.util.Environment
 import groovy.json.JsonBuilder
+import grails.core.GrailsApplication
 import org.springframework.context.i18n.LocaleContextHolder
 
 import static groovy.io.FileType.FILES
 
 class ShortcutController {
-
+    GrailsApplication grailsApplication
     private static List<File> JSONFILELIST = []
     private static JsonBuilder OUTPUTJSON
     def messageSource
@@ -31,7 +32,7 @@ class ShortcutController {
         if (Environment.current == Environment.PRODUCTION || Environment.current == Environment.TEST) {
             dirPath = grailsApplication.mainContext.servletContext.getRealPath('/')
         } else if (Environment.current == Environment.DEVELOPMENT) {
-            dirPath = System.properties['base.dir']
+            dirPath = System.properties['user.dir']
         }
         List<File> jsonFiles = getJSONFilesFromDirectory(dirPath)
         return jsonFiles
