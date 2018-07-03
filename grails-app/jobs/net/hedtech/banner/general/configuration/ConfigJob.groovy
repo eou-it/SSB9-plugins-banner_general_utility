@@ -1,18 +1,19 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
 import org.apache.log4j.Logger
 import grails.util.Holders as CH
 import org.springframework.dao.InvalidDataAccessResourceUsageException
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class ConfigJob {
 
     def configPropertiesService
     def springSecurityService
 
-    private static final LOGGER = Logger.getLogger(ConfigJob.class.name)
     static def delay = CH.config.configJob?.delay instanceof Integer? CH.config.configJob?.delay : 60000
     static def interval = CH.config.configJob?.interval instanceof Integer? CH.config.configJob?.interval : 60000
     def concurrent = false
@@ -24,7 +25,7 @@ class ConfigJob {
 
     def execute() {
 
-        LOGGER.info("Running Config Job to update configurations")
+        log.info("Running Config Job with configurations actualCount =  ${actualCount}, delay = ${delay}, repeatInterval= ${interval}")
         if (actualCount != 0) {
             try {
                 configPropertiesService.setConfigFromDb()
@@ -36,9 +37,9 @@ class ConfigJob {
                 springSecurityService.clearCachedRequestmaps()
 
             } catch (InvalidDataAccessResourceUsageException e) {
-                LOGGER.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
+                log.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
             }
-            LOGGER.info("Configurations updated")
+            log.info("Configurations updated")
         }
     }
 }
