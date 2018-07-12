@@ -34,11 +34,7 @@ grails.doc.alias.dev        = "3. Developer Guide"
 grails.config.locations = [] // leave this initialized to an empty list, and add your locations
 // in the APPLICATION CONFIGURATION section below.
 
-//TODO Add dependency on BannerCore and the import should be resolved.
-/*def locationAdder = ApplicationConfigurationUtils.&addLocation.curry(grails.config.locations)
-
-[BANNER_APP_CONFIG:        "banner_configuration.groovy",
-].each { envName, defaultFileName -> locationAdder(envName, defaultFileName) }*/
+// TODO :grails_332_change, needs to revisit - Integration Test cases fixing
 
 
 // Code Coverage configuration
@@ -50,13 +46,6 @@ grails.views.default.codec="none" // none, html, base64
 grails.views.gsp.encoding="UTF-8"
 privacy.codes = "INT NAV UNI"
 
-//TODO grailsAnnotationConfiguration to be imported and provided as configClass in datasource
-//import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration
-
-
-
-// Note: Most of the dataSource configuration resides in resources.groovy and in the
-// installation-specific configuration file (see Config.groovy for the include).
 
 dataSource {
     //TODO configClass - GrailsAnnotationConfiguration.Class in order to make use of annotation.
