@@ -27,7 +27,6 @@ class ConfigJob {
     }
 
     def execute() {
-        println "CH.config.configJob?.actualCount = ${CH.config.configJob?.actualCount}"
         log.info("Running Config Job with configurations actualCount =  ${actualCount}")
         if (actualCount != 0) {
             try {
