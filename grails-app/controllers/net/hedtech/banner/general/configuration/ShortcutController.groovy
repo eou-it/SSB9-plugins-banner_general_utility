@@ -14,17 +14,17 @@ class ShortcutController {
 
     private static final LOGGER = Logger.getLogger(ShortcutController.class.name)
     private static List<File> JSONFILELIST = []
-    private static JsonBuilder OUTPUTJSON
     def messageSource
     def grailsApplication
 
     def data() {
-        if (JSONFILELIST.isEmpty() || OUTPUTJSON == null) {
+        LinkedHashMap shortcutkeysmap = new LinkedHashMap()
+        if (JSONFILELIST.isEmpty()) {
             JSONFILELIST = getShortcutJSONFiles()
-            LinkedHashMap shortcutKeys = populateOSSpecificShortcutFromJsonFiles()
-            OUTPUTJSON = getMessageForShortcutKeys(shortcutKeys)
         }
-        render OUTPUTJSON
+        shortcutkeysmap = populateOSSpecificShortcutFromJsonFiles()
+        JsonBuilder outputjson = getMessageForShortcutKeys(shortcutkeysmap)
+        render outputjson
     }
 
 
@@ -47,18 +47,19 @@ class ShortcutController {
                 jsonFiles << it
             }
         }
+        LOGGER.debug("${jsonFiles?.size()} shortcut jsonFiles found.")
         return jsonFiles
     }
 
 
     private static LinkedHashMap populateOSSpecificShortcutFromJsonFiles() {
-        List jsonData = []
+        def jsonData
         List windowsList = []
         List macList = []
         JSONFILELIST?.each { jsonFile ->
-            jsonData << JSON.parse(jsonFile.text)
-            windowsList << jsonData.windows
-            macList << jsonData.mac
+            jsonData = JSON.parse(jsonFile.text)
+            windowsList << jsonData?.windows
+            macList << jsonData?.mac
         }
         LinkedHashMap shortcutKeys = new LinkedHashMap()
         shortcutKeys << [windows: windowsList]
@@ -82,6 +83,11 @@ class ShortcutController {
                                 windowsShortcut.description = getMessage(windowsShortcut.description)
                                 tempList.add(windowsShortcut)
                             }
+                            if(sectionHeadingWindowsMap.get(getMessage(windowsShortcuts.key))){
+                                List existingKeys = sectionHeadingWindowsMap.get(getMessage(windowsShortcuts.key)) as List
+                                existingKeys.addAll(tempList)
+                                tempList = existingKeys
+                            }
                             sectionHeadingWindowsMap.put(getMessage(windowsShortcuts.key), tempList)
                         }
 
@@ -96,6 +102,11 @@ class ShortcutController {
                             macShortcut.combination = getMessage(macShortcut.combination)
                             macShortcut.description = getMessage(macShortcut.description)
                             tempList.add(macShortcut)
+                        }
+                        if(sectionHeadingMacMap.get(getMessage(macShortcuts.key))){
+                            List existingKeys = sectionHeadingMacMap.get(getMessage(macShortcuts.key)) as List
+                            existingKeys.addAll(tempList)
+                            tempList = existingKeys
                         }
                         sectionHeadingMacMap.put(getMessage(macShortcuts.key), tempList)
                     }
