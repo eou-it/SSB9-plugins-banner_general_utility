@@ -87,7 +87,8 @@ class SupplementalDataSSBService {
             log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
             throw e
         } finally {
-            sql?.close()
+            // TODO :grails_332_change, needs to revisit
+            //sql?.close()
         }
     }
 
