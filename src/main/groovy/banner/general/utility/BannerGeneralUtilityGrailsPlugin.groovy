@@ -2,6 +2,7 @@ package banner.general.utility
 
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.plugins.*
+import grails.util.Holders
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import net.hedtech.banner.i18n.BannerMessageSource
 import grails.plugin.springsecurity.SecurityConfigType
@@ -10,6 +11,10 @@ class BannerGeneralUtilityGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "3.3.2 > *"
+    def dependsOn = [
+            bannerCore: '9.28.1 => *'
+    ]
+    def loadAfter = ["bannerCore"]
     // resources that are excluded from plugin packaging
     /*def pluginExcludes = [
         "grails-app/views/error.gsp"
