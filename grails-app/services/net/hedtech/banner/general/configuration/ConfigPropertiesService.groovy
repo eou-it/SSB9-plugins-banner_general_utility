@@ -46,7 +46,7 @@ class ConfigPropertiesService extends ServiceBase {
      * This method will be get called in bootstrap to load all the config properties from the DB.
      */
     public void setConfigFromDb() {
-        String appId = grailsApplication.metadata['app.appId']
+        String appId = CH.config.app.appId
         LOGGER.info("Fetching config from DB for appId = ${ appId }")
         try {
             ArrayList configProp = ConfigProperties.fetchSimpleConfigByAppId(GLOBAL)
@@ -113,8 +113,8 @@ class ConfigPropertiesService extends ServiceBase {
 
 
     public void seedDataToDBFromConfig() {
-        String appName = grailsApplication.metadata['app.name']
-        String appId = grailsApplication.metadata['app.appId']
+        String appName = CH.config.app.name
+        String appId = CH.config.app.appId
         if (appId) {
             try {
                 ConfigApplication configApp = ConfigApplication.fetchByAppId(appId)
