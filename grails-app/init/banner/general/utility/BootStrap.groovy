@@ -21,8 +21,6 @@ class BootStrap {
     def springSecurityService
 
     def init = { servletContext ->
-        println "THIS IS FROM BOOSTRAP!!!"
-
         if (GeneralMenu.isEnabled()) {
             def dbInstanceName = menuService.getInstitutionDBInstanceName()
             servletContext.setAttribute("dbInstanceName", dbInstanceName)
