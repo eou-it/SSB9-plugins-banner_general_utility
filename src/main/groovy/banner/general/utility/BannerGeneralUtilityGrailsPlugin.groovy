@@ -3,6 +3,7 @@ package banner.general.utility
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.plugins.*
 import grails.util.Holders
+import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import net.hedtech.banner.i18n.BannerMessageSource
 import grails.plugin.springsecurity.SecurityConfigType
@@ -19,7 +20,7 @@ class BannerGeneralUtilityGrailsPlugin extends Plugin {
     /*def pluginExcludes = [
         "grails-app/views/error.gsp"
     ]*/
-    // String securityConfigType = SpringSecurityUtils.securityConfigType
+    //String securityConfigType = grails.plugin.springsecurity.SpringSecurityUtils.securityConfigType
     //ConfigObject conf = SpringSecurityUtils.securityConfig
 
     // TODO Fill in these fields
@@ -65,13 +66,13 @@ Brief summary/description of the plugin.
          * which extends "RequestmapFilterInvocationDefinition", this service will fetch the Requestmap from the
          * DB and Config.groovy.
          */
-        /*if (securityConfigType == 'Requestmap') {
+        if (SpringSecurityUtils.securityConfigType == 'Requestmap') {
             objectDefinitionSource(GeneralPageRoleMappingService) {
-                if (conf.rejectIfNoRule instanceof Boolean) {
-                    rejectIfNoRule = conf.rejectIfNoRule
+                if (SpringSecurityUtils.securityConfig.rejectIfNoRule instanceof Boolean) {
+                    rejectIfNoRule = SpringSecurityUtils.securityConfig.rejectIfNoRule
                 }
             }
-        }*/
+        }
     }
     }
 
