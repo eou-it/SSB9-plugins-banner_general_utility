@@ -15,7 +15,7 @@ import org.apache.log4j.Logger
 @Transactional
 class ConfigUserPreferenceService extends ServiceBase {
 
-    static transactional = true
+    //static transactional = true
 
     def grailsApplication
 
