@@ -11,14 +11,17 @@ import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
 import org.springframework.dao.InvalidDataAccessResourceUsageException
-
+import grails.gorm.transactions.Transactional
 /**
  * The service is used to fetch all the global/app based config properties from DB
  * and will merge those props to Context Holder by the help of bootstrap.
  */
+
+
+@Transactional
 class ConfigPropertiesService extends ServiceBase {
 
-    static transactional = true
+    //static transactional = true
 
     private static final LOGGER = Logger.getLogger(ConfigPropertiesService.class.name)
 

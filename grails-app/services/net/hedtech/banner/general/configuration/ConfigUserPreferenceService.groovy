@@ -4,12 +4,15 @@
 
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
 
+
+@Transactional
 class ConfigUserPreferenceService extends ServiceBase {
 
     static transactional = true

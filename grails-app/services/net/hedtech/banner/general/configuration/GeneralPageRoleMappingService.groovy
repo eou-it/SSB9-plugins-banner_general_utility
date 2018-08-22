@@ -7,7 +7,7 @@ package net.hedtech.banner.general.configuration
 import grails.plugin.springsecurity.InterceptedUrl
 import grails.plugin.springsecurity.ReflectionUtils
 import grails.plugin.springsecurity.web.access.intercept.RequestmapFilterInvocationDefinition
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import org.apache.commons.lang.WordUtils
 import org.apache.log4j.Logger
@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils
  * If the grails.plugin.springsecurity.securityConfigType = SecurityConfigType.InterceptUrlMap in the Cofig.groovy then this
  * service will get injected by the spring from BannerGeneralUtilityGrailsPlugin.groovy.
  */
+@Transactional
 class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition {
     private static Logger logger = Logger.getLogger(GeneralPageRoleMappingService.class.name)
 
@@ -31,6 +32,8 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
     private static Map originalInterceptUrlMap
 
     private String wildcardKey = '/**'
+    private static final String INTERCEPT_URLMAP_PATTERN = 'pattern'
+    private static final String INTERCEPT_URLMAP_ACCESS = 'access'
 
     public static boolean isDataIsSeededForInterceptUrlMap = false
 
@@ -160,7 +163,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         def list
         def generalPageRoleMapping = new LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>>()
         try {
-            String appId = Holders.grailsApplication.metadata['app.appId']
+            String appId = Holders.config.app.appId
             if (appId) {
                 if (!sessionFactory) {
                     Session session
@@ -215,22 +218,33 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
         generalPageRoleMapping
     }
 
-    private Map prepareMap(List list, Map generalPageRoleMapping) {
-        def urlSet = new LinkedHashSet<String>()
+    private LinkedHashSet prepareMap(List list) {
+        def pageRoleInterceptURLList = new LinkedHashSet<GeneralPageRoleMapping>()
         list.each { GeneralPageRoleMapping grm ->
-            urlSet.add(grm.pageUrl)
+            HashMap urlSetMap = new HashMap()
+            List pageRoleMappingList = new ArrayList()
+            pageRoleMappingList = getRolesList(list,grm.pageUrl)
+            urlSetMap.put(INTERCEPT_URLMAP_ACCESS ,pageRoleMappingList)
+            urlSetMap.put(INTERCEPT_URLMAP_PATTERN, grm.pageUrl)
+            pageRoleInterceptURLList.add(urlSetMap)
         }
+        pageRoleInterceptURLList
+    }
 
-        urlSet.each { String pageUrl ->
-            def pageRoleMappingList = new ArrayList<GeneralPageRoleMapping>()
-            list.each { GeneralPageRoleMapping pageRoleMapping ->
-                if (pageRoleMapping.pageUrl == pageUrl) {
-                    pageRoleMappingList << pageRoleMapping
-                }
+    /**
+     * To Create the List of Roles associated for each pageURL
+     * @param roleList
+     * @param pageUrl
+     * @return
+     */
+    private List getRolesList(List roleList,String pageUrl){
+        List<String> roleCodeList = new ArrayList<String>()
+        roleList.each { pageRoleMapping ->
+            if (pageRoleMapping.pageUrl == pageUrl) {
+                roleCodeList << pageRoleMapping.roleCode
             }
-            generalPageRoleMapping.put(pageUrl, pageRoleMappingList)
         }
-        generalPageRoleMapping
+        return roleCodeList
     }
 
     /**
@@ -245,8 +259,8 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      */
     public void seedInterceptUrlMapAtServerStartup() {
         try {
-            String appName = Holders.grailsApplication.metadata['app.name']
-            String appId = Holders.grailsApplication.metadata['app.appId']
+            String appName = Holders.config.app.name
+            String appId = Holders.config.app.appId
 
             ConfigApplication application = ConfigApplication.fetchByAppId(appId)
             if (!application) {
@@ -257,12 +271,13 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                 application = newConfigApp.save(failOnError: true, flush: true)
             }
 
-            LinkedHashMap<String, ArrayList<String>> interceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
+            List<Map<String, ?>> interceptUrlMap = ReflectionUtils.getConfigProperty("interceptUrlMap").clone()
             List list = GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator(appId)
-            Map<String, ArrayList<String>> interceptUrlMapFromDB = new HashMap<String, ArrayList<String>>()
-            interceptUrlMapFromDB = prepareMap(list, interceptUrlMapFromDB)
+            LinkedHashSet<Map<String, ?>> interceptUrlMapFromDB = new LinkedHashSet<Map<String, ?>>()
+            interceptUrlMapFromDB = prepareMap(list)
 
-            int pageIdMaxSize = ConfigControllerEndpointPage?.constraints?.pageId?.maxSize
+            //int pageIdMaxSizepageId
+            int pageIdMaxSize = ConfigControllerEndpointPage.getConstrainedProperties().get('pageId').getMaxSize()
             pageIdMaxSize = (pageIdMaxSize ? pageIdMaxSize : 60)
 
             Long maxOfDisplaySequence = ConfigControllerEndpointPage.createCriteria()?.get {
@@ -271,32 +286,31 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                 }
             } as Long
             maxOfDisplaySequence = (maxOfDisplaySequence ? maxOfDisplaySequence : 0)
-
-            interceptUrlMap.each { String url, ArrayList<String> roles ->
-                if (!interceptUrlMapFromDB.containsKey(url)) {
+            interceptUrlMap.each { roles ->
+                if (!interceptUrlMapFromDB.contains(roles)) {
                     // Start
                     // Save GURCTLEP
                     ConfigControllerEndpointPage ccep = new ConfigControllerEndpointPage()
                     ccep.setLastModifiedBy('BANNER')
                     ccep.setLastModified(new Date())
                     ccep.setDisplaySequence(maxOfDisplaySequence + 1)
-                    ccep.setPageUrl(url)
+                    ccep.setPageUrl(roles.pattern)
                     ccep.setStatusIndicator(true)
                     ccep.setConfigApplication(application)
 
                     // Preparing the pageId
                     String appIdCamelCase = WordUtils.capitalizeFully(application.getAppId())
                     String pageId = ''
-                    if (url == '/' || url == '/**') {
-                        pageId = appIdCamelCase + ' ' + url
+                    if (roles.pattern == '/' || roles.pattern == '/**') {
+                        pageId = appIdCamelCase + ' ' + roles.pattern
                     } else {
-                        pageId = getStringForPageId(url, pageIdMaxSize)
+                        pageId = getStringForPageId(roles.pattern, pageIdMaxSize)
                     }
                     ccep.setPageId(pageId)
                     ccep.save(failOnError: true, flush: true)
 
                     // Save GURAPPR - multile roles
-                    roles.each { roleCode ->
+                    roles.access.each { roleCode ->
                         ConfigRolePageMapping crpm = new ConfigRolePageMapping()
                         crpm.setConfigApplication(application)
                         crpm.setLastModifiedBy('BANNER')
@@ -308,6 +322,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     // End
                     maxOfDisplaySequence++
                 }
+
             }
         } catch (Exception e) {
             logger.error(e.getMessage())

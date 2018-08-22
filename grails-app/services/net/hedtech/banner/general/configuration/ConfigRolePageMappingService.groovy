@@ -5,7 +5,8 @@
 package net.hedtech.banner.general.configuration
 
 import net.hedtech.banner.service.ServiceBase
+import grails.gorm.transactions.Transactional
 
+@Transactional
 class ConfigRolePageMappingService extends ServiceBase {
-    static transactional = true
 }
