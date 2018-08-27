@@ -5,7 +5,8 @@ package net.hedtech.banner.i18n
 
 import grails.util.Holders
 import groovy.sql.Sql
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
+//import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import grails.web.context.ServletContextHolder
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
