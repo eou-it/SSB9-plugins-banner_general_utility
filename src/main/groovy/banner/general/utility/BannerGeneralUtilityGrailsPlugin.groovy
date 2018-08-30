@@ -1,12 +1,8 @@
 package banner.general.utility
 
 import grails.plugin.springsecurity.SpringSecurityUtils
-import grails.plugins.*
-import grails.util.Holders
+import grails.plugins.Plugin
 import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
-import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
-import net.hedtech.banner.i18n.BannerMessageSource
-import grails.plugin.springsecurity.SecurityConfigType
 
 class BannerGeneralUtilityGrailsPlugin extends Plugin {
 
@@ -14,26 +10,24 @@ class BannerGeneralUtilityGrailsPlugin extends Plugin {
     def grailsVersion = "3.3.2 > *"
     def dependsOn = [
             bannerCore: '9.28.1 => *'
+           /* springSecurityCore: '3.2.3 => *'*/
     ]
     def loadAfter = ["bannerCore"]
-    // resources that are excluded from plugin packaging
-    /*def pluginExcludes = [
-        "grails-app/views/error.gsp"
-    ]*/
-    //String securityConfigType = grails.plugin.springsecurity.SpringSecurityUtils.securityConfigType
-    //ConfigObject conf = SpringSecurityUtils.securityConfig
 
-    // TODO Fill in these fields
-    def title = "Banner General Utility" // Headline display name of the plugin
-    def author = "Your name"
+    def author = "ellucian"
     def authorEmail = ""
-    def description = '''\
-Brief summary/description of the plugin.
-'''
+    def title = "Banner Core Framework Plugin"
+    def description = '''This plugin adds Spring Security (aka Acegi) and a custom
+                         |DataSource implementation (BannerDataSource) that together
+                         |provide for authentication and authorization based upon
+                         |Banner Security configuration. In addition, this plugin provides
+                         |additional framework support (e.g., injecting CRUD methods into
+                         |services, providing base test classes) to facilitate development of
+                         |Banner web applications.'''.stripMargin()
     // def profiles = ['web']
 
     // URL to the plugin's documentation
-    def documentation = "http://grails.org/plugin/banner-general-utility"
+    def documentation = ""
 
     // Extra (optional) plugin metadata
 
@@ -52,15 +46,17 @@ Brief summary/description of the plugin.
     // Online location of the plugin's browseable source code.
 //    def scm = [ url: "http://svn.codehaus.org/grails-plugins/" ]
 
+
     Closure doWithSpring() { {->
         // Reconfigure the messageSource to use BannerMessageSource
-        /*def beanConf = springConfig.getBeanConfig('messageSource')
+        //TODO Grails 3 changes
+     /*   def beanConf = springConfig.getBeanConfig('messageSource')
         def beanDef = beanConf ? beanConf.beanDefinition : springConfig.getBeanDefinition('messageSource')
         if (beanDef?.beanClassName == PluginAwareResourceBundleMessageSource.class.canonicalName) {
             //just change the target class of the bean, maintaining all configurations.
             beanDef.beanClassName = BannerMessageSource.class.canonicalName
-        }
-*/
+        }*/
+
         /**
          * If the securityConfigType = 'Requestmap' then the "GeneralPageRoleMappingService" will be get injected
          * which extends "RequestmapFilterInvocationDefinition", this service will fetch the Requestmap from the
@@ -98,4 +94,6 @@ Brief summary/description of the plugin.
     void onShutdown(Map<String, Object> event) {
         // TODO Implement code that is executed when the application shuts down (optional)
     }
+
+
 }

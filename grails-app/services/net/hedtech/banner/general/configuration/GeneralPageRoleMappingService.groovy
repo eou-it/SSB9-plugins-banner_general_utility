@@ -29,7 +29,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
     def sessionFactory
 
-    private static Map originalInterceptUrlMap
+    private static List originalInterceptUrlMap
 
     private String wildcardKey = '/**'
     private static final String INTERCEPT_URLMAP_PATTERN = 'pattern'
@@ -74,18 +74,9 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      */
     protected List<InterceptedUrl> pageRoleMappingListFromDBAndConfig() {
         List<InterceptedUrl> data = new ArrayList<InterceptedUrl>()
-        def pageRoleMappingList = getPageRoleMappingList()
-        LinkedHashMap<String, List<String>> interceptedUrlMapFromDB = new LinkedHashMap<String, List<String>>()
-        pageRoleMappingList.each { String key, ArrayList<GeneralPageRoleMapping> grmList ->
-            def roleList = []
-            grmList.each { GeneralPageRoleMapping grm ->
-                roleList << grm.roleCode
-            }
-            grmList.each {
-                interceptedUrlMapFromDB.put(key, super.split(roleList?.join(',')))
-            }
-        }
-        Map interceptedUrlMapFromConfig
+        LinkedHashSet interceptedUrlMapFromDB = new LinkedHashSet<>()
+        interceptedUrlMapFromDB = getPageRoleMappingList()
+        LinkedHashSet interceptedUrlMapFromConfig
 
         if (!isDataIsSeededForInterceptUrlMap) {
             if (originalInterceptUrlMap == null) {
@@ -93,24 +84,34 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             }
             interceptedUrlMapFromConfig = originalInterceptUrlMap.clone()
 
-            interceptedUrlMapFromConfig.putAll(interceptedUrlMapFromDB)
+            interceptedUrlMapFromConfig.addAll(interceptedUrlMapFromDB)
+            //List OF MAP
         } else {
             interceptedUrlMapFromConfig = interceptedUrlMapFromDB.clone()
         }
 
-        if (interceptedUrlMapFromConfig.get(wildcardKey)) {
-            def wildcardValue = interceptedUrlMapFromConfig.get(wildcardKey)
-            interceptedUrlMapFromConfig.remove(wildcardKey)
-            interceptedUrlMapFromConfig << [(wildcardKey): wildcardValue]
+        if (interceptedUrlMapFromConfig.pattern.contains(wildcardKey)) {
+            def wildcardValue
+            interceptedUrlMapFromConfig.find{ url ->
+                if(url.pattern == wildcardKey){
+                    wildcardValue =  url.access
+                }
+            }
+            HashMap wildCardMap = new HashMap()
+            wildCardMap.put(INTERCEPT_URLMAP_PATTERN,wildcardKey)
+            wildCardMap.put(INTERCEPT_URLMAP_ACCESS,wildcardValue)
+            interceptedUrlMapFromConfig.remove(wildCardMap)
+            interceptedUrlMapFromConfig << wildCardMap
         }
 
         // Prepare List of interceptedUrlMap from the Merged data.
-        Holders.config.grails.plugin.springsecurity.interceptUrlMap = [:]
-        interceptedUrlMapFromConfig.each { k, v ->
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.clear()
+
+        interceptedUrlMapFromConfig.each { interceptMapping ->
             HttpMethod method = null
-            if(StringUtils.hasText(k) && v?.size() > 0) {
-                InterceptedUrl iu = new InterceptedUrl(k, super.split(v?.join(',')), method)
-                Holders.config.grails.plugin.springsecurity.interceptUrlMap?.put(k, super.split(v?.join(',')))
+            if(StringUtils.hasText(interceptMapping.pattern) && interceptMapping.access?.size() > 0) {
+                InterceptedUrl iu = new InterceptedUrl(interceptMapping.pattern, interceptMapping.access,method)
+                Holders.config.grails.plugin.springsecurity.interceptUrlMap?.add(iu)
                 data.add(iu)
             }else {
                 logger.error("Key is =$k and Value is =$v in invalid for interceptUrlMap.")
@@ -131,7 +132,8 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             def ctx = Holders.grailsApplication.mainContext
             sessionFactory = Holders.grailsApplication.getMainContext().sessionFactory
             def hibernateSessionFactory = (!sessionFactory ? ctx.sessionFactory : sessionFactory)
-            session = hibernateSessionFactory.openSession(dataSource.getSsbConnection())
+            //session = hibernateSessionFactory.openSession(dataSource.getSsbConnection())
+            session = hibernateSessionFactory.openSession()
         } catch (e) {
             logger.error('Exception creating Hibernate session;', e)
         }
@@ -143,7 +145,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * @return list
      */
     @Transactional(readOnly = true)
-    public LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>> getPageRoleMappingList() {
+    public LinkedHashSet getPageRoleMappingList() {
         fetchGeneralPageRoleMappingByAppId()
     }
 
@@ -159,14 +161,15 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * The private method and this common method will be called with Hibernate Session passed as a param.
      * @param session
      */
-    private LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>> fetchGeneralPageRoleMappingByAppId() {
+    private LinkedHashSet fetchGeneralPageRoleMappingByAppId() {
         def list
+        Session session
         def generalPageRoleMapping = new LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>>()
+        LinkedHashSet<Map<String, ?>> interceptUrlMapFromDB = new LinkedHashSet<Map<String, ?>>()
         try {
             String appId = Holders.config.app.appId
             if (appId) {
                 if (!sessionFactory) {
-                    Session session
                     try {
                         session = getHibernateSession()
                         list = session.createQuery('''SELECT new GeneralPageRoleMapping(generalPageRoleMapping.pageUrl,
@@ -187,37 +190,24 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                         logger.error('Exception while executing the query with new Hibernate session;')
                     }
                     finally {
-                        session?.close()
+                      // session?.close()
                     }
                 } else {
                     list = GeneralPageRoleMapping.fetchByAppIdAndStatusIndicator(appId, true)
                 }
-
-                def urlSet = new LinkedHashSet<String>()
-                list.each { GeneralPageRoleMapping grm ->
-                    urlSet.add(grm.pageUrl)
-                }
-
-                urlSet.each { String pageUrl ->
-                    def pageRoleMappingList = new ArrayList<GeneralPageRoleMapping>()
-                    list.each { GeneralPageRoleMapping pageRoleMapping ->
-                        if (pageRoleMapping.pageUrl == pageUrl) {
-                            if(StringUtils.hasText(pageRoleMapping.roleCode) && StringUtils.hasText(pageRoleMapping.pageId)) {
-                                pageRoleMappingList << pageRoleMapping
-                            } else {
-                                logger.error("Invalid interceptUrlMap = $pageRoleMapping" )
-                            }
-                        }
-                    }
-                    generalPageRoleMapping.put(pageUrl, pageRoleMappingList)
-                }
+                interceptUrlMapFromDB= prepareMap(list)
             }
         } catch (e) {
             logger.error("Exception in get list of GeneralPageRoleMapping", e)
         }
-        generalPageRoleMapping
+        interceptUrlMapFromDB
     }
 
+    /**
+     *  Return the intercept URL Hashset having pattern as key (page url) and access as key (list of roles)
+     * @param list
+     * @return Set
+     */
     private LinkedHashSet prepareMap(List list) {
         def pageRoleInterceptURLList = new LinkedHashSet<GeneralPageRoleMapping>()
         list.each { GeneralPageRoleMapping grm ->
@@ -287,7 +277,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             } as Long
             maxOfDisplaySequence = (maxOfDisplaySequence ? maxOfDisplaySequence : 0)
             interceptUrlMap.each { roles ->
-                if (!interceptUrlMapFromDB.contains(roles)) {
+                if (!interceptUrlMapFromDB?.pattern?.contains(roles?.pattern)) {
                     // Start
                     // Save GURCTLEP
                     ConfigControllerEndpointPage ccep = new ConfigControllerEndpointPage()
@@ -310,13 +300,13 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     ccep.save(failOnError: true, flush: true)
 
                     // Save GURAPPR - multile roles
-                    roles.access.each { roleCode ->
+                    roles.configAttributes.each { roleCode ->
                         ConfigRolePageMapping crpm = new ConfigRolePageMapping()
                         crpm.setConfigApplication(application)
                         crpm.setLastModifiedBy('BANNER')
                         crpm.setLastModified(new Date())
                         crpm.setEndpointPage(ccep)
-                        crpm.setRoleCode(roleCode)
+                        crpm.setRoleCode(roleCode.toString())
                         crpm.save(failOnError: true, flush: true)
                     }
                     // End
