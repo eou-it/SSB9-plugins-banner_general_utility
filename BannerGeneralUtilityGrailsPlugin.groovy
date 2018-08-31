@@ -6,7 +6,7 @@ import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
 import net.hedtech.banner.i18n.BannerMessageSource
 class BannerGeneralUtilityGrailsPlugin {
-    String version = "9.28.1"
+    String version = "9.28.2"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2.1 > *"
