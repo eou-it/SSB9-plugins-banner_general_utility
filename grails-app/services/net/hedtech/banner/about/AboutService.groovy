@@ -140,7 +140,10 @@ class AboutService {
     }*/
 
     private String getCopyright() {
-        getMessage("net.hedtech.banner.login.copyright1")
+        getMessage("default.copyright.startyear")
+                .concat(getMessage("default.copyright.endyear")
+                .concat(" ")
+                .concat(getMessage("default.copyright.message")))
     }
 
     private String getCopyrightLegalNotice() {

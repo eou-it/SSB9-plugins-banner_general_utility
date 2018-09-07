@@ -32,7 +32,7 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         println aboutData
         assertEquals(MessageHelper.message("about.banner.title"),aboutData.get("api.title"))
         assertEquals(MessageHelper.message("about.banner.close"),aboutData.get("api.close"))
-        assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright1"),aboutData.get("about.banner.copyright"))
+        assertEquals(MessageHelper.message("default.copyright.startyear"+ "default.copyright.endyear"+ " " + "default.login.copyright.message"),aboutData.get("about.banner.copyright"))
         assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright2"),aboutData.get("about.banner.copyrightLegalNotice"))
     }
 
