@@ -4,17 +4,17 @@
 
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Transactional
 import grails.plugin.springsecurity.InterceptedUrl
 import grails.plugin.springsecurity.ReflectionUtils
 import grails.plugin.springsecurity.web.access.intercept.RequestmapFilterInvocationDefinition
-import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import org.apache.commons.lang.WordUtils
-import org.apache.log4j.Logger
 import org.hibernate.Session
+import org.springframework.http.HttpMethod
 
 //import org.hibernate.classic.Session
-import org.springframework.http.HttpMethod
+
 import org.springframework.util.StringUtils
 
 /**
@@ -25,8 +25,6 @@ import org.springframework.util.StringUtils
  */
 @Transactional
 class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition {
-    private static Logger logger = Logger.getLogger(GeneralPageRoleMappingService.class.name)
-
     def sessionFactory
 
     private static List originalInterceptUrlMap
@@ -49,7 +47,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             reset()
             initialized = true
         } catch (Exception e) {
-            logger.error("Exception initializing; Error message is: { " + e.getMessage() + " }", e)
+            log.error("Exception initializing; Error message is: { " + e.getMessage() + " }", e)
         }
     }
 
@@ -66,7 +64,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             compileAndStoreMapping(iu)
         }
 
-        logger.debug("configs: $data")
+        log.debug("configs: $data")
     }
 
     /**
@@ -114,7 +112,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                 Holders.config.grails.plugin.springsecurity.interceptUrlMap?.add(iu)
                 data.add(iu)
             }else {
-                logger.error("Key is =$k and Value is =$v in invalid for interceptUrlMap.")
+                log.error("Key is =$k and Value is =$v in invalid for interceptUrlMap.")
             }
         }
         data
@@ -135,7 +133,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             //session = hibernateSessionFactory.openSession(dataSource.getSsbConnection())
             session = hibernateSessionFactory.openSession()
         } catch (e) {
-            logger.error('Exception creating Hibernate session;', e)
+            log.error('Exception creating Hibernate session;', e)
         }
         session
     }
@@ -187,7 +185,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                                 .list()
                     }
                     catch (e) {
-                        logger.error('Exception while executing the query with new Hibernate session;')
+                        log.error('Exception while executing the query with new Hibernate session;')
                     }
                     finally {
                       // session?.close()
@@ -198,7 +196,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                 interceptUrlMapFromDB= prepareMap(list)
             }
         } catch (e) {
-            logger.error("Exception in get list of GeneralPageRoleMapping", e)
+            log.error("Exception in get list of GeneralPageRoleMapping", e)
         }
         interceptUrlMapFromDB
     }
@@ -315,7 +313,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
 
             }
         } catch (Exception e) {
-            logger.error(e.getMessage())
+            log.error(e.getMessage())
         }
 
         isDataIsSeededForInterceptUrlMap = true
@@ -372,7 +370,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                 int initIndex = 0
                 if (preparedPageId?.size() > pageIdMaxSize) {
                     while (preparedPageId?.size() > pageIdMaxSize) {
-                        logger.warn("Prepared PageId to seed data for intercepturl is exceed the size(maxSize=${pageIdMaxSize}), " +
+                        log.warn("Prepared PageId to seed data for intercepturl is exceed the size(maxSize=${pageIdMaxSize}), " +
                                 "the full length of prepared url is : " + preparedPageId)
                         preparedPageId = preparedPageId?.minus(list?.get(initIndex)?.capitalize())
                         initIndex++
