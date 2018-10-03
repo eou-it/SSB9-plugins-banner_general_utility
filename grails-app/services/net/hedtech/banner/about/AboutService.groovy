@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
@@ -139,7 +139,10 @@ class AboutService {
     }*/
 
     private String getCopyright() {
-        getMessage("net.hedtech.banner.login.copyright1")
+        getMessage("default.copyright.startyear")
+                .concat(getMessage("default.copyright.endyear")
+                .concat(" ")
+                .concat(getMessage("default.copyright.message")))
     }
 
     private String getCopyrightLegalNotice() {
