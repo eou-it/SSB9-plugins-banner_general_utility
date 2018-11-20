@@ -4,9 +4,11 @@
 
 package net.hedtech.banner.general.configuration
 
+import grails.util.Holders
 import grails.util.Holders as CH
 import groovy.sql.Sql
 import net.hedtech.banner.controllers.ControllerUtils
+import net.hedtech.banner.db.dbutility.DBUtility
 import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
@@ -260,7 +262,14 @@ class ConfigPropertiesService extends ServiceBase {
         String decryptedValue
         try {
             if (encryptedValue) {
-                conn = dataSource.getSsbConnection()
+                def ssbEnabled = Holders.config.ssbEnabled instanceof Boolean ? Holders.config.ssbEnabled : false
+                if(ssbEnabled){
+                    conn = dataSource.getSsbConnection()
+                }
+                else
+                {
+                    conn = dataSource.getConnection()
+                }
                 Sql db = new Sql(conn)
                 db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
                     decryptedValue = y_string
