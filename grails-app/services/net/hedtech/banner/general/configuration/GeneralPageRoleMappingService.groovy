@@ -11,10 +11,8 @@ import grails.plugin.springsecurity.web.access.intercept.RequestmapFilterInvocat
 import grails.util.Holders
 import org.apache.commons.lang.WordUtils
 import org.hibernate.Session
+import org.hibernate.SessionBuilder
 import org.springframework.http.HttpMethod
-
-//import org.hibernate.classic.Session
-
 import org.springframework.util.StringUtils
 
 /**
@@ -130,8 +128,8 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             def ctx = Holders.grailsApplication.mainContext
             sessionFactory = Holders.grailsApplication.getMainContext().sessionFactory
             def hibernateSessionFactory = (!sessionFactory ? ctx.sessionFactory : sessionFactory)
-            //session = hibernateSessionFactory.openSession(dataSource.getSsbConnection())
-            session = hibernateSessionFactory.openSession()
+            SessionBuilder sb = hibernateSessionFactory.withOptions()
+            session = sb.connection(dataSource.getSsbConnection()).openSession()
         } catch (e) {
             log.error('Exception creating Hibernate session;', e)
         }
