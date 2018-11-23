@@ -4,11 +4,9 @@
 
 package net.hedtech.banner.general.configuration
 
-import grails.util.Holders
 import grails.util.Holders as CH
 import groovy.sql.Sql
 import net.hedtech.banner.controllers.ControllerUtils
-import net.hedtech.banner.db.dbutility.DBUtility
 import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger

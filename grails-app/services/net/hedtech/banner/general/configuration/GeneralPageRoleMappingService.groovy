@@ -9,7 +9,6 @@ import grails.plugin.springsecurity.ReflectionUtils
 import grails.plugin.springsecurity.web.access.intercept.RequestmapFilterInvocationDefinition
 import grails.transaction.Transactional
 import grails.util.Holders
-import net.hedtech.banner.db.dbutility.DBUtility
 import org.apache.commons.lang3.text.WordUtils
 import org.apache.log4j.Logger
 import org.hibernate.classic.Session
