@@ -262,14 +262,7 @@ class ConfigPropertiesService extends ServiceBase {
         String decryptedValue
         try {
             if (encryptedValue) {
-                def ssbEnabled = Holders.config.ssbEnabled instanceof Boolean ? Holders.config.ssbEnabled : false
-                if(ssbEnabled){
-                    conn = dataSource.getSsbConnection()
-                }
-                else
-                {
-                    conn = dataSource.getConnection()
-                }
+                conn = dataSource.getConnection()
                 Sql db = new Sql(conn)
                 db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
                     decryptedValue = y_string
