@@ -125,7 +125,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             def ctx = Holders.grailsApplication.mainContext
             sessionFactory = Holders.grailsApplication.getMainContext().sessionFactory
             def hibernateSessionFactory = (!sessionFactory ? ctx.sessionFactory : sessionFactory)
-            session = hibernateSessionFactory.openSession(dataSource.getSsbConnection())
+            session = hibernateSessionFactory.openSession(dataSource.getConnection())
         } catch (e) {
             logger.error('Exception creating Hibernate session;', e)
         }
