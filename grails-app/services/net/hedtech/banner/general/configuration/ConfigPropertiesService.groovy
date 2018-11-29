@@ -260,7 +260,7 @@ class ConfigPropertiesService extends ServiceBase {
         String decryptedValue
         try {
             if (encryptedValue) {
-                conn = dataSource.getSsbConnection()
+                conn = dataSource.getConnection()
                 Sql db = new Sql(conn)
                 db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
                     decryptedValue = y_string
