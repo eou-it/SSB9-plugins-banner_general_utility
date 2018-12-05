@@ -267,7 +267,7 @@ class ConfigPropertiesService extends ServiceBase {
                 }
             }
         }catch(Exception ex){
-            log.warn("Failed to decrypt the Encrypted text in ConfigPropertiesService.getDecryptedValue() with Exception-",ex)
+             log.info("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue()")
         }
         finally {
             conn?.close()
@@ -291,7 +291,7 @@ class ConfigPropertiesService extends ServiceBase {
                 }
             }
         } catch(Exception ex){
-            log.warn("Failed to encrypt in ConfigPropertiesService.getEncryptedValue() with Exception-", ex)
+            log.info("Failed to encrypt in ConfigPropertiesService.getEncryptedValue()")
         }
         finally {
             conn?.close()
