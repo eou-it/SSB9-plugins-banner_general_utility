@@ -260,13 +260,16 @@ class ConfigPropertiesService extends ServiceBase {
         String decryptedValue
         try {
             if (encryptedValue) {
-                conn = dataSource.getSsbConnection()
+                conn = dataSource.getConnection()
                 Sql db = new Sql(conn)
                 db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
                     decryptedValue = y_string
                 }
             }
-        } finally {
+        }catch(Exception ex){
+             log.info("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue()")
+        }
+        finally {
             conn?.close()
         }
         return decryptedValue
@@ -280,14 +283,17 @@ class ConfigPropertiesService extends ServiceBase {
         def conn
         String encryptedValue
         try {
-            conn = dataSource.getSsbConnection()
+            conn = dataSource.getConnection()
             Sql db = new Sql(conn)
             if (clearText) {
                 db.call(ENCRYPT_TEXT_FUNCTION, [clearText, Sql.VARCHAR]) { v_bdmPasswd ->
                     encryptedValue = v_bdmPasswd
                 }
             }
-        } finally {
+        } catch(Exception ex){
+            log.info("Failed to encrypt in ConfigPropertiesService.getEncryptedValue()")
+        }
+        finally {
             conn?.close()
         }
         return encryptedValue
