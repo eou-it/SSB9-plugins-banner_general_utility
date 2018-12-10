@@ -80,3 +80,7 @@ environments {
         }
     }
 }
+
+grails.config.locations = [
+        BANNER_APP_CONFIG: "banner_configuration.groovy"
+]
