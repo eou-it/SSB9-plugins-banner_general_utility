@@ -3,12 +3,16 @@
  *******************************************************************************/
 package net.hedtech.banner.i18n
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 
+@Integration
+@Rollback
 class ResourceBundleControllerIntegrationTests extends BaseIntegrationTestCase {
 
     def resourceBundleController

@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -12,6 +14,8 @@ import org.junit.Test
 /**
  * ConfigControllerEndpointPageIntegrationTests are used to test the ConfigControllerEndpointPage domain.
  */
+@Integration
+@Rollback
 class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCase {
 
     private def appName

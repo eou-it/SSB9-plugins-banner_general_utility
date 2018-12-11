@@ -3,7 +3,9 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Rollback
 import grails.plugin.springsecurity.InterceptedUrl
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -13,6 +15,8 @@ import org.junit.Test
 /**
  * Integration test cases for GeneralPageRoleMappingService.
  */
+@Integration
+@Rollback
 class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def generalPageRoleMappingService

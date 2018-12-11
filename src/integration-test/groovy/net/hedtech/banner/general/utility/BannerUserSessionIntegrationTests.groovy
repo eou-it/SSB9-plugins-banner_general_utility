@@ -4,6 +4,8 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 
 package net.hedtech.banner.general.utility
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.validation.ValidationException
 import groovy.sql.Sql
 import net.hedtech.banner.general.configuration.ConfigApplication
@@ -13,7 +15,8 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
-
+@Integration
+@Rollback
 class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
 
     public static final String GOTO_CURRENTLY_OPENED = "goto.currently.opened"

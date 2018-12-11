@@ -4,13 +4,16 @@ Copyright 2017 Ellucian Company L.P. and its affiliates.
  
 package net.hedtech.banner.general
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
-
+@Integration
+@Rollback
 class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	
 	@Before
