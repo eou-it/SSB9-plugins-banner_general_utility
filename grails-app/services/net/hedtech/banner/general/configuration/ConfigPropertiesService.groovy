@@ -258,12 +258,15 @@ class ConfigPropertiesService extends ServiceBase {
     public String getDecryptedValue(def encryptedValue) {
         def conn
         String decryptedValue
+        def ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
         try {
             if (encryptedValue) {
-                conn = dataSource.getConnection()
-                Sql db = new Sql(conn)
-                db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
-                    decryptedValue = y_string
+                if(ssbEnabled) {
+                    conn = dataSource.getSsbConnection()
+                    Sql db = new Sql(conn)
+                    db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
+                        decryptedValue = y_string
+                    }
                 }
             }
         }catch(Exception ex){
@@ -282,12 +285,15 @@ class ConfigPropertiesService extends ServiceBase {
     public String getEncryptedValue(String clearText) {
         def conn
         String encryptedValue
+        def ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
         try {
-            conn = dataSource.getConnection()
-            Sql db = new Sql(conn)
-            if (clearText) {
-                db.call(ENCRYPT_TEXT_FUNCTION, [clearText, Sql.VARCHAR]) { v_bdmPasswd ->
-                    encryptedValue = v_bdmPasswd
+            if(ssbEnabled) {
+                conn = dataSource.getSsbConnection()
+                Sql db = new Sql(conn)
+                if (clearText) {
+                    db.call(ENCRYPT_TEXT_FUNCTION, [clearText, Sql.VARCHAR]) { v_bdmPasswd ->
+                        encryptedValue = v_bdmPasswd
+                    }
                 }
             }
         } catch(Exception ex){
