@@ -3,6 +3,9 @@
  ****************************************************************************** */
 package net.hedtech.banner.supplemental
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import grails.util.GrailsWebMockUtil
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.test.ZipTest
@@ -10,21 +13,31 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.context.WebApplicationContext
+import org.springframework.web.context.request.RequestContextHolder
 
 import java.text.ParseException
 
 /**
  * Integration tests of the supplemental data service.
  */
+@Integration
+@Rollback
 class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
+
+    @Autowired
+    WebApplicationContext ctx
     def supplementalDataService        // injected by Spring
     private static final def log = Logger.getLogger('net.hedtech.banner.supplemental.SupplementalDataService')
 
     @Before
     public void setUp() {
+        GrailsWebMockUtil.bindMockWebRequest(ctx)
         formContext = ['GUAGMNU']
         super.setUp()
         updateGorsdamTableValidation()
@@ -36,6 +49,11 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
     public void tearDown() {
         log.setLevel(Level.OFF)
         super.tearDown()
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        RequestContextHolder.resetRequestAttributes()
     }
 
     /**

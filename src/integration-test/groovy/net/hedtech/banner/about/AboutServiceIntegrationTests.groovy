@@ -4,6 +4,8 @@
 
 package net.hedtech.banner.about
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -11,6 +13,8 @@ import org.junit.Before
 import org.junit.Test
 import org.springframework.context.i18n.LocaleContextHolder
 
+@Integration
+@Rollback
 class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     def aboutService
     def grailsApplication

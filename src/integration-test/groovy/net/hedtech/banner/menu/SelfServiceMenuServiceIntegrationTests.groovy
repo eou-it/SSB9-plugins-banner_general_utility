@@ -3,17 +3,29 @@
  *******************************************************************************/
 package net.hedtech.banner.menu
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import grails.util.GrailsWebMockUtil
 import grails.util.Holders
+import grails.web.context.ServletContextHolder
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.i18n.LocaleContextHolder
+import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.support.WebApplicationContextUtils
 
+@Integration
+@Rollback
 class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
+    @Autowired
+    WebApplicationContext ctx
     SelfServiceMenuService selfServiceMenuService
     def grailsApplication
     def dataSource
@@ -78,6 +90,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Before
     public void setUp() {
+        GrailsWebMockUtil.bindMockWebRequest(ctx)
         formContext = ['GUAGMNU']
         super.setUp()
         conn = dataSource.getSsbConnection()
@@ -119,6 +132,11 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         tearDownBanner8URL()
         tearDownBanner8LocaleSpecificURL()
         if (sql) sql?.close()
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        RequestContextHolder.resetRequestAttributes()
     }
 
 
@@ -659,11 +677,23 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
 
     private setMepCode(mepCode) {
-        RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep", mepCode)
+        def webRequest = RequestContextHolder.currentRequestAttributes().request
+        if(!webRequest) {
+            def servletContext  = ServletContextHolder.getServletContext()
+            def applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext)
+            webRequest =  grails.util.GrailsWebMockUtil.bindMockWebRequest(applicationContext)
+        }
+        webRequest?.session?.setAttribute("mep", mepCode)
     }
 
     private removeMepCode() {
-        RequestContextHolder.currentRequestAttributes()?.request?.session?.removeAttribute("mep")
+        def webRequest = RequestContextHolder.currentRequestAttributes().request
+        if(!webRequest) {
+            def servletContext  = ServletContextHolder.getServletContext()
+            def applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext)
+            webRequest =  grails.util.GrailsWebMockUtil.bindMockWebRequest(applicationContext)
+        }
+        webRequest?.session?.removeAttribute("mep")
     }
 
 }

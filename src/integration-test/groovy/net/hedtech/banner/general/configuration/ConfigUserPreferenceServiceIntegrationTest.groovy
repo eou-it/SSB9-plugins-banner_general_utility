@@ -4,6 +4,8 @@
 
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -14,6 +16,8 @@ import org.junit.Test
 /**
  * ConfigUserPreferenceServiceIntegrationTest.
  */
+@Integration
+@Rollback
 class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase {
 
     private def appName

@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.i18n
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 //import org.codehaus.groovy.grails.web.context.ServletContextHolder
@@ -14,6 +16,8 @@ import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertTrue
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 
+@Integration
+@Rollback
 class ResourceBundleServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def messageSource

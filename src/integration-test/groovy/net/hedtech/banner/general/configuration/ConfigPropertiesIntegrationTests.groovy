@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -13,6 +15,8 @@ import org.springframework.dao.QueryTimeoutException
 /**
  * ConfigPropertiesIntegrationTests are used to test the ConfigProperties domain.
  */
+@Integration
+@Rollback
 class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
 
     private def appName
