@@ -6,18 +6,28 @@ package net.hedtech.banner.general
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import grails.util.GrailsWebMockUtil
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
+import org.springframework.web.context.WebApplicationContext
+import org.springframework.web.context.request.RequestContextHolder
+
 @Integration
 @Rollback
 class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
+
+	@Autowired
+	WebApplicationContext ctx
 	
 	@Before
     public void setUp() {
+		GrailsWebMockUtil.bindMockWebRequest(ctx)
 		formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
 		super.setUp()
 	}
@@ -25,6 +35,11 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	@After
     public void tearDown() {
 		super.tearDown()
+	}
+
+	@AfterClass
+	public static void cleanUp() {
+		RequestContextHolder.resetRequestAttributes()
 	}
 
     @Test
