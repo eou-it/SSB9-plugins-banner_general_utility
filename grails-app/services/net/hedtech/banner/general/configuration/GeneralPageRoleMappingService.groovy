@@ -125,7 +125,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             def ctx = Holders.grailsApplication.mainContext
             sessionFactory = Holders.grailsApplication.getMainContext().sessionFactory
             def hibernateSessionFactory = (!sessionFactory ? ctx.sessionFactory : sessionFactory)
-            def ssbEnabled= Holders?.config?.ssbEnabled instanceof Boolean ? Holders?.config?.ssbEnabled : false
+            Boolean ssbEnabled= Holders?.config?.ssbEnabled instanceof Boolean ? Holders?.config?.ssbEnabled : false
             if(ssbEnabled) {
                 session = hibernateSessionFactory.openSession(dataSource.getSsbConnection())
             }

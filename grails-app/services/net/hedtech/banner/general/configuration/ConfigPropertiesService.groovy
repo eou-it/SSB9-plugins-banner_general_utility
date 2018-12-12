@@ -258,22 +258,22 @@ class ConfigPropertiesService extends ServiceBase {
     public String getDecryptedValue(def encryptedValue) {
         def conn
         String decryptedValue
-        def ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
-        try {
-            if (encryptedValue) {
-                if(ssbEnabled) {
+        Boolean ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
+        if(ssbEnabled) {
+            try {
+                if (encryptedValue) {
                     conn = dataSource.getSsbConnection()
                     Sql db = new Sql(conn)
                     db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
                         decryptedValue = y_string
                     }
                 }
+            } catch (Exception ex) {
+                log.info("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue()")
             }
-        }catch(Exception ex){
-             log.info("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue()")
-        }
-        finally {
-            conn?.close()
+            finally {
+                conn?.close()
+            }
         }
         return decryptedValue
     }
@@ -285,9 +285,10 @@ class ConfigPropertiesService extends ServiceBase {
     public String getEncryptedValue(String clearText) {
         def conn
         String encryptedValue
-        def ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
-        try {
-            if(ssbEnabled) {
+        Boolean ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
+        if(ssbEnabled) {
+            try {
+
                 conn = dataSource.getSsbConnection()
                 Sql db = new Sql(conn)
                 if (clearText) {
@@ -295,12 +296,12 @@ class ConfigPropertiesService extends ServiceBase {
                         encryptedValue = v_bdmPasswd
                     }
                 }
+            } catch (Exception ex) {
+                log.info("Failed to encrypt in ConfigPropertiesService.getEncryptedValue()")
             }
-        } catch(Exception ex){
-            log.info("Failed to encrypt in ConfigPropertiesService.getEncryptedValue()")
-        }
-        finally {
-            conn?.close()
+            finally {
+                conn?.close()
+            }
         }
         return encryptedValue
     }
