@@ -268,13 +268,18 @@ class ConfigPropertiesService extends ServiceBase {
                         decryptedValue = y_string
                     }
                 }
+
             } catch (Exception ex) {
-                log.info("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue()")
+                log.error("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue()")
             }
             finally {
                 conn?.close()
             }
         }
+        else{
+            log.info("Failed to decrypt the encrypted text type  as ssbEnabled flag is false")
+        }
+
         return decryptedValue
     }
 
@@ -288,7 +293,6 @@ class ConfigPropertiesService extends ServiceBase {
         Boolean ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
         if(ssbEnabled) {
             try {
-
                 conn = dataSource.getSsbConnection()
                 Sql db = new Sql(conn)
                 if (clearText) {
@@ -302,6 +306,9 @@ class ConfigPropertiesService extends ServiceBase {
             finally {
                 conn?.close()
             }
+        }
+        else{
+            log.info("Failed to encrypt the text as ssbEnabled flag is false")
         }
         return encryptedValue
     }
