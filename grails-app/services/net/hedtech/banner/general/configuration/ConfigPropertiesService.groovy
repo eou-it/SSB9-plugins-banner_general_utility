@@ -258,20 +258,28 @@ class ConfigPropertiesService extends ServiceBase {
     public String getDecryptedValue(def encryptedValue) {
         def conn
         String decryptedValue
-        try {
-            if (encryptedValue) {
-                conn = dataSource.getConnection()
-                Sql db = new Sql(conn)
-                db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
-                    decryptedValue = y_string
+        Boolean ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
+        if(ssbEnabled) {
+            try {
+                if (encryptedValue) {
+                    conn = dataSource.getSsbConnection()
+                    Sql db = new Sql(conn)
+                    db.call(DECRYPT_TEXT_FUNCTION, [Sql.VARCHAR, encryptedValue]) { y_string ->
+                        decryptedValue = y_string
+                    }
                 }
+
+            } catch (Exception ex) {
+                log.error("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue()")
             }
-        }catch(Exception ex){
-             log.info("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue()")
+            finally {
+                conn?.close()
+            }
         }
-        finally {
-            conn?.close()
+        else{
+            log.info("Failed to decrypt the encrypted text type  as ssbEnabled flag is false")
         }
+
         return decryptedValue
     }
 
@@ -282,19 +290,25 @@ class ConfigPropertiesService extends ServiceBase {
     public String getEncryptedValue(String clearText) {
         def conn
         String encryptedValue
-        try {
-            conn = dataSource.getConnection()
-            Sql db = new Sql(conn)
-            if (clearText) {
-                db.call(ENCRYPT_TEXT_FUNCTION, [clearText, Sql.VARCHAR]) { v_bdmPasswd ->
-                    encryptedValue = v_bdmPasswd
+        Boolean ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
+        if(ssbEnabled) {
+            try {
+                conn = dataSource.getSsbConnection()
+                Sql db = new Sql(conn)
+                if (clearText) {
+                    db.call(ENCRYPT_TEXT_FUNCTION, [clearText, Sql.VARCHAR]) { v_bdmPasswd ->
+                        encryptedValue = v_bdmPasswd
+                    }
                 }
+            } catch (Exception ex) {
+                log.info("Failed to encrypt in ConfigPropertiesService.getEncryptedValue()")
             }
-        } catch(Exception ex){
-            log.info("Failed to encrypt in ConfigPropertiesService.getEncryptedValue()")
+            finally {
+                conn?.close()
+            }
         }
-        finally {
-            conn?.close()
+        else{
+            log.info("Failed to encrypt the text as ssbEnabled flag is false")
         }
         return encryptedValue
     }
