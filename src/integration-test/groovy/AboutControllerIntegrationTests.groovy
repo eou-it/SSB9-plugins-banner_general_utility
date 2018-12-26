@@ -1,3 +1,4 @@
+
 /*******************************************************************************
  Copyright 2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
@@ -16,11 +17,14 @@ Integration Test cases for AboutController
 @Rollback
 class AboutControllerIntegrationTests extends BaseIntegrationTestCase {
 
+    def aboutService
+
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         controller = new AboutController()
+        controller.aboutService = aboutService
     }
 
     @After

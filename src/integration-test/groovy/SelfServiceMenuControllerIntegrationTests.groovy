@@ -5,10 +5,13 @@
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
+import net.hedtech.banner.menu.SelfServiceMenuService
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.beans.factory.annotation.Autowired
+
 
 @Integration
 @Rollback
@@ -17,6 +20,7 @@ class SelfServiceMenuControllerIntegrationTests extends BaseIntegrationTestCase{
     def menuName
     def menu
     def pidm
+    def selfServiceMenuService
 
     @Before
     public void setUp() {
@@ -24,6 +28,7 @@ class SelfServiceMenuControllerIntegrationTests extends BaseIntegrationTestCase{
         Holders.config.ssbEnabled = true
         Holders.config.banner.sso.authenticationProvider = "default";
         controller = new SelfServiceMenuController()
+        controller.selfServiceMenuService = selfServiceMenuService
         super.SSBSetUp("ESSREG02", "111111");
     }
 

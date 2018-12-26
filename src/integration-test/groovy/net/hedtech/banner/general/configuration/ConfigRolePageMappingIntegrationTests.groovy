@@ -24,7 +24,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
         super.setUp()
-        appName = Holders.grailsApplication.metadata['app.name']
+        appName = 'TESTAPP'
         appId = 'TESTAPP'
     }
 

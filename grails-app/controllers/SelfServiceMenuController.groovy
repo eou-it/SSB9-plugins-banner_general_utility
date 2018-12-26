@@ -15,7 +15,7 @@ class SelfServiceMenuController {
 
     def selfServiceMenuService
     def mnuLabel = "Banner"
-    //private static final def log = Logger.getLogger(getClass())
+
 
     def data = {
         def mnuParams

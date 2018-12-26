@@ -28,7 +28,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         super.setUp()
         pidm = getPidmBySpridenId("HOSH00001")
-        appName = Holders.grailsApplication.metadata['app.name']
+        appName = 'TESTAPP'
         appId = 'TESTAPP'
     }
 
