@@ -389,13 +389,28 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
 
     @Test
-    public void testGetDecryptedValue() {
+    public void testGetDecryptedValueWithSSbEnabledTrue() {
+        Boolean ssbEnabledFlag = CH?.config?.ssbEnabled
+        Holders.config.ssbEnabled = true
         def configApplication = createNewConfigApplication()
         createConfigProperties(configApplication, CONFIG_NAME_TESTAPP_PASSWORD, configPropertiesService.getEncryptedValue(CONFIG_VALUE_TESTAPP_PASSWORD), CONFIG_TYPE_CLEAR_TEXT)
         configPropertiesService.setConfigFromDb()
-        assertEquals CONFIG_VALUE_TESTAPP_PASSWORD, CH.config.get(CONFIG_NAME_TESTAPP_PASSWORD)
+        assertEquals CONFIG_VALUE_TESTAPP_PASSWORD,CH.config.get(CONFIG_NAME_TESTAPP_PASSWORD)
+        Holders.config.ssbEnabled = ssbEnabledFlag
+
     }
 
+    @Test
+    public void testGetDecryptedValueWithSSbEnabledFalse() {
+        Boolean ssbEnabledFlag = CH?.config?.ssbEnabled
+        Holders.config.ssbEnabled = false
+        def configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, CONFIG_NAME_TESTAPP_PASSWORD, configPropertiesService.getEncryptedValue(CONFIG_VALUE_TESTAPP_PASSWORD), CONFIG_TYPE_CLEAR_TEXT)
+        configPropertiesService.setConfigFromDb()
+        assertEquals '',CH.config.get(CONFIG_NAME_TESTAPP_PASSWORD)
+        Holders.config.ssbEnabled = ssbEnabledFlag
+
+    }
 
      @Test
      public void testGetEncryptedValueWithNoClearText() {

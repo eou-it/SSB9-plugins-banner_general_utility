@@ -121,7 +121,6 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
      * @return Session     Classic hibernate session.
      */
     protected Session getHibernateSession() {
-        //TODO The session imports for HIBERNATE HAS BEEN MODIFIED.
         Session session
         try {
             def dataSource = Holders.grailsApplication.mainContext.getBean('dataSource')
@@ -129,7 +128,13 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
             sessionFactory = Holders.grailsApplication.getMainContext().sessionFactory
             def hibernateSessionFactory = (!sessionFactory ? ctx.sessionFactory : sessionFactory)
             SessionBuilder sb = hibernateSessionFactory.withOptions()
-            session = sb.connection(dataSource.getSsbConnection()).openSession()
+            Boolean ssbEnabled= Holders?.config?.ssbEnabled instanceof Boolean ? Holders?.config?.ssbEnabled : false
+            if(ssbEnabled) {
+                session = sb.connection(dataSource.getSsbConnection()).openSession()
+            }
+            else{
+                session = sb.connection(dataSource.getConnection()).openSession()
+            }
         } catch (e) {
             log.error('Exception creating Hibernate session;', e)
         }
