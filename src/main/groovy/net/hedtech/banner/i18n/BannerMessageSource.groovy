@@ -3,27 +3,39 @@
  ******************************************************************************/
 package net.hedtech.banner.i18n
 
+
 import grails.util.CacheEntry
+import grails.util.Environment
+import grails.util.Holders
 import grails.util.Holders as CH
 import grails.util.Pair
-import grails.web.context.ServletContextHolder
+import groovy.util.logging.Slf4j
+import org.grails.io.support.Resource
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.grails.spring.context.support.ReloadableResourceBundleMessageSource.PropertiesHolder
-import org.grails.web.util.GrailsApplicationAttributes
-import org.springframework.core.io.Resource
 
 import java.text.MessageFormat
 import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
+@Slf4j
 class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 
-    static final String APPLICATION_PATH = 'WEB-INF/grails-app/i18n/'
+
+    static final String APPLICATION_PATH_DEV = "grails-app/i18n/"
+    static final String PLUGINS_PATH_DEV = "/plugins/"
+
+    static final String APPLICATION_PATH_PROD = "/WEB-INF/classes/"
+    static final String PLUGIN_PATH_PROD = "/WEB-INF/lib/"
+
+    private String messageBundleLocationPattern = "classpath*:messages.properties";
 
     ExternalMessageSource externalMessageSource
 
-    protected def basenamesExposed
+
+    protected List basenamesExposed = []
+    protected List pluginBaseNames = []
     private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> bannerCachedMergedPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
 
     LinkedHashMap normalizedNamesIndex
@@ -36,44 +48,66 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         }
     }
 
-    private def getBasenamesSuper(){
-        def result = []
-        // Don't like this but it is avoiding to scan the available resources again
-        def listStr = super.toString()
-        listStr = listStr.substring(listStr.indexOf('[')+1,listStr.lastIndexOf(']'))
-        def basenamesTemp = listStr.split(",")
-        basenamesTemp.each {
-            if ( it.startsWith(APPLICATION_PATH) ) {
-             result << it
+    private def setBaseNamesSuper(){
+        Resource[] resources;
+        resources  = new org.grails.io.support.PathMatchingResourcePatternResolver().getResources(messageBundleLocationPattern)
+
+        for (Resource resource : resources) {
+            String fileStr = resource.getURL().file.toString()
+            if(Environment.isDevelopmentEnvironmentAvailable()){
+                if(fileStr.contains(APPLICATION_PATH_DEV)) {
+                    basenamesExposed.add(fileStr)
+                } else {
+                    pluginBaseNames.add(fileStr)
+                }
+            } else {
+                if(fileStr.contains(APPLICATION_PATH_PROD)){ƒ
+                    basenamesExposed.add(fileStr)
+                } else {
+                    pluginBaseNames.add(fileStr)
+                }
             }
         }
-        result
+
     }
 
     private def initNormalizedIndex(){
 
         final String APPLICATION_PATH_NORM = 'application/'
-        final String PLUGINS_PATH = "/plugins/"
-        final String PLUGIN_APP_PATH = "grails-app/i18n/"
         normalizedNamesIndex = [:] as LinkedHashMap
-        basenamesExposed = getBasenamesSuper()
+
+        setBaseNamesSuper()
+
         basenamesExposed.each { basename ->
-            def norm = APPLICATION_PATH_NORM + basename.minus(APPLICATION_PATH)
+            def norm
+            if(Environment.isDevelopmentEnvironmentAvailable()) {
+                norm = APPLICATION_PATH_NORM + basename.minus(APPLICATION_PATH_DEV)
+            } else {
+                norm = APPLICATION_PATH_NORM + basename.minus(APPLICATION_PATH_PROD)
+            }
             normalizedNamesIndex[norm] = [source: this, basename: basename]
         }
         pluginBaseNames.each { basename ->
             def norm = basename.replace('\\','/')
-            norm = norm.substring(norm.indexOf(PLUGINS_PATH)+1)
-            norm = norm.minus(PLUGIN_APP_PATH)
-            norm = norm.replaceFirst(/-[0-9.]+/,"")
+            if(Environment.isDevelopmentEnvironmentAvailable()) {
+                norm = norm.substring(norm.indexOf(PLUGINS_PATH_DEV) + 1)
+                norm = norm.minus(PLUGINS_PATH_DEV)
+                norm = norm.replaceFirst(/-[0-9.]+/, "")
+            } else {
+                norm = norm.substring(norm.indexOf(PLUGIN_PATH_PROD) + 1)
+                norm = norm.minus(PLUGIN_PATH_PROD)
+                norm = norm.replaceFirst(/-[0-9.]+/, "")
+            }
             normalizedNamesIndex[norm.toString()] = [source: this, basename: basename]
         }
+
         if (externalMessageSource) {
             externalMessageSource.basenamesExposed.each { basename ->
                 def norm = "${externalMessageSource.bundleName}/$basename"
                 normalizedNamesIndex[norm] = [source: externalMessageSource, basename: basename]
             }
         }
+
     }
 
     public def getNormalizedNames(){
@@ -93,6 +127,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         if (!match) {
             return propertiesMerged // return empty properties
         }
+
         def basename = match.basename
         def fnames = match.source.calculateAllFilenames(basename, locale)
         logger.debug "getPropertiesForTM - Locale: $locale Basename: $basename"
@@ -126,8 +161,8 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     @Override
     protected String resolveCodeWithoutArguments(String code, Locale locale) {
         if (!textManagerService) {
-            textManagerService = ServletContextHolder.getServletContext()?.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)?.getBean("textManagerService")
-            }
+             textManagerService = Holders.grailsApplication.mainContext.getBean("textManagerService")
+        }
         String msg = textManagerService?.findMessage(code,getLocale(locale.toString()))
         if(msg == null) {
             msg = externalMessageSource?.resolveCodeWithoutArguments(code, locale)
@@ -142,8 +177,8 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     @Override
     protected MessageFormat resolveCode(String code, Locale locale) {
         if (!textManagerService) {
-            textManagerService = ServletContextHolder.getServletContext()?.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)?.getBean("textManagerService")
-            }
+             textManagerService = Holders.grailsApplication.mainContext.getBean("textManagerService")
+        }
         String msg = textManagerService?.findMessage(code,getLocale(locale.toString()))
         if(msg != null) {
             return new MessageFormat( msg )
@@ -217,7 +252,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     public void mergeTextManagerProperties( Locale locale, Properties props ) {
         Map entries = new LinkedHashMap()
         if (!textManagerService) {
-            textManagerService = ServletContextHolder.getServletContext()?.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)?.getBean("textManagerService")
+              textManagerService = Holders.grailsApplication.mainContext.getBean("textManagerService")
         }
         props.each  { key, _ ->
             String value = textManagerService?.findMessage(key, locale)
