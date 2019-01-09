@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -11,6 +13,8 @@ import org.junit.Before
 import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 
+@Integration
+@Rollback
 class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
 
     private def appName
@@ -20,7 +24,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
         super.setUp()
-        appName = Holders.grailsApplication.metadata['app.name']
+        appName = 'TESTAPP'
         appId = 'TESTAPP'
     }
 

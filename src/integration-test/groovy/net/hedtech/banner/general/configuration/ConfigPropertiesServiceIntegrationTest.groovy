@@ -4,6 +4,8 @@
 
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import grails.util.Holders as CH
 import groovy.sql.Sql
@@ -15,6 +17,8 @@ import groovy.sql.Sql
 /**
  * ConfigPropertiesServiceIntegrationTest.
  */
+@Integration
+@Rollback
 class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
     def configPropertiesService

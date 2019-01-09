@@ -4,17 +4,29 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 
 package net.hedtech.banner.general.utility
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import grails.util.GrailsWebMockUtil
 import grails.validation.ValidationException
 import groovy.sql.Sql
 import net.hedtech.banner.general.configuration.ConfigApplication
 import net.hedtech.banner.session.BannerUserSession
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
+import org.springframework.web.context.WebApplicationContext
+import org.springframework.web.context.request.RequestContextHolder
 
+@Integration
+@Rollback
 class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
+
+    @Autowired
+    WebApplicationContext ctx
 
     public static final String GOTO_CURRENTLY_OPENED = "goto.currently.opened"
     public static final String GLOBAL_START_DATE = "global.start.date"
@@ -34,6 +46,7 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
 
     @Before
     public void setUp() {
+        GrailsWebMockUtil.bindMockWebRequest(ctx)
         formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
         super.setUp()
     }
@@ -41,6 +54,11 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
     @After
     public void tearDown() {
         super.tearDown()
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        RequestContextHolder.resetRequestAttributes()
     }
 
     @Test

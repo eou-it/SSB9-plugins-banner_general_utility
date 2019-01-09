@@ -1,8 +1,5 @@
-//import net.hedtech.banner.configuration.ApplicationConfigurationUtils
-//TODO Add dependency on BannerCore and the import should be resolved.
-
 /*******************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 
@@ -15,7 +12,7 @@ grails.doc.license = '''Use of these materials is limited to Ellucian licensees,
                         |In preparing and providing this publication, Ellucian is not rendering legal, accounting, or other similar professional services. Ellucian makes no claims that an institution's use of this publication or the software for which it is provided will insure compliance with applicable federal or state laws, rules, or regulations. Each organization should seek legal, accounting and other similar professional services from competent providers of the organization’s own choosing.
                         |'''.stripMargin()
 
-grails.doc.copyright = '''© 2010-2012 Ellucian. All rights reserved.
+grails.doc.copyright = '''© 2010-2018 Ellucian. All rights reserved.
                           |Use of these materials is limited to Ellucian licensees, and is subject to the terms and conditions of one or more written license agreements between Ellucian and the licensee in question.
                           |In preparing and providing this publication, Ellucian is not rendering legal, accounting, or other similar professional services. Ellucian makes no claims that an institution's use of this publication or the software for which it is provided will insure compliance with applicable federal or state laws, rules, or regulations. Each organization should seek legal, accounting and other similar professional services from competent providers of the organization’s own choosing.
                           |'''.stripMargin()
@@ -31,11 +28,9 @@ grails.doc.alias.security   = "2.2 Application Security"
 grails.doc.alias.services   = "2.3 Services"
 grails.doc.alias.dev        = "3. Developer Guide"
 
-grails.config.locations = [] // leave this initialized to an empty list, and add your locations
-// in the APPLICATION CONFIGURATION section below.
-
-// TODO :grails_332_change, needs to revisit - Integration Test cases fixing
-
+grails.config.locations = [
+        BANNER_APP_CONFIG: "banner_configuration.groovy"
+]
 
 // Code Coverage configuration
 coverage {
@@ -48,9 +43,6 @@ privacy.codes = "INT NAV UNI"
 
 
 dataSource {
-    //TODO configClass - GrailsAnnotationConfiguration.Class in order to make use of annotation.
-    // TODO But Application.groovy (inside init) here by default extends GrailsAnnotationConfiguration So the configuration should go there somewhere.
-    //configClass = GrailsAnnotationConfiguration.class
     dialect = "org.hibernate.dialect.Oracle10gDialect"
     loggingSql = false
 }
@@ -59,7 +51,7 @@ dataSource {
 hibernate {
     cache.use_second_level_cache = false
     cache.use_query_cache = false
-    cache.region.factory_class = 'net.sf.ehcache.hibernate.EhCacheRegionFactory'
+    cache.region.factory_class = 'org.hibernate.cache.ehcache.EhCacheRegionFactory'
     config.location = [
             "classpath:hibernate-banner-general-utility.cfg.xml",
             "classpath:hibernate-banner-core.cfg.xml"

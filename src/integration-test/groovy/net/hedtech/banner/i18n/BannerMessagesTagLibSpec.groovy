@@ -4,8 +4,10 @@
 
 package net.hedtech.banner.i18n
 
-import grails.test.spock.IntegrationSpec
-import grails.test.mixin.TestFor
+//import grails.test.spock.IntegrationSpec
+//import grails.test.mixin.TestFor
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import spock.lang.Specification
 
 //class StubMessageSource extends BannerMessageSource {
@@ -19,7 +21,9 @@ import spock.lang.Specification
 // TODO: Have not found a way to call applyTemplate using the actual BannerMessageSource in these tests,
 // instead of the grails mock messageSource
 // For now, the tests in banner_ui_ss_testapp will have to suffice
-@TestFor(BannerMessagesTagLib) // allows applyLayout
+//@TestFor(BannerMessagesTagLib) // allows applyLayout
+@Integration
+@Rollback
 class BannerMessagesTagLibSpec extends Specification {
 
 //    def messageSource

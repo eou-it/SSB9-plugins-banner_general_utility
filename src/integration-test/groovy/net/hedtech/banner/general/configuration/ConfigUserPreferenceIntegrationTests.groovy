@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -13,6 +15,8 @@ import org.junit.Test
 /**
  * ConfigUserPreferenceIntegrationTests.
  */
+@Integration
+@Rollback
 class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
     Integer pidm
@@ -24,7 +28,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         super.setUp()
         pidm = getPidmBySpridenId("HOSH00001")
-        appName = Holders.grailsApplication.metadata['app.name']
+        appName = 'TESTAPP'
         appId = 'TESTAPP'
     }
 
