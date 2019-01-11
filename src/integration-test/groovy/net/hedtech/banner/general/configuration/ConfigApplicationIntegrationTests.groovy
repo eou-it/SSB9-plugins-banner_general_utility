@@ -28,7 +28,6 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase {
     WebApplicationContext ctx
     @Before
     public void setUp() {
-        GrailsWebMockUtil.bindMockWebRequest(ctx)
         formContext = ['GUAGMNU']
         super.setUp()
         appName = "TESTAPPNAME"
