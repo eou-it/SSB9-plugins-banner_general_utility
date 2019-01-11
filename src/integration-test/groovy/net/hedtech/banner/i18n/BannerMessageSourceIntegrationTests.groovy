@@ -5,6 +5,7 @@ package net.hedtech.banner.i18n
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
@@ -21,7 +22,7 @@ class StubbyTextManagerService {
 
 class BannerMessageSourceIntegrationTests extends BaseIntegrationTestCase {
 
-    def messageSource
+    def messageSource = Holders.grailsApplication.mainContext.getBean('messageSource')
     def externalLocation = 'target/i18n'
 
 

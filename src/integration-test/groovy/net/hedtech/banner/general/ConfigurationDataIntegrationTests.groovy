@@ -27,7 +27,6 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	
 	@Before
     public void setUp() {
-		GrailsWebMockUtil.bindMockWebRequest(ctx)
 		formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
 		super.setUp()
 	}
