@@ -1,8 +1,10 @@
 package banner.general.utility
 
+import grails.core.GrailsApplication
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.plugins.Plugin
 import net.hedtech.banner.general.configuration.GeneralPageRoleMappingService
+import net.hedtech.banner.i18n.BannerMessageSource
 
 class BannerGeneralUtilityGrailsPlugin extends Plugin {
 
@@ -29,6 +31,8 @@ class BannerGeneralUtilityGrailsPlugin extends Plugin {
     // URL to the plugin's documentation
     def documentation = ""
 
+
+
     // Extra (optional) plugin metadata
 
     // License: one of 'APACHE', 'GPL2', 'GPL3'
@@ -48,28 +52,26 @@ class BannerGeneralUtilityGrailsPlugin extends Plugin {
 
 
     Closure doWithSpring() { {->
-        // Reconfigure the messageSource to use BannerMessageSource
-        //TODO Grails 3 changes
-     /*   def beanConf = springConfig.getBeanConfig('messageSource')
-        def beanDef = beanConf ? beanConf.beanDefinition : springConfig.getBeanDefinition('messageSource')
-        if (beanDef?.beanClassName == PluginAwareResourceBundleMessageSource.class.canonicalName) {
-            //just change the target class of the bean, maintaining all configurations.
-            beanDef.beanClassName = BannerMessageSource.class.canonicalName
-        }*/
+            // Reconfigure the messageSource to use BannerMessageSource
+            GrailsApplication application = grailsApplication
+            messageSource(BannerMessageSource) { bean ->
+                application = application
+                pluginManager = pluginManager
+            }
 
-        /**
-         * If the securityConfigType = 'Requestmap' then the "GeneralPageRoleMappingService" will be get injected
-         * which extends "RequestmapFilterInvocationDefinition", this service will fetch the Requestmap from the
-         * DB and Config.groovy.
-         */
-        if (SpringSecurityUtils.securityConfigType == 'Requestmap') {
-            objectDefinitionSource(GeneralPageRoleMappingService) {
-                if (SpringSecurityUtils.securityConfig.rejectIfNoRule instanceof Boolean) {
-                    rejectIfNoRule = SpringSecurityUtils.securityConfig.rejectIfNoRule
+            /**
+             * If the securityConfigType = 'Requestmap' then the "GeneralPageRoleMappingService" will be get injected
+             * which extends "RequestmapFilterInvocationDefinition", this service will fetch the Requestmap from the
+             * DB and Config.groovy.
+             */
+            if (SpringSecurityUtils.securityConfigType == 'Requestmap') {
+                objectDefinitionSource(GeneralPageRoleMappingService) {
+                    if (SpringSecurityUtils.securityConfig.rejectIfNoRule instanceof Boolean) {
+                        rejectIfNoRule = SpringSecurityUtils.securityConfig.rejectIfNoRule
+                    }
                 }
             }
         }
-    }
     }
 
     void doWithDynamicMethods() {

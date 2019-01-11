@@ -74,11 +74,20 @@ class SelfServiceMenuController {
         return session[currentMenu]
     }
     private def setHideSSBHeaderCompsParam(def mnuList){
+        Boolean hideSSBHeader = false
+        if(session['hideSSBHeaderComps'] != null){
+            if(session['hideSSBHeaderComps'] instanceof Boolean){
+                hideSSBHeader = session['hideSSBHeaderComps']
+            } else{
+                def hideSSBHeaderValue = session['hideSSBHeaderComps'].trim()
+                hideSSBHeader = Boolean.parseBoolean(hideSSBHeaderValue)
+            }
+        }
         mnuList.eachWithIndex{ SelfServiceMenu,  i ->
             if(SelfServiceMenu.url.indexOf(MEPCODE)>-1 && session["mep"]!=null){
                 SelfServiceMenu.url=SelfServiceMenu.url.replace("{mepCode}", session["mep"])
             }
-            if(session['hideSSBHeaderComps']!=null && session['hideSSBHeaderComps'].trim()=='true'){
+            if(hideSSBHeader){
                 String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
                 SelfServiceMenu.url=SelfServiceMenu.url+symbol+hideSSBHeaderComps;
             }
