@@ -3,12 +3,14 @@
  ******************************************************************************/
 package net.hedtech.banner.i18n
 
+import grails.util.Holders
+
 
 class ResourceBundleService {
     static transactional = false //Transactions not managed by hibernate
 
     //Injected
-    def messageSource
+    def messageSource =  Holders.grailsApplication.mainContext.getBean('messageSource')
     def textManagerService
 
     def list() {

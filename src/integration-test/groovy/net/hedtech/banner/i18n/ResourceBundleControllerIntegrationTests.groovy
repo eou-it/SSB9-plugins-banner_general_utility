@@ -22,6 +22,7 @@ class ResourceBundleControllerIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         super.setUp()
         resourceBundleController = new ResourceBundleController()
+        resourceBundleController.resourceBundleService=new ResourceBundleService()
     }
 
     @After
