@@ -57,18 +57,8 @@ hibernate {
             "classpath:hibernate-banner-core.cfg.xml"
     ]
 }
-// environment specific settings
-environments {
-    development {
-        dataSource {
-        }
-    }
-    test {
-        dataSource {
-        }
-    }
-    production {
-        dataSource {
-        }
-    }
-}
+
+grails.config.locations = [
+        BANNER_APP_CONFIG: "banner_configuration.groovy"
+]
+

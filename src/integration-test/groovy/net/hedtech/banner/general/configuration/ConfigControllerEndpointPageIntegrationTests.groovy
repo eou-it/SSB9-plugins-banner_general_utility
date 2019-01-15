@@ -27,7 +27,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        appName = Holders.grailsApplication.metadata['app.name']
+        appName = Holders.grailsApplication.config.info.app.name
         appId = 'TESTAPP'
     }
 

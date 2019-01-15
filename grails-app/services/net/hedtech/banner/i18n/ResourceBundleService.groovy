@@ -3,6 +3,8 @@
  ******************************************************************************/
 package net.hedtech.banner.i18n
 
+import grails.util.Holders
+
 
 class ResourceBundleService {
     static transactional = false //Transactions not managed by hibernate

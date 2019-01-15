@@ -14,7 +14,7 @@ import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
+import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -24,11 +24,9 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase {
 
     private String appName
     private String appId
-    @Autowired
-    WebApplicationContext ctx
+
     @Before
     public void setUp() {
-        GrailsWebMockUtil.bindMockWebRequest(ctx)
         formContext = ['GUAGMNU']
         super.setUp()
         appName = "TESTAPPNAME"

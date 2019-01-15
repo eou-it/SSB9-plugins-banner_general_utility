@@ -9,6 +9,7 @@ import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.hibernate.SessionFactory
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -34,7 +35,9 @@ class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        appName = Holders.grailsApplication.metadata['app.name']
+        configUserPreferenceService = new ConfigUserPreferenceService()
+        configUserPreferenceService.sessionFactory = Holders.grailsApplication.getMainContext().sessionFactory
+        appName = Holders.grailsApplication.config.info.app.name
         appId = 'TESTAPP'
         pidm = getPidmBySpridenId("HOSH00002")
     }
