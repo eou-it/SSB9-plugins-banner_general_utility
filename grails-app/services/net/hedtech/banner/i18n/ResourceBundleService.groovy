@@ -10,7 +10,7 @@ class ResourceBundleService {
     static transactional = false //Transactions not managed by hibernate
 
     //Injected
-    def messageSource =  Holders.grailsApplication.mainContext.getBean('messageSource')
+    def messageSource
     def textManagerService
 
     def list() {

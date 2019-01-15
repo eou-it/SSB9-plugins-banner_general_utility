@@ -65,6 +65,16 @@ environments {
     }
     test {
         dataSource {
+            /*driverClassName = "${Holders.config.bannerSsbDataSource.driver}"
+            url = "${Holders.config.bannerSsbDataSource.url}"
+            password = "${Holders.config.bannerSsbDataSource.password}"
+            username = "${Holders.config.bannerSsbDataSource.username}"*/
+            driverClassName = "oracle.jdbc.OracleDriver"
+            url="jdbc:oracle:thin:@localhost:1521:ban83"
+            username="ban_ss_user"
+            password="u_pick_it"
+            dialect = "org.hibernate.dialect.Oracle10gDialect"
+            loggingSql = false
         }
     }
     production {

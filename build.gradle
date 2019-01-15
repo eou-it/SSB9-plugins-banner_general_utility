@@ -2,6 +2,7 @@ buildscript {
     repositories {
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://dl.bintray.com/goodstartgenetics/grails3-plugins/" }
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
@@ -50,6 +51,7 @@ dependencies {
     testCompile "org.grails:grails-gorm-testing-support"
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails:grails-web-testing-support"
+    compile 'org.grails.plugins:hibernate-filter-plugin:0.5.4'
 
     //Quartz
     compile 'org.grails.plugins:quartz:2.0.13'

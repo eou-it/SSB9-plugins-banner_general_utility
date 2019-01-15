@@ -99,6 +99,7 @@ class ResourceBundleServiceIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         Holders.config.ssbEnabled = true
+        messageSource =  Holders.grailsApplication.mainContext.getBean('messageSource')
         super.setUp();
         createProjectForApp('UNITTEST', 'Integration Test Banner General Utility')
     }
