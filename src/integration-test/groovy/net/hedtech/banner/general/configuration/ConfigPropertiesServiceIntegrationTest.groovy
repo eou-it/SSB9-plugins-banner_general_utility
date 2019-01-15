@@ -49,11 +49,11 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        ACTUALAPPNAME = Holders.grailsApplication.metadata['app.name']
-        Holders.grailsApplication.metadata['app.name'] = TESTAPP
-        ACTUALAPPID = Holders.grailsApplication.metadata['app.appId']
-        Holders.grailsApplication.metadata['app.appId'] = TESTAPP
-        appName = Holders.grailsApplication.metadata['app.name']
+        ACTUALAPPNAME = Holders.grailsApplication.config.info.app.name
+        Holders.grailsApplication.config.info.app.name = TESTAPP
+        ACTUALAPPID = Holders.grailsApplication.config.app.appId
+        Holders.grailsApplication.config.app.appId = TESTAPP
+        appName = Holders.grailsApplication.config.info.app.name
         appId = TESTAPP
         mergeSeedDataKeysIntoConfigForTest()
     }
@@ -61,7 +61,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     @After
     public void tearDown() {
         super.tearDown()
-        Holders.grailsApplication.metadata['app.name'] = ACTUALAPPNAME
+        Holders.grailsApplication.config.info.app.name = ACTUALAPPNAME
     }
 
     @Test

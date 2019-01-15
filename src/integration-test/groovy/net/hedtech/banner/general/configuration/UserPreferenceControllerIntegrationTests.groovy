@@ -15,11 +15,14 @@ import org.springframework.context.i18n.LocaleContextHolder
 @Rollback
 class UserPreferenceControllerIntegrationTests extends BaseIntegrationTestCase {
 
+    def controller
+
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         controller = new UserPreferenceController()
+        controller.configUserPreferenceService =  new ConfigUserPreferenceService()
         UserPreferenceController.metaClass.render = { Map map ->
             renderMap = map
         }

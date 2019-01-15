@@ -7,14 +7,13 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.test.ZipTest
+import net.hedtech.banner.supplemental.test.ZipTest
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.log4j.Logger
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
-
 import java.text.ParseException
 
 /**
@@ -25,6 +24,7 @@ import java.text.ParseException
 class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase {
     def supplementalDataSSBService        // injected by Spring
     private static final def log = Logger.getLogger(getClass())
+    def sessionFactory
 
     @Before
     public void setUp() {

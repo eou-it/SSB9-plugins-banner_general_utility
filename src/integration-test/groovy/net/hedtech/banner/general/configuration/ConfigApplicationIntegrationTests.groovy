@@ -24,8 +24,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase {
 
     private String appName
     private String appId
-    @Autowired
-    WebApplicationContext ctx
+
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']

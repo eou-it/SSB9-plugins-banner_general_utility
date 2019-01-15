@@ -8,7 +8,7 @@ import grails.testing.mixin.integration.Integration
 import grails.util.GrailsWebMockUtil
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.test.ZipTest
+import net.hedtech.banner.supplemental.test.ZipTest
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
@@ -30,14 +30,13 @@ import java.text.ParseException
 @Rollback
 class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
 
-    @Autowired
-    WebApplicationContext ctx
+
     def supplementalDataService        // injected by Spring
     private static final def log = Logger.getLogger('net.hedtech.banner.supplemental.SupplementalDataService')
+    def sessionFactory
 
     @Before
     public void setUp() {
-        GrailsWebMockUtil.bindMockWebRequest(ctx)
         formContext = ['GUAGMNU']
         super.setUp()
         updateGorsdamTableValidation()
