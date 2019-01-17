@@ -3,6 +3,8 @@
  ******************************************************************************/
 package net.hedtech.banner.i18n
 
+import org.springframework.context.i18n.LocaleContextHolder
+
 
 class ResourceBundleService {
     static transactional = false //Transactions not managed by hibernate
@@ -14,8 +16,11 @@ class ResourceBundleService {
     def list() {
         def result = []
         def id = 0 //Include a simple numeric counter as dummy id
-        messageSource.getNormalizedNames().each { basename ->
+        /*messageSource.getNormalizedNames().each { basename ->
             result << [ id: id++, basename: basename,  enableTranslation: false]
+        }*/
+        messageSource.mergeBinaryUploadPluginProperties(LocaleContextHolder.getLocale()).each{ basename, data ->
+            result << [ id: id++, basename: basename, json:data,  enableTranslation: false]
         }
         result.toList()
     }
@@ -38,8 +43,10 @@ class ResourceBundleService {
         List localeParts = localeString.split("_")
         localeParts << "" //Make sure the List has 2 entries at least
         Locale locale = new Locale(localeParts[0],localeParts[1])
+        messageSource.mergeBinaryUploadPluginProperties(locale)
+        def validJson = messageSource.propertiesMap.get(name)
         result = [basename: name, locale: localeString,
-                  properties: messageSource.getPropertiesByNormalizedName(name, locale)]
+                  properties: validJson?validJson:messageSource.getPropertiesByNormalizedName(name, locale)]
 
         result
     }

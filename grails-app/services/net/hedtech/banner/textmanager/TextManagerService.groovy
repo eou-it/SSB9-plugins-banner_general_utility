@@ -15,6 +15,7 @@ class TextManagerService {
 
     def underlyingDataSource
     def underlyingSsbDataSource
+    def grailsApplication
 
     private Object savePropLock= new Object();
 
@@ -37,7 +38,7 @@ class TextManagerService {
             return tranManProjectCache
         }
         Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
-        String appName = Holders.grailsApplication.metadata['app.name']
+        String appName = grailsApplication.config.info.app.name
         String result = ""
         int matches = 0
         try {
@@ -81,7 +82,7 @@ class TextManagerService {
             int cnt = 0
             synchronized (savePropLock){
             def textManagerDB = new TextManagerDB()
-            textManagerDB.createConnection()
+            textManagerDB.createConnection(sessionFactory)
 
             try {
                 String msg = """

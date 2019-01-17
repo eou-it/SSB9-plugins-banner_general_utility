@@ -4,6 +4,7 @@
 package net.hedtech.banner.i18n
 
 
+import grails.plugins.GrailsPlugin
 import grails.util.CacheEntry
 import grails.util.Environment
 import grails.util.Holders
@@ -11,8 +12,10 @@ import grails.util.Holders as CH
 import grails.util.Pair
 import groovy.util.logging.Slf4j
 import org.grails.io.support.Resource
+import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.grails.spring.context.support.ReloadableResourceBundleMessageSource.PropertiesHolder
+import org.grails.web.json.JSONArray
 
 import java.text.MessageFormat
 import java.util.concurrent.Callable
@@ -32,6 +35,8 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     private String messageBundleLocationPattern = "classpath*:messages.properties";
 
     ExternalMessageSource externalMessageSource
+
+    Map propertiesMap = new HashMap()
 
 
     protected List basenamesExposed = []
@@ -262,5 +267,35 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         }
         log.debug "mergeTextManagerProperties returning ${entries.size()}"
         props.putAll( entries )
+    }
+
+
+    public def mergeBinaryUploadPluginProperties(final Locale locale ) {
+        final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins()
+        for (GrailsPlugin plugin : allPlugins) {
+            if (plugin instanceof BinaryGrailsPlugin) {
+                BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
+                final Properties binaryPluginProperties = binaryPlugin.getProperties(locale)
+                if (binaryPluginProperties != null) {
+                    String path = plugin.getPluginPath()+"/messages"
+                    propertiesMap.put(path,binaryPluginProperties)
+                }
+            }
+        }
+        setBaseNamesSuper()
+        if(basenamesExposed.size()>0){
+            String file = basenamesExposed.get(0)
+            def loc = locale.toString();
+            def langSuffix = ( loc == "en" || loc == "root" ) ? "" : "_${loc}"
+            Properties properties = new Properties()
+            def fileName = "messages${langSuffix}.properties"
+            file = file.substring(0,file.lastIndexOf('/'))+"/${fileName}"
+            File propertiesFile = new File(file)
+            propertiesFile.withInputStream {
+                properties.load(it)
+            }
+            propertiesMap.put('i18n/messages',properties)
+        }
+        return propertiesMap
     }
 }
