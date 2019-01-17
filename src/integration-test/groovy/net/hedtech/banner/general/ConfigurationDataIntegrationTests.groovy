@@ -14,7 +14,7 @@ import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
+import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -27,7 +27,6 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	
 	@Before
     public void setUp() {
-		GrailsWebMockUtil.bindMockWebRequest(ctx)
 		formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
 		super.setUp()
 	}

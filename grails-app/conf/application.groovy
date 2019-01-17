@@ -28,15 +28,6 @@ grails.doc.alias.security   = "2.2 Application Security"
 grails.doc.alias.services   = "2.3 Services"
 grails.doc.alias.dev        = "3. Developer Guide"
 
-grails.config.locations = [
-        BANNER_APP_CONFIG: "banner_configuration.groovy"
-]
-
-// Code Coverage configuration
-coverage {
-    enabledByDefault = false
-}
-
 grails.views.default.codec="none" // none, html, base64
 grails.views.gsp.encoding="UTF-8"
 privacy.codes = "INT NAV UNI"
@@ -57,18 +48,8 @@ hibernate {
             "classpath:hibernate-banner-core.cfg.xml"
     ]
 }
-// environment specific settings
-environments {
-    development {
-        dataSource {
-        }
-    }
-    test {
-        dataSource {
-        }
-    }
-    production {
-        dataSource {
-        }
-    }
-}
+
+grails.config.locations = [
+        BANNER_APP_CONFIG: "banner_configuration.groovy"
+]
+

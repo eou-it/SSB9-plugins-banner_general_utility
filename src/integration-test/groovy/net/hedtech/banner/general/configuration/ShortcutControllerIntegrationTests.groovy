@@ -16,6 +16,7 @@ import org.junit.Test
 class ShortcutControllerIntegrationTests extends BaseIntegrationTestCase {
 
     GrailsApplication grailsApplication
+    def controller
 
     @Before
     public void setUp() {
