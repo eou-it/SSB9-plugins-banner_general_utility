@@ -4,7 +4,7 @@
 
 package net.hedtech.banner.textmanager
 
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 import org.springframework.transaction.annotation.Propagation
 import grails.util.Holders
 import groovy.sql.Sql
