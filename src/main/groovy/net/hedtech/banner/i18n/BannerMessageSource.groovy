@@ -4,6 +4,7 @@
 package net.hedtech.banner.i18n
 
 
+import grails.plugins.GrailsPlugin
 import grails.util.CacheEntry
 import grails.util.Environment
 import grails.util.Holders
@@ -11,8 +12,10 @@ import grails.util.Holders as CH
 import grails.util.Pair
 import groovy.util.logging.Slf4j
 import org.grails.io.support.Resource
+import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.grails.spring.context.support.ReloadableResourceBundleMessageSource.PropertiesHolder
+import org.grails.web.json.JSONArray
 
 import java.text.MessageFormat
 import java.util.concurrent.Callable
@@ -29,14 +32,16 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     static final String APPLICATION_PATH_PROD = "/WEB-INF/classes/"
     static final String PLUGIN_PATH_PROD = "/WEB-INF/lib/"
 
-    private String messageBundleLocationPattern = "classpath*:messages.properties";
+    private String messageBundleLocationPattern = "classpath*:messages.properties"
 
     ExternalMessageSource externalMessageSource
+
+    Map propertiesMap = new HashMap()
 
 
     protected List basenamesExposed = []
     protected List pluginBaseNames = []
-    private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> bannerCachedMergedPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
+    private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> bannerCachedMergedPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>()
 
     LinkedHashMap normalizedNamesIndex
 
@@ -49,7 +54,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     }
 
     private def setBaseNamesSuper(){
-        Resource[] resources;
+        Resource[] resources
         resources  = new org.grails.io.support.PathMatchingResourcePatternResolver().getResources(messageBundleLocationPattern)
 
         for (Resource resource : resources) {
@@ -214,18 +219,18 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
             @Override
             public PropertiesHolder call() throws Exception {
                 log.debug "PropertiesHolder call"
-                Properties mergedProps = new Properties();
-                PropertiesHolder mergedHolder = new PropertiesHolder(self, mergedProps);
-                mergeBinaryPluginProperties(locale, mergedProps);
+                Properties mergedProps = new Properties()
+                PropertiesHolder mergedHolder = new PropertiesHolder(self, mergedProps)
+                mergeBinaryPluginProperties(locale, mergedProps)
                 log.debug "After mergeBinary: ${mergedProps.size()}"
 
                 for (String basename : pluginBaseNames) {
-                    List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(basename, locale);
+                    List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(basename, locale)
                     for (int j = filenamesAndResources.size() - 1; j >= 0; j--) {
-                        Pair<String, Resource> filenameAndResource = filenamesAndResources.get(j);
+                        Pair<String, Resource> filenameAndResource = filenamesAndResources.get(j)
                         if(filenameAndResource.getbValue() != null) {
-                            PropertiesHolder propHolder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue());
-                            mergedProps.putAll(propHolder.getProperties());
+                            PropertiesHolder propHolder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue())
+                            mergedProps.putAll(propHolder.getProperties())
                         }
                     }
                 }
@@ -238,11 +243,11 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
                 log.debug "After get application resources loop: ${mergedProps.size()}"
 
 
-                mergeTextManagerProperties(locale, mergedProps);
+                mergeTextManagerProperties(locale, mergedProps)
                 log.debug "After mergeTextManager: ${mergedProps.size()}}"
-                return mergedHolder;
+                return mergedHolder
             }
-        });
+        })
         return entry
     }
 
@@ -262,5 +267,35 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         }
         log.debug "mergeTextManagerProperties returning ${entries.size()}"
         props.putAll( entries )
+    }
+
+
+    public def mergeBinaryUploadPluginProperties(final Locale locale ) {
+        final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins()
+        for (GrailsPlugin plugin : allPlugins) {
+            if (plugin instanceof BinaryGrailsPlugin) {
+                BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin
+                final Properties binaryPluginProperties = binaryPlugin.getProperties(locale)
+                if (binaryPluginProperties != null) {
+                    String path = plugin.getPluginPath()+"/messages"
+                    propertiesMap.put(path,binaryPluginProperties)
+                }
+            }
+        }
+        setBaseNamesSuper()
+        if(basenamesExposed.size()>0){
+            String file = basenamesExposed.get(0)
+            def loc = locale.toString()
+            def langSuffix = ( loc == "en" || loc == "root" ) ? "" : "_${loc}"
+            Properties properties = new Properties()
+            def fileName = "messages${langSuffix}.properties"
+            file = file.substring(0,file.lastIndexOf('/'))+"/${fileName}"
+            File propertiesFile = new File(file)
+            propertiesFile.withInputStream {
+                properties.load(it)
+            }
+            propertiesMap.put('i18n/messages',properties)
+        }
+        return propertiesMap
     }
 }
