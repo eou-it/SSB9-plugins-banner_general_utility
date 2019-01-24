@@ -42,9 +42,8 @@ class TextManagerDB {
         }
     }
 
-    public createConnection (){
-        def ctx = CH.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
-        def sessionFactory = ctx.sessionFactory
+    public createConnection (sessionFactory){
+        /*ApplicationContext ctx= Holders.getGrailsApplication().getMainContext() -- for future reference*/
         sql = new Sql(sessionFactory.getCurrentSession().connection())
     }
 
