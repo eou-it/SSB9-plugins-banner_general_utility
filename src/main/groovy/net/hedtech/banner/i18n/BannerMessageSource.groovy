@@ -286,16 +286,32 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         if(basenamesExposed.size()>0){
             String file = basenamesExposed.get(0)
             def loc = locale.toString()
-            def langSuffix = ( loc == "en" || loc == "root" ) ? "" : "_${loc}"
+            def langSuffix = ( loc.contains("en") || loc == "root" ) ? "" : "_${loc}"
             Properties properties = new Properties()
             def fileName = "messages${langSuffix}.properties"
             file = file.substring(0,file.lastIndexOf('/'))+"/${fileName}"
-            File propertiesFile = new File(file)
-            propertiesFile.withInputStream {
-                properties.load(it)
+            File propertiesFile=checkFileExists(file)
+            if(propertiesFile) {
+                propertiesFile.withInputStream {
+                    properties.load(it)
+                }
+                propertiesMap.put('i18n/messages', properties)
             }
-            propertiesMap.put('i18n/messages',properties)
         }
         return propertiesMap
+    }
+
+    private checkFileExists(file) {
+        File defaultFile = new File(file)
+        if(defaultFile.exists()){
+            return defaultFile
+        }else{
+            file = file.substring(0,file.lastIndexOf('/'))+"/messages.properties"
+            defaultFile = new File(file)
+            if(defaultFile.exists()){
+                return defaultFile
+            }else
+                return null
+        }
     }
 }
