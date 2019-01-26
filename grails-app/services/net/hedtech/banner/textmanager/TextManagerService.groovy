@@ -4,12 +4,12 @@
 
 package net.hedtech.banner.textmanager
 
-import grails.gorm.transactions.Transactional
-import org.springframework.transaction.annotation.Propagation
+import groovy.util.logging.Slf4j
 import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.log4j.Logger
 
+@Slf4j
 class TextManagerService {
     def sessionFactory
 
@@ -38,7 +38,7 @@ class TextManagerService {
             return tranManProjectCache
         }
         Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
-        String appName = grailsApplication.config.info.app.name
+        String appName = grailsApplication.config.getProperty('app.name')
         String result = ""
         int matches = 0
         try {
@@ -53,6 +53,7 @@ class TextManagerService {
                 result = row.GMRPCFG_PROJECT
                 matches++
             }
+
         } catch (e) {
             log.error("Error initializing text manager", e)
             tmEnabled = false
@@ -71,8 +72,6 @@ class TextManagerService {
         result
     }
 
-
-    @Transactional
     def save(properties, name, srcLocale = ROOT_LOCALE_APP, locale) {
         if (!tmEnabled) {
             return

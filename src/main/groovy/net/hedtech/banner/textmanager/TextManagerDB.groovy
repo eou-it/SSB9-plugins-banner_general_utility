@@ -5,10 +5,11 @@ package net.hedtech.banner.textmanager
 
 import grails.util.Holders as CH
 import groovy.sql.Sql
-import org.apache.log4j.Logger
+import groovy.util.logging.Slf4j
 import org.grails.web.util.GrailsApplicationAttributes
 import java.sql.SQLException
 
+@Slf4j
 class TextManagerDB {
     def dataSource
     Sql sql
@@ -20,7 +21,6 @@ class TextManagerDB {
     String moduleType
     String moduleName*/
 
-    private static final def log = Logger.getLogger(TextManagerDB.class.name)
 
     static class ObjectProperty {
         String langCode
