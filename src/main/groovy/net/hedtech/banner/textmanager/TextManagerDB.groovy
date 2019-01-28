@@ -1,12 +1,15 @@
 /******************************************************************************
- *  Copyright 2017 Ellucian Company L.P. and its affiliates.                  *
+ *  Copyright 2017-2019 Ellucian Company L.P. and its affiliates.                  *
  ******************************************************************************/
 package net.hedtech.banner.textmanager
 
+import grails.util.Holders
 import grails.util.Holders as CH
 import groovy.sql.Sql
 import groovy.util.logging.Slf4j
 import org.grails.web.util.GrailsApplicationAttributes
+import org.springframework.context.ApplicationContext
+
 import java.sql.SQLException
 
 @Slf4j
@@ -42,8 +45,9 @@ class TextManagerDB {
         }
     }
 
-    public createConnection (sessionFactory){
-        /*ApplicationContext ctx= Holders.getGrailsApplication().getMainContext() -- for future reference*/
+    public createConnection (){
+        ApplicationContext ctx= Holders.getGrailsApplication().getMainContext()
+        def sessionFactory = ctx.sessionFactory
         sql = new Sql(sessionFactory.getCurrentSession().connection())
     }
 

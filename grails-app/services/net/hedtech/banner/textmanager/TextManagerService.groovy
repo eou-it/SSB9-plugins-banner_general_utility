@@ -1,5 +1,5 @@
 /******************************************************************************
- *  Copyright 2017-2018 Ellucian Company L.P. and its affiliates.                  *
+ *  Copyright 2017-2019 Ellucian Company L.P. and its affiliates.                  *
  ******************************************************************************/
 
 package net.hedtech.banner.textmanager
@@ -17,7 +17,6 @@ class TextManagerService {
     def underlyingSsbDataSource
     def grailsApplication
 
-    private Object savePropLock= new Object();
 
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
     // Save the chosen source language as root (as user cannot change translation)
@@ -79,9 +78,8 @@ class TextManagerService {
         def project = tranManProject()
         if (project) {
             int cnt = 0
-            synchronized (savePropLock){
             def textManagerDB = new TextManagerDB()
-            textManagerDB.createConnection(sessionFactory)
+            textManagerDB.createConnection()
 
             try {
                 String msg = """
@@ -147,7 +145,7 @@ class TextManagerService {
             }finally{
                 textManagerDB.closeConnection()
             }
-            }
+
             return [error: null, count: cnt]
         }
         return [error: "Unable to save - no Project configured", count: 0]

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2013-2017 Ellucian Company L.P. and its affiliates.
+ * Copyright 2013-2019 Ellucian Company L.P. and its affiliates.
  ******************************************************************************/
 package net.hedtech.banner.i18n
 
@@ -46,7 +46,6 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     LinkedHashMap normalizedNamesIndex
 
     def textManagerService
-    private Object savePropLock= new Object();
 
     public def setExternalMessageSource(messageSource){
         if (messageSource) {
@@ -83,7 +82,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         normalizedNamesIndex = [:] as LinkedHashMap
 
         setBaseNamesSuper()
-        synchronized (savePropLock) {
+
         basenamesExposed.each { basename ->
             def norm
             if(Environment.isDevelopmentEnvironmentAvailable()) {
@@ -113,7 +112,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
                 normalizedNamesIndex[norm] = [source: externalMessageSource, basename: basename]
             }
         }
-        }
+
 
     }
 
