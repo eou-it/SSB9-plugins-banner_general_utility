@@ -79,8 +79,8 @@ class TextManagerService {
         if (project) {
             int cnt = 0
             def textManagerDB = new TextManagerDB()
-            textManagerDB.createConnection()
 
+            synchronized (textManagerDB.createConnection()) {
             try {
                 String msg = """
                                 Arguments: mo=<mode> ba=<batch> lo=<db logon> pc=<TranMan Project> sl=<source language>
@@ -144,6 +144,7 @@ class TextManagerService {
                 log.error("Exception in saving properties", e)
             }finally{
                 textManagerDB.closeConnection()
+            }
             }
 
             return [error: null, count: cnt]
