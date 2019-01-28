@@ -17,6 +17,7 @@ class TextManagerService {
     def underlyingSsbDataSource
     def grailsApplication
 
+    private Object savePropLock= new Object();
 
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
     // Save the chosen source language as root (as user cannot change translation)
@@ -52,7 +53,6 @@ class TextManagerService {
                 result = row.GMRPCFG_PROJECT
                 matches++
             }
-
         } catch (e) {
             log.error("Error initializing text manager", e)
             tmEnabled = false
@@ -78,9 +78,11 @@ class TextManagerService {
         def project = tranManProject()
         if (project) {
             int cnt = 0
+            synchronized (savePropLock){
             def textManagerDB = new TextManagerDB()
-
-            synchronized (textManagerDB.createConnection()) {
+            /*textManagerDB.createConnection(sessionFactory)*/
+            Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
+            textManagerDB.sql = sql
             try {
                 String msg = """
                                 Arguments: mo=<mode> ba=<batch> lo=<db logon> pc=<TranMan Project> sl=<source language>
@@ -143,10 +145,13 @@ class TextManagerService {
             } catch (e){
                 log.error("Exception in saving properties", e)
             }finally{
-                textManagerDB.closeConnection()
+                //textManagerDB.closeConnection()
+                if ( sql) {
+                    sql.commit();
+                    sql.close();
+                }
             }
             }
-
             return [error: null, count: cnt]
         }
         return [error: "Unable to save - no Project configured", count: 0]
