@@ -10,6 +10,8 @@ import groovy.sql.Sql
 import org.apache.log4j.Logger
 import org.springframework.context.ApplicationContext
 
+import java.sql.SQLException
+
 @Slf4j
 class TextManagerService {
     def sessionFactory
@@ -77,11 +79,11 @@ class TextManagerService {
             return
         }
         def project = tranManProject()
+        Sql sql
         if (project) {
             int cnt = 0
-            synchronized (savePropLock) {
-                def textManagerDB = new TextManagerDB()
-
+            def textManagerDB = new TextManagerDB()
+            synchronized (textManagerDB) {
                 try {
                     String msg = """
                                 Arguments: mo=<mode> ba=<batch> lo=<db logon> pc=<TranMan Project> sl=<source language>
@@ -110,6 +112,10 @@ class TextManagerService {
                             log.error "No target language specified (tgtLocale=...) \n" + msg
                         }
                     }
+                    /*ApplicationContext ctx= Holders.getGrailsApplication().getMainContext()
+                    def sessionFactory = ctx.sessionFactory
+                    sql = new Sql(sessionFactory.getCurrentSession().connection())
+                    textManagerDB.sql=sql*/
                     textManagerDB.createConnection()
                     textManagerDB.setDBContext(dbValues)
                     textManagerDB.setDefaultProp(dbValues)
@@ -142,6 +148,10 @@ class TextManagerService {
                 } catch (e) {
                     log.error("Exception in saving properties", e)
                 } finally {
+                    /*if ( sql) {
+                        sql.commit();
+                        sql.close();
+                    }*/
                     textManagerDB.closeConnection()
                 }
             }
