@@ -112,18 +112,15 @@ class TextManagerService {
                             log.error "No target language specified (tgtLocale=...) \n" + msg
                         }
                     }
-                    /*ApplicationContext ctx= Holders.getGrailsApplication().getMainContext()
-                    def sessionFactory = ctx.sessionFactory
-                    sql = new Sql(sessionFactory.getCurrentSession().connection())
-                    textManagerDB.sql=sql*/
-                    textManagerDB.createConnection()
+                    sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
+                    textManagerDB.sql=sql
                     textManagerDB.setDBContext(dbValues)
                     textManagerDB.setDefaultProp(dbValues)
                     def defaultObjectProp = textManagerDB.getDefaultObjectProp()
                     final String sep = "."
                     int sepLoc
 
-                    properties.eachWithIndex() { property, i ->
+                properties.each { property ->
                         sepLoc = 0
                         String key = property.key
                         String value = property.value
@@ -137,23 +134,20 @@ class TextManagerService {
                         log.info key + " = " + defaultObjectProp.string
                         textManagerDB.setPropString(defaultObjectProp)
                         cnt++
-                        if(i==properties.size()-1){
-                            //Invalidate strings that are in db but not in property file
-                            if (dbValues.srcIndicator.equals("s")) {
-                                textManagerDB.invalidateStrings(dbValues)
-                            }
-                            textManagerDB.setModuleRecord(dbValues)
-                        }
-                    }
+                }
+                //Invalidate strings that are in db but not in property file
+                if (dbValues.srcIndicator.equals("s")) {
+                    textManagerDB.invalidateStrings(dbValues)
+                }
+                textManagerDB.setModuleRecord(dbValues)
 
                 } catch (e) {
                     log.error("Exception in saving properties", e)
                 } finally {
-                    /*if ( sql) {
-                        sql.commit();
-                        sql.close();
-                    }*/
-                    textManagerDB.closeConnection()
+                    if ( textManagerDB.sql) {
+                        textManagerDB.sql.commit();
+                        textManagerDB.sql.close();
+                    }
                 }
             }
             return [error: null, count: cnt]
