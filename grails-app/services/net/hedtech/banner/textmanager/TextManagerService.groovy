@@ -18,6 +18,7 @@ class TextManagerService {
     def underlyingSsbDataSource
     def grailsApplication
 
+    private Object savePropLock= new Object()
 
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
     // Save the chosen source language as root (as user cannot change translation)
@@ -78,69 +79,71 @@ class TextManagerService {
         def project = tranManProject()
         if (project) {
             int cnt = 0
-            def textManagerDB = new TextManagerDB()
+            synchronized (savePropLock) {
+                def textManagerDB = new TextManagerDB()
 
-            try {
-                String msg = """
+                try {
+                    String msg = """
                                 Arguments: mo=<mode> ba=<batch> lo=<db logon> pc=<TranMan Project> sl=<source language>
                                 tl=<target language>  sf=<source file> tf=<target file>
                                 mode: s (extract) | r (reverse extract) | t (translate) | q (quick translate - no check)
                                 batch: [y|n]. n (No) is default. If y (Yes), the module record will be updated with
                                 file locations etc.
                              """
-                dbValues.projectCode = project
-                dbValues.moduleName =  name.toUpperCase()
-                dbValues.srcLocale =  ROOT_LOCALE_TM
-                dbValues.srcFile = locale == ROOT_LOCALE_APP ? "${name}.properties" : "${name}_${locale}.properties"
-                dbValues.srcIndicator = locale == srcLocale ? 's' : 'r'
-                dbValues.tgtLocale = locale == srcLocale ? '' : "${locale.replace('_','')}"
-                if (dbValues.srcIndicator == null) {
-                    dbValues << [srcIndicator:"s"]
-                } else if (dbValues.srcIndicator.equals("t")) {
-                    if (dbValues.tgtFile == null) {
-                        log.error "No target file specified (tgtFile=...) \n" + msg
+                    dbValues.projectCode = project
+                    dbValues.moduleName = name.toUpperCase()
+                    dbValues.srcLocale = ROOT_LOCALE_TM
+                    dbValues.srcFile = locale == ROOT_LOCALE_APP ? "${name}.properties" : "${name}_${locale}.properties"
+                    dbValues.srcIndicator = locale == srcLocale ? 's' : 'r'
+                    dbValues.tgtLocale = locale == srcLocale ? '' : "${locale.replace('_', '')}"
+                    if (dbValues.srcIndicator == null) {
+                        dbValues << [srcIndicator: "s"]
+                    } else if (dbValues.srcIndicator.equals("t")) {
+                        if (dbValues.tgtFile == null) {
+                            log.error "No target file specified (tgtFile=...) \n" + msg
+                        }
+                        if (dbValues.tgtLocale == null) {
+                            log.error "No target language specified (tgtLocale=...) \n" + msg
+                        }
+                    } else if (dbValues.srcIndicator.equals("r")) {
+                        if (dbValues.tgtLocale == null) {
+                            log.error "No target language specified (tgtLocale=...) \n" + msg
+                        }
                     }
-                    if (dbValues.tgtLocale == null) {
-                        log.error "No target language specified (tgtLocale=...) \n" + msg
-                    }
-                } else if (dbValues.srcIndicator.equals("r")) {
-                    if (dbValues.tgtLocale == null) {
-                        log.error "No target language specified (tgtLocale=...) \n" + msg
-                    }
-                }
-                textManagerDB.createConnection()
-                textManagerDB.setDBContext(dbValues)
-                textManagerDB.setDefaultProp(dbValues)
-                def defaultObjectProp = textManagerDB.getDefaultObjectProp()
-                final String sep = "."
-                int sepLoc
+                    textManagerDB.createConnection()
+                    textManagerDB.setDBContext(dbValues)
+                    textManagerDB.setDefaultProp(dbValues)
+                    def defaultObjectProp = textManagerDB.getDefaultObjectProp()
+                    final String sep = "."
+                    int sepLoc
 
-                properties.each { property ->
-                    sepLoc = 0
-                    String key = property.key
-                    String value = property.value
-                    sepLoc = key.lastIndexOf(sep)
-                    if (sepLoc == -1) {
+                    properties.each { property ->
                         sepLoc = 0
+                        String key = property.key
+                        String value = property.value
+                        sepLoc = key.lastIndexOf(sep)
+                        if (sepLoc == -1) {
+                            sepLoc = 0
+                        }
+                        defaultObjectProp.parentName = sep + key.substring(0, sepLoc) //. plus expression between brackets in [x.y...].z
+                        defaultObjectProp.objectName = key.substring(sepLoc)       // expression between brackets in x.y....[z]
+                        defaultObjectProp.string = smartQuotesReplace(value)
+                        log.info key + " = " + defaultObjectProp.string
+                        textManagerDB.setPropString(defaultObjectProp)
+                        cnt++
                     }
-                    defaultObjectProp.parentName = sep + key.substring(0, sepLoc) //. plus expression between brackets in [x.y...].z
-                    defaultObjectProp.objectName = key.substring(sepLoc)       // expression between brackets in x.y....[z]
-                    defaultObjectProp.string = smartQuotesReplace(value)
-                    log.info key + " = " + defaultObjectProp.string
-                    textManagerDB.setPropString(defaultObjectProp)
-                    cnt++
-                }
 
-                //Invalidate strings that are in db but not in property file
-                if (dbValues.srcIndicator.equals("s")) {
+                    //Invalidate strings that are in db but not in property file
+                    if (dbValues.srcIndicator.equals("s")) {
                         textManagerDB.invalidateStrings(dbValues)
-                }
-                textManagerDB.setModuleRecord(dbValues)
+                    }
+                    textManagerDB.setModuleRecord(dbValues)
 
-            } catch (e){
-                log.error("Exception in saving properties", e)
-            }finally{
-                textManagerDB.closeConnection()
+                } catch (e) {
+                    log.error("Exception in saving properties", e)
+                } finally {
+                    textManagerDB.closeConnection()
+                }
             }
             return [error: null, count: cnt]
         }
