@@ -58,31 +58,31 @@ class ResourceBundleService {
         def count = 0
         //Save the Source Locale first
         def properties = get(name, sourceLocale).properties
-        if (textManagerService) {
-            status = textManagerService.save(properties, name, sourceLocale, sourceLocale)
-        } else {// Return mock status for testing
-            status = [error: null, count: 1, mock: true]
-        }
-        if (status.error) {
-            errors = "$errors ${status.error}\n"
-        } else {
-            count += status.count
-        }
-        locales.each{ locale ->
-            if (locale.enabled && sourceLocale != locale.code) {
-                properties = get(name, locale.code).properties
-                if (textManagerService) {
-                    status = textManagerService.save(properties, name, sourceLocale, locale.code)
-                } else {// Return mock status for testing
-                    status = [error: null, count: 1, mock: true]
-                }
-                if (status.error) {
-                    errors = "$errors ${status.error}\n"
-                } else {
-                    count += status.count
+            if (textManagerService) {
+                status = textManagerService.save(properties, name, sourceLocale, sourceLocale)
+            } else {// Return mock status for testing
+                status = [error: null, count: 1, mock: true]
+            }
+            if (status.error) {
+                errors = "$errors ${status.error}\n"
+            } else {
+                count += status.count
+            }
+            locales.each { locale ->
+                if (locale.enabled && sourceLocale != locale.code) {
+                    properties = get(name, locale.code).properties
+                    if (textManagerService) {
+                        status = textManagerService.save(properties, name, sourceLocale, locale.code)
+                    } else {// Return mock status for testing
+                        status = [error: null, count: 1, mock: true]
+                    }
+                    if (status.error) {
+                        errors = "$errors ${status.error}\n"
+                    } else {
+                        count += status.count
+                    }
                 }
             }
-        }
         [error: errors, count: count]
     }
 }
