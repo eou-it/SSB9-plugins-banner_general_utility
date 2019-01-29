@@ -8,6 +8,7 @@ import groovy.util.logging.Slf4j
 import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.log4j.Logger
+import org.springframework.context.ApplicationContext
 
 @Slf4j
 class TextManagerService {
@@ -17,7 +18,6 @@ class TextManagerService {
     def underlyingSsbDataSource
     def grailsApplication
 
-    private Object savePropLock= new Object();
 
     static final String ROOT_LOCALE_APP = 'en' // This will be the locale assumed for properties without locale
     // Save the chosen source language as root (as user cannot change translation)
@@ -78,11 +78,8 @@ class TextManagerService {
         def project = tranManProject()
         if (project) {
             int cnt = 0
-            synchronized (savePropLock){
             def textManagerDB = new TextManagerDB()
-            /*textManagerDB.createConnection(sessionFactory)*/
-            Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
-            textManagerDB.sql = sql
+
             try {
                 String msg = """
                                 Arguments: mo=<mode> ba=<batch> lo=<db logon> pc=<TranMan Project> sl=<source language>
@@ -111,7 +108,7 @@ class TextManagerService {
                         log.error "No target language specified (tgtLocale=...) \n" + msg
                     }
                 }
-
+                textManagerDB.createConnection()
                 textManagerDB.setDBContext(dbValues)
                 textManagerDB.setDefaultProp(dbValues)
                 def defaultObjectProp = textManagerDB.getDefaultObjectProp()
@@ -130,9 +127,7 @@ class TextManagerService {
                     defaultObjectProp.objectName = key.substring(sepLoc)       // expression between brackets in x.y....[z]
                     defaultObjectProp.string = smartQuotesReplace(value)
                     log.info key + " = " + defaultObjectProp.string
-
-                        textManagerDB.setPropString(defaultObjectProp)
-
+                    textManagerDB.setPropString(defaultObjectProp)
                     cnt++
                 }
 
@@ -145,12 +140,7 @@ class TextManagerService {
             } catch (e){
                 log.error("Exception in saving properties", e)
             }finally{
-                //textManagerDB.closeConnection()
-                if ( sql) {
-                    sql.commit();
-                    sql.close();
-                }
-            }
+                textManagerDB.closeConnection()
             }
             return [error: null, count: cnt]
         }
