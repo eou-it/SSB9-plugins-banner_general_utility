@@ -13,7 +13,6 @@ class ResourceBundleService {
     //Injected
     def messageSource
     def textManagerService
-    private Object savePropLock= new Object()
 
     def list() {
         def result = []
@@ -59,7 +58,7 @@ class ResourceBundleService {
         def count = 0
         //Save the Source Locale first
         def properties = get(name, sourceLocale).properties
-        synchronized (savePropLock) {
+        synchronized (textManagerService) {
             if (textManagerService) {
                 status = textManagerService.save(properties, name, sourceLocale, sourceLocale)
             } else {// Return mock status for testing

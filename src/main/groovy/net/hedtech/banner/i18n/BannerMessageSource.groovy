@@ -83,28 +83,31 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         normalizedNamesIndex = [:] as LinkedHashMap
 
         setBaseNamesSuper()
-
-        basenamesExposed.each { basename ->
-            def norm
-            if(Environment.isDevelopmentEnvironmentAvailable()) {
-                norm = APPLICATION_PATH_NORM + basename.minus(APPLICATION_PATH_DEV)
-            } else {
-                norm = APPLICATION_PATH_NORM + basename.minus(APPLICATION_PATH_PROD)
+        synchronized (basenamesExposed) {
+            basenamesExposed.each { basename ->
+                def norm
+                if (Environment.isDevelopmentEnvironmentAvailable()) {
+                    norm = APPLICATION_PATH_NORM + basename.minus(APPLICATION_PATH_DEV)
+                } else {
+                    norm = APPLICATION_PATH_NORM + basename.minus(APPLICATION_PATH_PROD)
+                }
+                normalizedNamesIndex[norm] = [source: this, basename: basename]
             }
-            normalizedNamesIndex[norm] = [source: this, basename: basename]
         }
-        pluginBaseNames.each { basename ->
-            def norm = basename.replace('\\','/')
-            if(Environment.isDevelopmentEnvironmentAvailable()) {
-                norm = norm.substring(norm.indexOf(PLUGINS_PATH_DEV) + 1)
-                norm = norm.minus(PLUGINS_PATH_DEV)
-                norm = norm.replaceFirst(/-[0-9.]+/, "")
-            } else {
-                norm = norm.substring(norm.indexOf(PLUGIN_PATH_PROD) + 1)
-                norm = norm.minus(PLUGIN_PATH_PROD)
-                norm = norm.replaceFirst(/-[0-9.]+/, "")
+        synchronized (pluginBaseNames) {
+            pluginBaseNames.each { basename ->
+                def norm = basename.replace('\\', '/')
+                if (Environment.isDevelopmentEnvironmentAvailable()) {
+                    norm = norm.substring(norm.indexOf(PLUGINS_PATH_DEV) + 1)
+                    norm = norm.minus(PLUGINS_PATH_DEV)
+                    norm = norm.replaceFirst(/-[0-9.]+/, "")
+                } else {
+                    norm = norm.substring(norm.indexOf(PLUGIN_PATH_PROD) + 1)
+                    norm = norm.minus(PLUGIN_PATH_PROD)
+                    norm = norm.replaceFirst(/-[0-9.]+/, "")
+                }
+                normalizedNamesIndex[norm.toString()] = [source: this, basename: basename]
             }
-            normalizedNamesIndex[norm.toString()] = [source: this, basename: basename]
         }
 
         if (externalMessageSource) {
