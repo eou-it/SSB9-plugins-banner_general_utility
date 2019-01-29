@@ -78,12 +78,13 @@ class TextManagerService {
         if (!tmEnabled) {
             return
         }
+        synchronized (savePropLock) {
         def project = tranManProject()
         Sql sql
         if (project) {
             int cnt = 0
-            def textManagerDB = new TextManagerDB()
-            synchronized (textManagerDB) {
+                def textManagerDB = new TextManagerDB()
+
                 try {
                     String msg = """
                                 Arguments: mo=<mode> ba=<batch> lo=<db logon> pc=<TranMan Project> sl=<source language>
@@ -149,8 +150,8 @@ class TextManagerService {
                         textManagerDB.sql.close();
                     }
                 }
-            }
             return [error: null, count: cnt]
+        }
         }
         return [error: "Unable to save - no Project configured", count: 0]
     }
