@@ -394,19 +394,14 @@ class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase
     }
 
     private def updateGorsdamTableValidation() {
-        def sql
-        try {
-            sql = new Sql(sessionFactory.getCurrentSession().connection())
-            sql.executeUpdate("""
+        def sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.executeUpdate("""
             UPDATE GORSDAM
               SET GORSDAM_ATTR_DATA_LEN = 6,
                   GORSDAM_ATTR_DATA_SCALE = 2
             WHERE GORSDAM_TABLE_NAME = 'GTVZIPC'
               AND GORSDAM_ATTR_NAME = 'NUMBER'
             """)
-        }
-        finally {
-            sql?.close()  // note that the test will close the connection, since it's our current session's connection
-        }
+
     }
 }
