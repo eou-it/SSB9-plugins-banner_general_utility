@@ -58,26 +58,15 @@ class AboutService {
         }
     }
     private void loadResourcePropertiesFile() {
-        String propertyFileName = ServletContextHolder.servletContext.getRealPath('/WEB-INF/classes/release.properties')
-        resourceProperties = new Properties();
-        InputStream input = null;
+        String propertyFiletext = Thread.currentThread().getContextClassLoader().getResource( "release.properties" )?.text
+        String propertyFilePath = Thread.currentThread().getContextClassLoader().getResource( "release.properties" )?.path
+        resourceProperties = new Properties()
         try {
-
-            if (propertyFileName != null && new File(propertyFileName).exists()){
-                input = new FileInputStream(propertyFileName);
-                resourceProperties.load(input);
+            if (propertyFiletext != null && propertyFilePath.endsWith('release.properties')){
+                resourceProperties.load(new StringReader(propertyFiletext))
             }
-
         } catch (IOException ex) {
             log.error "IOException Occured in method loadResourcePropertiesFile" , ex
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                    log.error "IOException Occured in method loadResourcePropertiesFile", e
-                }
-            }
         }
 
     }

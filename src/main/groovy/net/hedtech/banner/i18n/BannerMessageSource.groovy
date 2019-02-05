@@ -61,7 +61,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
                     pluginBaseNames.add(fileStr)
                 }
             } else {
-                if(fileStr.contains(APPLICATION_PATH_PROD)){ƒ
+                if(fileStr.contains(APPLICATION_PATH_PROD)){
                     basenamesExposed.add(fileStr)
                 } else {
                     pluginBaseNames.add(fileStr)
