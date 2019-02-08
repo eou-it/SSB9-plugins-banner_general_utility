@@ -96,7 +96,7 @@ class SupplementalDataService {
             log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
             throw e
         } finally {
-            sql?.close()
+            //sql?.close()
         }
     }
 
@@ -132,7 +132,7 @@ class SupplementalDataService {
             log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
             throw e
         } finally {
-            sql?.close()
+            //sql?.close()
         }
     }
 
@@ -623,7 +623,7 @@ class SupplementalDataService {
                 }
 
                 log.debug("Querying on SDE Lookup Table executed")
-                sql.connection.close()
+                //sql.connection.close()
             }
 
             SupplementalPropertyDiscriminatorContent discProp =
@@ -849,7 +849,7 @@ class SupplementalDataService {
             }
 
             staticLogger.debug("Querying on SDE Lookup Table executed" )
-            sql.connection.close()
+            //sql.connection.close()
         }
         (lookupDomainList == [])?null:lookupDomainList[0]
     }
@@ -884,7 +884,7 @@ class SupplementalDataService {
             }
 
             staticLogger.debug("Querying on SDE Lookup Table executed" )
-            sql.connection.close()
+            //sql.connection.close()
         }
 
         return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
@@ -928,7 +928,7 @@ class SupplementalDataService {
             }
 
             staticLogger.debug("Querying on SDE Lookup Table executed" )
-            sql.connection.close()
+            //sql.connection.close()
         }
         return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
     }

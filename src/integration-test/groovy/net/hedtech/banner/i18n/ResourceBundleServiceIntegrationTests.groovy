@@ -50,23 +50,23 @@ class ResourceBundleServiceIntegrationTests extends BaseIntegrationTestCase {
         }
         if (!textManagerService.tranManProject()) {
             Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
-            def appName = Holders.grailsApplication.metadata['app.name']
+            def appName = 'TEST_PROJECT'//Holders.grailsApplication.metadata['app.name']
             try {
                 def statement = """
                                 BEGIN
                                     insert into GMBPROJ (GMBPROJ_PROJECT, GMBPROJ_ACTIVITY_DATE, GMBPROJ_DESC,
-                                   GMBPROJ_OWNER,GMBPROJ_USER_ID) values ($project, sysdate, $projectDescription,
+                                   GMBPROJ_OWNER,GMBPROJ_USER_ID) values ('$project', sysdate, '$projectDescription',
                                    'TRANMGR','ban_ss_user');
                                    insert into GMRPCFG (GMRPCFG_PROJECT, GMRPCFG_KEY, GMRPCFG_VALUE, GMRPCFG_DESC,
-                                   GMRPCFG_USER_ID,GMRPCFG_ACTIVITY_DATE) values ($project, $PROJECT_CFG_KEY_APP,
-                                   $appName, 'Banner Application in this project','ban_ss_user',sysdate );
+                                   GMRPCFG_USER_ID,GMRPCFG_ACTIVITY_DATE) values ('$project', '$PROJECT_CFG_KEY_APP',
+                                   '$appName', 'Banner Application in this project','ban_ss_user',sysdate );
                                    commit;
                                 END;
                             """
                 sql.execute(statement)
                 textManagerService.cacheTime = null
             } finally {
-                sql?.close()
+                //sql?.close()
             }
         }
     }
@@ -91,7 +91,7 @@ class ResourceBundleServiceIntegrationTests extends BaseIntegrationTestCase {
                 textManagerService.cacheTime = null
             } catch(e){
             } finally {
-                sql?.close()
+                //sql?.close()
             }
         }
     }
@@ -149,7 +149,7 @@ class ResourceBundleServiceIntegrationTests extends BaseIntegrationTestCase {
         data.enableTranslation = true
         data.sourceLocale = 'root'
         data.locales = testLocalesSave
-      //  def saveResult = resourceBundleService.save(data)
+        def saveResult = resourceBundleService.save(data)
         //assertTrue(saveResult.count > 0)
         assertEquals(ar.locale,"ar_SA")
     }
