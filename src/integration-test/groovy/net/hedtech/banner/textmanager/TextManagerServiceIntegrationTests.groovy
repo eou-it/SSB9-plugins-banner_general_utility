@@ -16,7 +16,7 @@ import org.junit.Test
 @Rollback
 class TextManagerServiceIntegrationTests extends BaseIntegrationTestCase {
     def textManagerService
-
+    def message
     def underlyingDataSource
     def underlyingSsbDataSource
     def project = 'UNITTEST'
@@ -30,23 +30,24 @@ class TextManagerServiceIntegrationTests extends BaseIntegrationTestCase {
         }
         if (!textManagerService.tranManProject()) {
             Sql sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
-            def appName = Holders.grailsApplication.metadata['app.name']
+            def appName = "UNITTEST"//Holders.grailsApplication.metadata['app.name']
             try {
                 def statement = """
                                 BEGIN
                                     insert into GMBPROJ (GMBPROJ_PROJECT, GMBPROJ_ACTIVITY_DATE, GMBPROJ_DESC,
-                                   GMBPROJ_OWNER,GMBPROJ_USER_ID) values ($project, sysdate, $projectDescription,
+                                   GMBPROJ_OWNER,GMBPROJ_USER_ID) values ('$project', sysdate, '$projectDescription',
                                    'TRANMGR','ban_ss_user');
                                    insert into GMRPCFG (GMRPCFG_PROJECT, GMRPCFG_KEY, GMRPCFG_VALUE, GMRPCFG_DESC,
-                                   GMRPCFG_USER_ID,GMRPCFG_ACTIVITY_DATE) values ($project, $PROJECT_CFG_KEY_APP,
-                                   $appName, 'Banner Application in this project','ban_ss_user',sysdate );
+                                    GMRPCFG_USER_ID,GMRPCFG_ACTIVITY_DATE) values ('$project', '$PROJECT_CFG_KEY_APP',
+                                    '$appName', 'Banner Application in this project','ban_ss_user',sysdate );
                                    commit;
                                 END;
                             """
                 sql.execute(statement)
+                sql.commit()
                 textManagerService.cacheTime = null
             } finally {
-                sql?.close()
+                //sql?.close()
             }
         }
     }
@@ -68,6 +69,7 @@ class TextManagerServiceIntegrationTests extends BaseIntegrationTestCase {
                                    end;
                                 """
                 sql.execute(statement)
+                sql.commit()
                 textManagerService.cacheTime = null
             } catch(e){
             } finally {
@@ -80,6 +82,7 @@ class TextManagerServiceIntegrationTests extends BaseIntegrationTestCase {
     public void setUp(){
         formContext = ['GUAGMNU']
         Holders.config.ssbEnabled = true
+        Holders.config.app.name = 'UNITTEST'
         super.setUp()
         createProjectForApp('UNITTEST', 'Integration Test Banner General Utility')
     }
@@ -93,7 +96,7 @@ class TextManagerServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void testSaveSuccess(){
-        def name = "integrationTest"
+        def name = "UNITTEST"
         def srcProperties = new Properties()
         def srcLocale = textManagerService.ROOT_LOCALE_APP
         def tgtProperties = new Properties()
@@ -106,12 +109,12 @@ class TextManagerServiceIntegrationTests extends BaseIntegrationTestCase {
 
         def srcStatus = textManagerService.save(srcProperties, name, srcLocale, srcLocale)
         def tgtStatus = textManagerService.save(tgtProperties, name, srcLocale, tgtLocale)
-        def message = textManagerService.findMessage("dummy.label1",tgtLocale)
+        def message = textManagerService.findMessage("dummy.label1",srcLocale)
 
         assertNull(srcStatus.error)
         assertEquals(2, srcStatus.count)
         assertNull(tgtStatus.error)
         assertEquals(2, tgtStatus.count)
-       // assertNotNull(message)
+        //assertNotNull(message)
     }
 }

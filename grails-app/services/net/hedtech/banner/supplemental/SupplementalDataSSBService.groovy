@@ -127,7 +127,7 @@ class SupplementalDataSSBService {
             log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
             throw e
         } finally {
-            sql?.close()
+            //sql?.close()
         }
     }
 
@@ -572,13 +572,12 @@ class SupplementalDataSSBService {
 
             staticLogger.debug("Querying on SDE Lookup Table started")
             Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
-
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
             staticLogger.debug("Querying on SDE Lookup Table executed")
-            sql.connection.close()
+            //sql.connection.close()
         }
         (lookupDomainList == []) ? null : lookupDomainList[0]
     }
@@ -613,7 +612,7 @@ class SupplementalDataSSBService {
             }
 
             staticLogger.debug("Querying on SDE Lookup Table executed")
-            sql.connection.close()
+            //sql.connection.close()
         }
 
         return (lookupDomainList == []) ? ([:]) : ([list: lookupDomainList, totalCount: lookupDomainList.size()])
@@ -651,13 +650,12 @@ class SupplementalDataSSBService {
 
             staticLogger.debug("Querying on SDE Lookup Table started")
             Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
-
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
             staticLogger.debug("Querying on SDE Lookup Table executed")
-            sql.connection.close()
+            //sql.connection.close()
         }
         return (lookupDomainList == []) ? ([:]) : ([list: lookupDomainList, totalCount: lookupDomainList.size()])
     }
