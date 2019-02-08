@@ -11,18 +11,21 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+
+
+
 @Integration
 @Rollback
-class StubbyTextManagerService {
-    public final static String MOCK_PREFIX = "MOCK "
-    def findMessage(key, locale) {
-        MOCK_PREFIX + "${locale}-${key})"
-    }
-}
-
 class BannerMessageSourceIntegrationTests extends BaseIntegrationTestCase {
 
-    def messageSource = Holders.grailsApplication.mainContext.getBean('messageSource')
+    class StubbyTextManagerService {
+        public final static String MOCK_PREFIX = "MOCK "
+        def findMessage(key, locale) {
+            MOCK_PREFIX + "${locale}-${key})"
+        }
+    }
+
+    def messageSource
     def externalLocation = 'target/i18n'
 
 
