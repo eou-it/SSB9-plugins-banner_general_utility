@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
@@ -28,6 +28,7 @@ class AboutService {
         about['api.close'] = getMessage("about.banner.close")
         about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
+        about['about.banner.platform.version'] = getPlatformVersion()
 
         /* Commented for now because we need only application name & version number.
          For specific role we have to show all the details but still not decided for which role to show all details.
@@ -112,6 +113,14 @@ class AboutService {
             getMessage("about.banner.application.version") + " " + resourceProperties.getProperty("application.version")
         } else {
             getMessage("about.banner.application.version") + " " + grailsApplication.config.info.app.version
+        }
+    }
+
+    private String getPlatformVersion(){
+        if (resourceProperties) {
+            getMessage("about.banner.platform.version") + " " + resourceProperties.getProperty("platform.version")
+        } else {
+            getMessage("about.banner.platform.version") + " " + grailsApplication.config.app.platform.version
         }
     }
 
