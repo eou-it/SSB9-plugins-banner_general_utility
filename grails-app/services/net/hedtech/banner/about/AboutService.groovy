@@ -29,18 +29,9 @@ class AboutService {
         about['api.close'] = getMessage("about.banner.close")
         about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
-        if (springSecurityService?.isLoggedIn()) {
-            def isWebtailorAdminRoleExists = false
-            def authorities = springSecurityService?.getAuthentication().getAuthorities().asList()
-            for(def authority : authorities) {
-                if(authority.toString() == "ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M") {
-                    isWebtailorAdminRoleExists = true
-                    break
-                }
-            }
-            if (isWebtailorAdminRoleExists) {
-                about['about.banner.platform.version'] = getPlatformVersion()
-            }
+        def authorities = springSecurityService?.getAuthentication()?.getAuthorities()?.asList()
+        if (springSecurityService?.isLoggedIn() && authorities?.toString().contains("ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M")) {
+            about['about.banner.platform.version'] = getPlatformVersion()
         }
 
         /* Commented for now because we need only application name & version number.
