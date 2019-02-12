@@ -13,7 +13,6 @@ import org.junit.Before
 import org.junit.Test
 import static groovy.test.GroovyAssert.shouldFail
 import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
-import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
 @Integration
@@ -22,6 +21,7 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase {
 
     private String appName
     private String appId
+    def configApplicationService
 
     @Before
     public void setUp() {
@@ -40,6 +40,22 @@ class ConfigApplicationIntegrationTests extends BaseIntegrationTestCase {
     public static void cleanUp() {
         RequestContextHolder.resetRequestAttributes()
     }
+
+
+    @Test
+    void testCreateMultipleConfigApplication() {
+        ConfigApplication configApplication = new ConfigApplication(appName: 'TestApp1', appId: 'TestAppId1')
+        configApplication = configApplicationService.create(configApplication)
+        //configApplication.save(failOnError: true, flush: true)
+        assertNotNull configApplication?.id
+
+
+        ConfigApplication configApplication2 = new ConfigApplication(appName: 'TestApp2', appId: 'TestAppId2')
+        configApplication2 = configApplicationService.create(configApplication2)
+       // configApplication2.save(failOnError: true, flush: true)
+        assertNotNull configApplication2?.id
+    }
+
     @Test
     void testCreateConfigApplication() {
         ConfigApplication configApplication = newConfigApplication()

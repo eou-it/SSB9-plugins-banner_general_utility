@@ -1,11 +1,10 @@
 /*******************************************************************************
- Copyright 2013-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2013-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.menu
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
-import grails.util.GrailsWebMockUtil
 import grails.util.Holders
 import grails.web.context.ServletContextHolder
 import groovy.sql.Sql
@@ -14,9 +13,7 @@ import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.i18n.LocaleContextHolder
-import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.support.WebApplicationContextUtils
 
@@ -24,8 +21,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils
 @Rollback
 class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
-    @Autowired
-    WebApplicationContext ctx
+
     SelfServiceMenuService selfServiceMenuService
     def grailsApplication
     def dataSource
@@ -90,18 +86,17 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Before
     public void setUp() {
-        GrailsWebMockUtil.bindMockWebRequest(ctx)
         formContext = ['GUAGMNU']
         super.setUp()
         conn = dataSource.getSsbConnection()
         sql = new Sql(conn)
-        Holders?.config.ssbEnabled = true;
+        Holders.config.ssbEnabled = true;
         grailsApplication.config?.seamless?.selfServiceApps = ["http://abc:8080/StudentFacultyGradeEntry/ssb/gradeEntry"]
     }
 
 
     public void setUpBanner8LocaleSpecificURL() {
-       Holders?.config?.banner8.SS.locale?.url = [default:BANNER8_URL_DEFAULT, en:BANNER8_URL_EN, en_AU:BANNER8_URL_ENAU, en_GB:BANNER8_URL_ENGB, en_IE:BANNER8_URL_ENIE, en_IN:BANNER8_URL_ENIN, fr:BANNER8_URL_FR, fr_CA:BANNER8_URL_FRCA, pt:BANNER8_URL_PT, es:BANNER8_URL_ES, ar:BANNER8_URL_AR]
+       Holders.config.banner8.SS.locale?.url = [default:BANNER8_URL_DEFAULT, en:BANNER8_URL_EN, en_AU:BANNER8_URL_ENAU, en_GB:BANNER8_URL_ENGB, en_IE:BANNER8_URL_ENIE, en_IN:BANNER8_URL_ENIN, fr:BANNER8_URL_FR, fr_CA:BANNER8_URL_FRCA, pt:BANNER8_URL_PT, es:BANNER8_URL_ES, ar:BANNER8_URL_AR]
        Holders?.config?.mep?.banner8?.SS?.locale?.url = [GVU:[default:GVU_BANNER8_URL_DEFAULT, en:GVU_BANNER8_URL_EN, en_AU:GVU_BANNER8_URL_ENAU, en_GB:GVU_BANNER8_URL_ENGB, en_IE:GVU_BANNER8_URL_ENIE, en_IN:GVU_BANNER8_URL_ENIN, fr:GVU_BANNER8_URL_FR, fr_CA:GVU_BANNER8_URL_FRCA, pt:GVU_BANNER8_URL_PT, es:GVU_BANNER8_URL_ES, ar:GVU_BANNER8_URL_AR ],
        BANNER:[default:BANNER_BANNER8_URL_DEFAULT, en:BANNER_BANNER8_URL_EN, en_AU:BANNER_BANNER8_URL_ENAU, en_GB:BANNER_BANNER8_URL_ENGB, en_IE:BANNER_BANNER8_URL_ENIE, en_IN:BANNER_BANNER8_URL_ENIN, fr:BANNER_BANNER8_URL_FR, fr_CA:BANNER_BANNER8_URL_FRCA, pt:BANNER_BANNER8_URL_PT, es:BANNER_BANNER8_URL_ES, ar:BANNER_BANNER8_URL_AR ]]
     }
