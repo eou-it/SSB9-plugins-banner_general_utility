@@ -17,6 +17,7 @@ class AboutService {
     def sessionFactory
     def resourceProperties
     def messageSource
+    def springSecurityService
 
 
     def getAbout() {
@@ -28,7 +29,19 @@ class AboutService {
         about['api.close'] = getMessage("about.banner.close")
         about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
-        about['about.banner.platform.version'] = getPlatformVersion()
+        if (springSecurityService?.isLoggedIn()) {
+            def isWebtailorAdminRoleExists = false
+            def authorities = springSecurityService?.getAuthentication().getAuthorities().asList()
+            for(def authority : authorities) {
+                if(authority.toString() == "ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M") {
+                    isWebtailorAdminRoleExists = true
+                    break
+                }
+            }
+            if (isWebtailorAdminRoleExists) {
+                about['about.banner.platform.version'] = getPlatformVersion()
+            }
+        }
 
         /* Commented for now because we need only application name & version number.
          For specific role we have to show all the details but still not decided for which role to show all details.
