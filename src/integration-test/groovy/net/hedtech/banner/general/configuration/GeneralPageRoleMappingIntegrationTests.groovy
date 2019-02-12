@@ -7,6 +7,7 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
+import static groovy.test.GroovyAssert.shouldFail
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
