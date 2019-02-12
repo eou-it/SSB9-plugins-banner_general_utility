@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import static groovy.test.GroovyAssert.shouldFail
 
 @Integration
 @Rollback
