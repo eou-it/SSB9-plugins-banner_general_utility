@@ -145,13 +145,9 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
         def bannerUserSession = newBannerUserSession()
         save bannerUserSession
 
-        def sql
-        try {
-            sql = new Sql( sessionFactory.getCurrentSession().connection() )
-            sql.executeUpdate( "update GURSESS set GURSESS_VERSION = 999 where GURSESS_SURROGATE_ID = ?", [ bannerUserSession.id ] )
-        } finally {
-            sql?.close() // note that the test will close the connection, since it's our current session's connection
-        }
+        def sql = new Sql( sessionFactory.getCurrentSession().connection() )
+        sql.executeUpdate( "update GURSESS set GURSESS_VERSION = 999 where GURSESS_SURROGATE_ID = ?", [ bannerUserSession.id ] )
+
         //Try to update the entity
         bannerUserSession.infoType = GOTO_CURRENTLY_OPENED
         bannerUserSession.info =  COURSE_DETAIL_INFORMATION
@@ -169,11 +165,13 @@ class BannerUserSessionIntegrationTests extends BaseIntegrationTestCase {
         bannerUserSession.delete()
         assertNull BannerUserSession.get( id )
     }
+
     @Test
     void testValidation() {
         def bannerUserSession = newBannerUserSession()
         assertTrue "BannerUserSession could not be validated as expected due to ${bannerUserSession.errors}", bannerUserSession.validate()
     }
+
     @Test
     void testNullValidationFailure() {
         def bannerUserSession = new BannerUserSession()
