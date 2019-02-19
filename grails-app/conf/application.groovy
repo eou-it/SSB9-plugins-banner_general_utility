@@ -1,7 +1,6 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
-
 grails.project.groupId = "net.hedtech" // used when deploying to a maven repo
 
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
@@ -95,17 +94,6 @@ grails {
     }
 }
 
-grails.validateable.packages=['net.hedtech.banner.student.registration']
-
-// placeholder for real configuration
-// base.dir is probably not defined for .war file deployments
-//banner.picturesPath=System.getProperty('base.dir') + '/test/images'
-
-
-markdown = [
-        removeHtml: true
-]
-
 
 // Note: Most of the dataSource configuration resides in resources.groovy and in the
 // installation-specific configuration file (see Config.groovy for the include).
@@ -119,12 +107,12 @@ dataSource {
 hibernate {
     cache.use_second_level_cache = true
     cache.use_query_cache = true
-    cache.region.factory_class = 'org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory'
     //hbm2ddl.auto = null
     show_sql = false
     packagesToScan="net.hedtech.**.*"
     flush.mode = AUTO
     dialect = "org.hibernate.dialect.Oracle10gDialect"
+    cache.region.factory_class = 'org.hibernate.cache.ehcache.EhCacheRegionFactory'
     config.location = [
             "classpath:hibernate-banner-core.cfg.xml",
             "classpath:hibernate-banner-core.testing.cfg.xml"

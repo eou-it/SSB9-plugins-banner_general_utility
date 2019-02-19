@@ -1,21 +1,21 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.menu
 
+import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.commons.lang.math.RandomUtils
-import org.apache.log4j.Logger
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 
 /**
  * Service for retrieving Banner menu item for Classic SSB.
  */
-
+@Transactional
 class SelfServiceMenuService {
-    static transactional = true
+
     def sessionFactory
     def grailsApplication
     def messageSource
