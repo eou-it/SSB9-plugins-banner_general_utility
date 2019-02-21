@@ -10,7 +10,6 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.springframework.dao.QueryTimeoutException
 
 /**
  * ConfigPropertiesIntegrationTests are used to test the ConfigProperties domain.
@@ -83,9 +82,8 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
         try {
             configProperties.save(failOnError: true, flush: true)
         }
-        catch (QueryTimeoutException ex){
-            assertTrue ex.getCause().getCause().message.contains('ORA-12899: value too large for column "GENERAL"."GUROCFG"."GUROCFG_NAME" (actual: 257, maximum: 256)')
-
+        catch (Exception ex){
+            assertTrue ex.getCause().message.contains('ORA-12899: value too large for column "GENERAL"."GUROCFG"."GUROCFG_NAME" (actual: 257, maximum: 256)')
         }
     }
 

@@ -16,6 +16,7 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 class ResourceBundleControllerIntegrationTests extends BaseIntegrationTestCase {
 
     def resourceBundleController
+    def messageSource
 
     @Before
     public void setUp() {
@@ -23,6 +24,7 @@ class ResourceBundleControllerIntegrationTests extends BaseIntegrationTestCase {
         super.setUp()
         resourceBundleController = new ResourceBundleController()
         resourceBundleController.resourceBundleService=new ResourceBundleService()
+        resourceBundleController.resourceBundleService.messageSource = messageSource
     }
 
     @After
@@ -49,7 +51,7 @@ class ResourceBundleControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testSavingValues(){
         def data = ['id': '40', 'name': 'PLUGINS/CSV/MESSAGES', 'locale': 'en_US']
-        resourceBundleController.request.JSON = data
+        resourceBundleController.request.parameters = data
         resourceBundleController.save()
         assert 200,resourceBundleController.response.status
     }

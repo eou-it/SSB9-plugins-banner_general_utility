@@ -240,7 +240,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     @Test
     public void testSeedDataToDBFromConfig() {
         ConfigApplication configApp = getConfigApplication()
-        configApp.appName = grailsApplication.metadata['app.name']
+        configApp.appName = Holders.grailsApplication.config.info.app.name
         configApplicationService.create(configApp)
 
 

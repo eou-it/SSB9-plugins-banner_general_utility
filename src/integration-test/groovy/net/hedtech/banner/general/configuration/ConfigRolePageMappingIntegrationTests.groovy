@@ -12,6 +12,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
+import static groovy.test.GroovyAssert.shouldFail
 
 @Integration
 @Rollback
@@ -67,13 +68,9 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
     void testOptimisticLock() {
         ConfigRolePageMapping configRolePageMap = saveConfigRolePageMapping()
 
-        def sql
-        try {
-            sql = new Sql(sessionFactory.getCurrentSession().connection())
-            sql.executeUpdate("update general.GURAPPR set GURAPPR_VERSION = 999 where GURAPPR_SURROGATE_ID = ?", [configRolePageMap.id])
-        } finally {
-            sql?.close() // note that the test will close the connection, since it's our current session's connection
-        }
+        def sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.executeUpdate("update general.GURAPPR set GURAPPR_VERSION = 999 where GURAPPR_SURROGATE_ID = ?", [configRolePageMap.id])
+
         //Try to update the entity
         configRolePageMap.roleCode = "UUUUU"
         shouldFail(HibernateOptimisticLockingFailureException) {

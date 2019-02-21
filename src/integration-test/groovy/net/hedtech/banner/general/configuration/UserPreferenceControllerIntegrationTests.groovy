@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -16,6 +16,7 @@ import org.springframework.context.i18n.LocaleContextHolder
 class UserPreferenceControllerIntegrationTests extends BaseIntegrationTestCase {
 
     def controller
+    def sessionFactory
 
     @Before
     public void setUp() {
@@ -23,6 +24,7 @@ class UserPreferenceControllerIntegrationTests extends BaseIntegrationTestCase {
         super.setUp()
         controller = new UserPreferenceController()
         controller.configUserPreferenceService =  new ConfigUserPreferenceService()
+        controller.configUserPreferenceService.sessionFactory = sessionFactory
         UserPreferenceController.metaClass.render = { Map map ->
             renderMap = map
         }
@@ -103,7 +105,6 @@ class UserPreferenceControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.request.contentType = "application/json"
         params = [
                 locale                 : "EN_AU"
-
         ]
         controller.request.parameters = params
         //controller.params.locale = 'EN_AU'
