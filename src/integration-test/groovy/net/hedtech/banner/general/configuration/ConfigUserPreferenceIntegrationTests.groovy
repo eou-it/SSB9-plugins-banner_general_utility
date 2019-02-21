@@ -50,23 +50,23 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testSuccessCreateLongConfigName() {
-        ConfigUserPreference configUserPreference = createConfigUserPreference()
-        assertNotNull configUserPreference.id
-        assertEquals 0L, configUserPreference.version
+        ConfigApplication configApplication = getConfigApplication()
+        configApplication.save(failOnError: true, flush: true)
 
         ConfigProperties configProperties = getConfigProperties()
         configProperties.setConfigApplication(configApplication)
         configProperties.configName = "Y" * 256
-        configProperties.save(failOnError: true, flush: true)
-
+        configProperties = configProperties.save(failOnError: true, flush: true)
         assertNotNull configProperties.id
         assertEquals 0L, configProperties.version
         assertEquals "Y" * 256 , configProperties.configName
         assertEquals "string", configProperties.configType
         assertEquals "TEST_VALUE", configProperties.configValue
 
-
-        configUserPreference.configName = "Y" * 256
+        ConfigUserPreference configUserPreference = getConfigUserPreference()
+        configUserPreference.setConfigApplication(configApplication)
+        configUserPreference.setConfigName(configProperties.getConfigName())
+        configUserPreference.setConfigType(configProperties.getConfigType())
         configUserPreference.save(failOnError: true, flush: true)
         assertNotNull configUserPreference.id
         assertEquals 0L, configUserPreference.version

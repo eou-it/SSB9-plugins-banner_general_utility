@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -27,7 +27,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        appName = Holders.grailsApplication.config.info.app.name
+        appName = 'TESTAPP'
         appId = 'TESTAPP'
     }
 
@@ -76,7 +76,7 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
         assertEquals 0L, endpointPage.version
 
         def id = endpointPage.id
-        endpointPage.delete()
+        endpointPage.delete(flush: true)
         assertNull endpointPage.get(id)
     }
 
@@ -138,10 +138,9 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
 
         //Delete and findAll
         def id = endpointPage.id
-        endpointPage.delete()
+        endpointPage.delete(flush: true)
         list = endpointPage.fetchAll()
         def eppDeleted = list.find { p -> p.id == id }
-
         assertNull eppDeleted
     }
 
@@ -205,7 +204,6 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
     @Test
     void testToString() {
         ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
-        endpointPage.save(failOnError: true, flush: true)
         assertNotNull endpointPage.id
         assertEquals 0L, endpointPage.version
 
@@ -222,7 +220,6 @@ class ConfigControllerEndpointPageIntegrationTests extends BaseIntegrationTestCa
     @Test
     void testHashCode() {
         ConfigControllerEndpointPage endpointPage = createConfigControllerEndPointPage()
-        endpointPage.save(failOnError: true, flush: true)
         assertNotNull endpointPage.id
         assertEquals 0L, endpointPage.version
 
