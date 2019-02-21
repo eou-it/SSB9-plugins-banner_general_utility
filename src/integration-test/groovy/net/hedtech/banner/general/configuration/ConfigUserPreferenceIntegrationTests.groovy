@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -60,7 +60,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         configProperties.save(failOnError: true, flush: true)
 
         assertNotNull configProperties.id
-        assertEquals 1L, configProperties.version
+        assertEquals 0L, configProperties.version
         assertEquals "Y" * 256 , configProperties.configName
         assertEquals "string", configProperties.configType
         assertEquals "TEST_VALUE", configProperties.configValue
@@ -69,7 +69,7 @@ class ConfigUserPreferenceIntegrationTests extends BaseIntegrationTestCase {
         configUserPreference.configName = "Y" * 256
         configUserPreference.save(failOnError: true, flush: true)
         assertNotNull configUserPreference.id
-        assertEquals 1L, configUserPreference.version
+        assertEquals 0L, configUserPreference.version
         assertEquals "Y" * 256 , configUserPreference.configName
         assertEquals "string", configUserPreference.configType
         assertEquals "USER_TEST_VALUE", configUserPreference.configValue

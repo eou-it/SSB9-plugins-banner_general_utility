@@ -1,14 +1,18 @@
 /******************************************************************************
- *  Copyright 2017 Ellucian Company L.P. and its affiliates.                  *
+ *  Copyright 2017-2019 Ellucian Company L.P. and its affiliates.                  *
  ******************************************************************************/
 package net.hedtech.banner.textmanager
 
+import grails.util.Holders
 import grails.util.Holders as CH
 import groovy.sql.Sql
-import org.apache.log4j.Logger
+import groovy.util.logging.Slf4j
 import org.grails.web.util.GrailsApplicationAttributes
+import org.springframework.context.ApplicationContext
+
 import java.sql.SQLException
 
+@Slf4j
 class TextManagerDB {
     def dataSource
     Sql sql
@@ -20,7 +24,6 @@ class TextManagerDB {
     String moduleType
     String moduleName*/
 
-    private static final def log = Logger.getLogger(TextManagerDB.class.name)
 
     static class ObjectProperty {
         String langCode
@@ -43,7 +46,7 @@ class TextManagerDB {
     }
 
     public createConnection (){
-        def ctx = CH.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
+        ApplicationContext ctx= Holders.getGrailsApplication().getMainContext()
         def sessionFactory = ctx.sessionFactory
         sql = new Sql(sessionFactory.getCurrentSession().connection())
     }
