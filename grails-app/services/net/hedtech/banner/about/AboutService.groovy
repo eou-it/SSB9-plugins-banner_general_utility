@@ -18,7 +18,7 @@ class AboutService {
     def resourceProperties
     def messageSource
     def springSecurityService
-
+    static final String webTailorAdminRole = "ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M"
 
     def getAbout() {
         def about = [:]
@@ -30,7 +30,7 @@ class AboutService {
         about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
         def authorities = springSecurityService?.getAuthentication()?.getAuthorities()?.asList()
-        if (springSecurityService?.isLoggedIn() && authorities?.toString().contains("ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M")) {
+        if (springSecurityService?.isLoggedIn() && authorities?.toString().contains(webTailorAdminRole)) {
             about['about.banner.platform.version'] = getPlatformVersion()
         }
 
