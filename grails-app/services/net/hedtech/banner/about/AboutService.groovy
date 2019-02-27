@@ -4,6 +4,7 @@
 
 package net.hedtech.banner.about
 
+import grails.util.Holders
 import grails.web.context.ServletContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.core.context.SecurityContextHolder
@@ -18,7 +19,7 @@ class AboutService {
     def resourceProperties
     def messageSource
     def springSecurityService
-    static final String webTailorAdminRole = "ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M"
+    static final String WEB_TAILOR_ADMIN_ROLE = "ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M"
 
     def getAbout() {
         def about = [:]
@@ -30,7 +31,7 @@ class AboutService {
         about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
         def authorities = springSecurityService?.getAuthentication()?.getAuthorities()?.asList()
-        if (springSecurityService?.isLoggedIn() && authorities?.toString().contains(webTailorAdminRole)) {
+        if (springSecurityService?.isLoggedIn() && authorities?.toString().contains(WEB_TAILOR_ADMIN_ROLE)) {
             about['about.banner.platform.version'] = getPlatformVersion()
         }
 
@@ -121,11 +122,7 @@ class AboutService {
     }
 
     private String getPlatformVersion(){
-        if (resourceProperties) {
-            getMessage("about.banner.platform.version") + " " + resourceProperties.getProperty("platform.version")
-        } else {
-            getMessage("about.banner.platform.version") + " " + grailsApplication.config.app.platform.version
-        }
+        getMessage("about.banner.platform.version") + " " + Holders.config.app.platform.version
     }
 
 /*    private Map getPluginsInfo(def pattern) {
