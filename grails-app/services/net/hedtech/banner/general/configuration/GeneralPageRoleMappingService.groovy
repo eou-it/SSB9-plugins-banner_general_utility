@@ -110,7 +110,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                 Holders.config.grails.plugin.springsecurity.interceptUrlMap?.add(iu)
                 data.add(iu)
             }else {
-                log.error("Key is =$k and Value is =$v in invalid for interceptUrlMap.")
+                log.error("Key is =${interceptMapping?.pattern} and Value is =${interceptMapping?.access} in invalid for interceptUrlMap.")
             }
         }
         data
@@ -301,7 +301,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     ccep.save(failOnError: true, flush: true)
 
                     // Save GURAPPR - multile roles
-                    roles.configAttributes.each { roleCode ->
+                    roles.access.each { roleCode ->
                         ConfigRolePageMapping crpm = new ConfigRolePageMapping()
                         crpm.setConfigApplication(application)
                         crpm.setLastModifiedBy('BANNER')

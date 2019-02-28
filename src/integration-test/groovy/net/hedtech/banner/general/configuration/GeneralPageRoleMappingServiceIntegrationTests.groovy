@@ -76,14 +76,14 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
     @Test
     public void testInvalidInterceptUrlMap() {
         try {
-            def properties = new Properties()
             def originalInterceptUrlMap = getInterceptedURLMap()
             assertTrue (originalInterceptUrlMap.size() >= 0)
             String invalidEntry = '/ssb/invalid/**'
-            originalInterceptUrlMap.put(invalidEntry, [])
-            properties.put('grails.plugin.springsecurity.interceptUrlMap', originalInterceptUrlMap)
-            def configSlurper = new ConfigSlurper()
-            Holders.config.merge(configSlurper.parse(properties))
+            Map invalidEntryMap = new LinkedHashMap()
+            invalidEntryMap.put('pattern',invalidEntry)
+            invalidEntryMap.put('access',[])
+            originalInterceptUrlMap.add(invalidEntryMap)
+            Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(invalidEntryMap)
 
             generalPageRoleMappingService.initialize()
             assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
@@ -143,16 +143,13 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
 
         generalPageRoleMappingService.seedInterceptUrlMapAtServerStartup()
 
-        LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>> pageRoleMappingList = generalPageRoleMappingService.getPageRoleMappingList()
-        LinkedHashMap<String, List<String>> interceptedUrlMapFromDB = new LinkedHashMap<String, List<String>>()
-        pageRoleMappingList.each { String key, ArrayList<GeneralPageRoleMapping> grmList ->
-            def roleList = []
-            grmList.each { GeneralPageRoleMapping grm ->
-                roleList << grm.roleCode
-            }
-            grmList.each {
-                interceptedUrlMapFromDB.put(key, generalPageRoleMappingService.split(roleList?.join(',')))
-            }
+        LinkedHashSet<Map<String, ?>> pageRoleMappingList = generalPageRoleMappingService.getPageRoleMappingList()
+        ArrayList<Map<String, ?>> interceptedUrlMapFromDB = new ArrayList<Map<String, ?>>()
+        pageRoleMappingList.each {grmList ->
+            Map generalPageMap = new LinkedHashMap()
+            generalPageMap.put('pattern',grmList.pattern)
+            generalPageMap.put('access',grmList.access)
+            interceptedUrlMapFromDB.add(generalPageMap)
         }
 
         assertEquals(interceptedUrlMapFromDB, Holders.config.grails.plugin.springsecurity.interceptUrlMap)
