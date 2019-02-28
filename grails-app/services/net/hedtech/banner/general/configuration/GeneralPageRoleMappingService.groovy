@@ -301,7 +301,7 @@ class GeneralPageRoleMappingService extends RequestmapFilterInvocationDefinition
                     ccep.save(failOnError: true, flush: true)
 
                     // Save GURAPPR - multile roles
-                    roles.access.each { roleCode ->
+                    roles.configAttributes.each { roleCode ->
                         ConfigRolePageMapping crpm = new ConfigRolePageMapping()
                         crpm.setConfigApplication(application)
                         crpm.setLastModifiedBy('BANNER')

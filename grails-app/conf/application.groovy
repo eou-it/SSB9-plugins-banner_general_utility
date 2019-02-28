@@ -85,7 +85,7 @@ environments {
                         mepErrorLogoutUrl='/logout/logoutPage'
                     }
                     useRequestMapDomainClass = false
-                    securityConfigType = grails.plugin.springsecurity.SecurityConfigType.InterceptUrlMap
+                    securityConfigType = grails.plugin.springsecurity.SecurityConfigType.Requestmap
                     interceptUrlMap = [
                             [pattern:'/',                  access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
                             [pattern:'/login/**',                 access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
@@ -128,7 +128,7 @@ environments {
                         mepErrorLogoutUrl='/logout/logoutPage'
                     }
                     useRequestMapDomainClass = false
-                    securityConfigType = grails.plugin.springsecurity.SecurityConfigType.InterceptUrlMap
+                    securityConfigType = grails.plugin.springsecurity.SecurityConfigType.Requestmap
                     interceptUrlMap = [
                             [pattern:'/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
                             [pattern:'/login/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
@@ -150,7 +150,7 @@ environments {
                         mepErrorLogoutUrl='/logout/logoutPage'
                     }
                     useRequestMapDomainClass = false
-                    securityConfigType = grails.plugin.springsecurity.SecurityConfigType.InterceptUrlMap
+                    securityConfigType = grails.plugin.springsecurity.SecurityConfigType.Requestmap
                     interceptUrlMap = [
                             [pattern:'/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
                             [pattern:'/login/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
