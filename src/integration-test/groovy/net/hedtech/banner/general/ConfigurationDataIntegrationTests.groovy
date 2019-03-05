@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2017 Ellucian Company L.P. and its affiliates.
+Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
  
 package net.hedtech.banner.general
@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import static groovy.test.GroovyAssert.shouldFail
 
 @Integration
 @Rollback
@@ -53,7 +54,7 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	void testFetchByNameAndType(){
 		def configurationData = newConfigurationData()
 		save configurationData
-		configurationData = ConfigurationData.fetchByNameAndType("TTTTT", "json","THEME")
+		configurationData = ConfigurationData.fetchByNameAndType("TTTTT", "json","EXTZ")
 		assertNotNull configurationData.id
 	}
 
@@ -61,7 +62,7 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	void testFetchTypes(){
 		def configurationData = newConfigurationData()
 		save configurationData
-		configurationData = ConfigurationData.fetchByType("json","THEME")
+		configurationData = ConfigurationData.fetchByType("json","EXTZ")
 		assertNotNull configurationData.id
 	}
 
@@ -109,14 +110,11 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
     void testOptimisticLock() {
 		def configurationData = newConfigurationData()
 		save configurationData
-        
+
         def sql
-        try {
+
             sql = new Sql( sessionFactory.getCurrentSession().connection() )
             sql.executeUpdate( "update GUROCFG set GUROCFG_VERSION = 999 where GUROCFG_SURROGATE_ID = ?", [ configurationData.id ] )
-        } finally {
-            sql?.close() // note that the test will close the connection, since it's our current session's connection
-        }
 		//Try to update the entity
 		configurationData.name="UUUUU"
 		configurationData.type="json"
@@ -147,7 +145,8 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
     		version:  0.0,
             lastModified: new Date(),
 			lastModifiedBy: "test",
-			dataOrigin: "Banner"
+			dataOrigin: "Banner",
+			appId: "EXTZ"
         )
         return configurationData
     }
