@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2019 Ellucian Company L.P. and its affiliates.
+Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
  
 package net.hedtech.banner.general
@@ -112,12 +112,9 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 		save configurationData
 
         def sql
-        try {
+
             sql = new Sql( sessionFactory.getCurrentSession().connection() )
             sql.executeUpdate( "update GUROCFG set GUROCFG_VERSION = 999 where GUROCFG_SURROGATE_ID = ?", [ configurationData.id ] )
-        }finally {
-           // sql?.close() // note that the test will close the connection, since it's our current session's connection
-        }
 		//Try to update the entity
 		configurationData.name="UUUUU"
 		configurationData.type="json"
