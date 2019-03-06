@@ -74,25 +74,97 @@ formControllerMap = [
         'uiCatalog' : ['SELFSERVICE'],
         'home' : ['SELFSERVICE']
 ]
-grails {
-    plugin {
-        springsecurity {
-            logout {
-                afterLogoutUrl = "/"
-                mepErrorLogoutUrl='/logout/logoutPage'
+
+environments {
+    test {
+        grails {
+            plugin {
+                springsecurity {
+                    logout {
+                        afterLogoutUrl = "/"
+                        mepErrorLogoutUrl='/logout/logoutPage'
+                    }
+                    useRequestMapDomainClass = false
+                    securityConfigType = grails.plugin.springsecurity.SecurityConfigType.Requestmap
+                    interceptUrlMap = [
+                            [pattern:'/',                  access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/login/**',                 access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/logout/**',            access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/ssb/uiCatalog/index',      access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/ssb/AuthenticationTesting',access: ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M',
+                                                                           'WEBUSER']],
+                            [pattern:'/ssb/survey/**',            access: ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M']],
+                            [pattern:'/ssb/userAgreement/**',     access: ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M']],
+                            [pattern:'/ssb/securityQA/**',        access: ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
+                                                                           'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M']],
+                            [pattern:'/ssb/theme/**',             access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/ssb/themeEditor/**',       access: ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M']],
+                            [pattern:'/ssb/themeEditor/test**',       access: ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M']],
+                            [pattern:'/ssb/AuthenticationTesting/testingEndPoint1/testingEndPoint2/homePage',access: ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M']],
+                            [pattern:'/**',                     access: ['IS_AUTHENTICATED_ANONYMOUSLY']]
+                    ]
+                }
             }
-            useRequestMapDomainClass = false
-            securityConfigType = grails.plugin.springsecurity.SecurityConfigType.InterceptUrlMap
-            interceptUrlMap = [
-                    [pattern:'/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
-                    [pattern:'/login/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
-                    [pattern:'/logout/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
-                    [pattern:'/index/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
-                    [pattern:'/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
-            ]
+        }
+    }
+    production{
+        grails {
+            plugin {
+                springsecurity {
+                    logout {
+                        afterLogoutUrl = "/"
+                        mepErrorLogoutUrl='/logout/logoutPage'
+                    }
+                    useRequestMapDomainClass = false
+                    securityConfigType = grails.plugin.springsecurity.SecurityConfigType.Requestmap
+                    interceptUrlMap = [
+                            [pattern:'/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/login/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/logout/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/index/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                    ]
+                }
+            }
+        }
+
+    }
+    development{
+        grails {
+            plugin {
+                springsecurity {
+                    logout {
+                        afterLogoutUrl = "/"
+                        mepErrorLogoutUrl='/logout/logoutPage'
+                    }
+                    useRequestMapDomainClass = false
+                    securityConfigType = grails.plugin.springsecurity.SecurityConfigType.Requestmap
+                    interceptUrlMap = [
+                            [pattern:'/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/login/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/logout/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/index/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                            [pattern:'/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                    ]
+                }
+            }
         }
     }
 }
+
+
 
 
 // Note: Most of the dataSource configuration resides in resources.groovy and in the

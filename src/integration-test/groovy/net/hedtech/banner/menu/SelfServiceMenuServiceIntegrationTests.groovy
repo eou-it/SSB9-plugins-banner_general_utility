@@ -4,6 +4,7 @@
 package net.hedtech.banner.menu
 
 import grails.gorm.transactions.Rollback
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import grails.web.context.ServletContextHolder
@@ -96,7 +97,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
 
     public void setUpBanner8LocaleSpecificURL() {
-       Holders.config.banner8.SS.locale?.url = [default:BANNER8_URL_DEFAULT, en:BANNER8_URL_EN, en_AU:BANNER8_URL_ENAU, en_GB:BANNER8_URL_ENGB, en_IE:BANNER8_URL_ENIE, en_IN:BANNER8_URL_ENIN, fr:BANNER8_URL_FR, fr_CA:BANNER8_URL_FRCA, pt:BANNER8_URL_PT, es:BANNER8_URL_ES, ar:BANNER8_URL_AR]
+       Holders.config.banner8.SS.locale.url = [default:BANNER8_URL_DEFAULT, en:BANNER8_URL_EN, en_AU:BANNER8_URL_ENAU, en_GB:BANNER8_URL_ENGB, en_IE:BANNER8_URL_ENIE, en_IN:BANNER8_URL_ENIN, fr:BANNER8_URL_FR, fr_CA:BANNER8_URL_FRCA, pt:BANNER8_URL_PT, es:BANNER8_URL_ES, ar:BANNER8_URL_AR]
        Holders?.config?.mep?.banner8?.SS?.locale?.url = [GVU:[default:GVU_BANNER8_URL_DEFAULT, en:GVU_BANNER8_URL_EN, en_AU:GVU_BANNER8_URL_ENAU, en_GB:GVU_BANNER8_URL_ENGB, en_IE:GVU_BANNER8_URL_ENIE, en_IN:GVU_BANNER8_URL_ENIN, fr:GVU_BANNER8_URL_FR, fr_CA:GVU_BANNER8_URL_FRCA, pt:GVU_BANNER8_URL_PT, es:GVU_BANNER8_URL_ES, ar:GVU_BANNER8_URL_AR ],
        BANNER:[default:BANNER_BANNER8_URL_DEFAULT, en:BANNER_BANNER8_URL_EN, en_AU:BANNER_BANNER8_URL_ENAU, en_GB:BANNER_BANNER8_URL_ENGB, en_IE:BANNER_BANNER8_URL_ENIE, en_IN:BANNER_BANNER8_URL_ENIN, fr:BANNER_BANNER8_URL_FR, fr_CA:BANNER_BANNER8_URL_FRCA, pt:BANNER_BANNER8_URL_PT, es:BANNER_BANNER8_URL_ES, ar:BANNER_BANNER8_URL_AR ]]
     }
@@ -126,6 +127,7 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         removeMepCode()
         tearDownBanner8URL()
         tearDownBanner8LocaleSpecificURL()
+        Holders.config.clear()
         if (sql) sql?.close()
     }
 
