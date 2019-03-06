@@ -31,7 +31,8 @@ class AboutService {
         about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
         def authorities = springSecurityService?.getAuthentication()?.getAuthorities()?.asList()
-        if (springSecurityService?.isLoggedIn() && authorities?.toString().contains(WEB_TAILOR_ADMIN_ROLE)) {
+        def roles = Holders.config.aboutInfoAccessRoles
+        if (springSecurityService?.isLoggedIn() && isUserHasRequiredRoles(roles, authorities)) {
             about['about.banner.platform.version'] = getPlatformVersion()
         }
 
@@ -46,6 +47,16 @@ class AboutService {
         about['about.banner.copyright'] = getCopyright()
         about['about.banner.copyrightLegalNotice'] = getCopyrightLegalNotice()
         return about
+    }
+
+    private boolean isUserHasRequiredRoles(ArrayList requiredRoles, ArrayList availableRoles){
+        for (String requiredRole in requiredRoles) {
+            for(String availableRole in availableRoles) {
+                if (availableRole.equalsIgnoreCase(requiredRole))
+                    return true
+            }
+        }
+        return false
     }
 
     private String getApplicationName(){
