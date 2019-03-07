@@ -44,6 +44,40 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
+    public void getAboutSuccessWithNecessaryRoles(){
+        loginSSB("CBUNTE3", "111111")
+        def aboutData = aboutService.getAbout()
+        println aboutData
+        logout()
+        assertEquals(MessageHelper.message("about.banner.title"),aboutData.get("api.title"))
+        assertEquals(MessageHelper.message("about.banner.close"),aboutData.get("api.close"))
+        assertEquals(MessageHelper.message("about.banner.application.version"),aboutData.get("about.banner.application.name"))
+        assertEquals(MessageHelper.message("about.banner.platform.version"),aboutData.get("about.banner.application.version"))
+        def copyrightLegalNotice = MessageHelper.message("default.copyright.startyear")
+        copyrightLegalNotice+=MessageHelper.message("default.copyright.endyear")
+        copyrightLegalNotice += ' ' + MessageHelper.message("default.copyright.message")
+        assertEquals (copyrightLegalNotice,aboutData.get("about.banner.copyright"))
+        assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright2"),aboutData.get("about.banner.copyrightLegalNotice"))
+    }
+
+    @Test
+    public void getAboutSuccessWithoutNecessaryRoles(){
+        loginSSB("HOSH00001", "111111")
+        def aboutData = aboutService.getAbout()
+        println aboutData
+        logout()
+        assertEquals(MessageHelper.message("about.banner.title"),aboutData.get("api.title"))
+        assertEquals(MessageHelper.message("about.banner.close"),aboutData.get("api.close"))
+        assertEquals(MessageHelper.message("about.banner.application.version"),aboutData.get("about.banner.application.name"))
+        assertEquals(MessageHelper.message("about.banner.platform.version"),aboutData.get("about.banner.application.version"))
+        def copyrightLegalNotice = MessageHelper.message("default.copyright.startyear")
+        copyrightLegalNotice+=MessageHelper.message("default.copyright.endyear")
+        copyrightLegalNotice += ' ' + MessageHelper.message("default.copyright.message")
+        assertEquals (copyrightLegalNotice,aboutData.get("about.banner.copyright"))
+        assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright2"),aboutData.get("about.banner.copyrightLegalNotice"))
+    }
+
+    @Test
     void testFormatCamelCaseToEnglish() {
         assertEquals("Banner", aboutService.formatCamelCaseToEnglish("banner"))
     }

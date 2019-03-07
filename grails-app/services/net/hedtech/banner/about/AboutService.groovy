@@ -1,9 +1,10 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
 
+import grails.util.Holders
 import grails.web.context.ServletContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.core.context.SecurityContextHolder
@@ -17,7 +18,8 @@ class AboutService {
     def sessionFactory
     def resourceProperties
     def messageSource
-
+    def springSecurityService
+    static final String WEB_TAILOR_ADMIN_ROLE = "ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M"
 
     def getAbout() {
         def about = [:]
@@ -28,6 +30,11 @@ class AboutService {
         about['api.close'] = getMessage("about.banner.close")
         about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
+        def authorities = springSecurityService?.getAuthentication()?.getAuthorities()?.asList()
+        def roles = Holders.config.aboutInfoAccessRoles
+        if (springSecurityService?.isLoggedIn() && isUserHasRequiredRoles(roles, authorities)) {
+            about['about.banner.platform.version'] = getPlatformVersion()
+        }
 
         /* Commented for now because we need only application name & version number.
          For specific role we have to show all the details but still not decided for which role to show all details.
@@ -40,6 +47,16 @@ class AboutService {
         about['about.banner.copyright'] = getCopyright()
         about['about.banner.copyrightLegalNotice'] = getCopyrightLegalNotice()
         return about
+    }
+
+    private boolean isUserHasRequiredRoles(ArrayList requiredRoles, ArrayList availableRoles){
+        for (String requiredRole in requiredRoles) {
+            for(String availableRole in availableRoles) {
+                if (availableRole.equalsIgnoreCase(requiredRole))
+                    return true
+            }
+        }
+        return false
     }
 
     private String getApplicationName(){
@@ -113,6 +130,10 @@ class AboutService {
         } else {
             getMessage("about.banner.application.version") + " " + grailsApplication.config.info.app.version
         }
+    }
+
+    private String getPlatformVersion(){
+        getMessage("about.banner.platform.version") + " " + Holders.config.app.platform.version
     }
 
 /*    private Map getPluginsInfo(def pattern) {
