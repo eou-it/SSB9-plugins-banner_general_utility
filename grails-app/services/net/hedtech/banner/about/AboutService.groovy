@@ -129,10 +129,11 @@ class AboutService {
     }*/
 
     private String getCopyright() {
-        getMessage("default.copyright.startyear")
-                .concat(getMessage("default.copyright.endyear")
-                .concat(" ")
-                .concat(getMessage("default.copyright.message")))
+        def startYear = getMessage("default.copyright.startyear")
+        def endYear = getMessage("default.copyright.endyear")
+        Object[] args = [startYear,endYear]
+        getMessage("default.copyright.message",args)
+
     }
 
     private String getCopyrightLegalNotice() {
@@ -160,8 +161,7 @@ class AboutService {
         }
     }
 
-    private String getMessage(String key) {
-        messageSource.getMessage(key, null, LocaleContextHolder.getLocale())
+    private String getMessage(String key,args= null) {
+        messageSource.getMessage(key, args, LocaleContextHolder.getLocale())
     }
-
 }
