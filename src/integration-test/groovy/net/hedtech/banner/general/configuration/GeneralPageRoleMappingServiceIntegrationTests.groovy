@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -27,7 +27,7 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        appName = Holders.grailsApplication.config.info.app.name
+        appName = 'TESTAPP'
         appId = 'TESTAPP'
     }
 
@@ -76,14 +76,14 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
     @Test
     public void testInvalidInterceptUrlMap() {
         try {
-            def properties = new Properties()
             def originalInterceptUrlMap = getInterceptedURLMap()
             assertTrue (originalInterceptUrlMap.size() >= 0)
             String invalidEntry = '/ssb/invalid/**'
-            originalInterceptUrlMap.put(invalidEntry, [])
-            properties.put('grails.plugin.springsecurity.interceptUrlMap', originalInterceptUrlMap)
-            def configSlurper = new ConfigSlurper()
-            Holders.config.merge(configSlurper.parse(properties))
+            Map invalidEntryMap = new LinkedHashMap()
+            invalidEntryMap.put('pattern',invalidEntry)
+            invalidEntryMap.put('access',[])
+            originalInterceptUrlMap.add(invalidEntryMap)
+            Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(invalidEntryMap)
 
             generalPageRoleMappingService.initialize()
             assertTrue generalPageRoleMappingService.fetchCompiledValue()?.size() >= 0
@@ -134,6 +134,8 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
 
     @Test
     public void testSeedInterceptUrlMapAtServerStartup() {
+        Holders.config.app.name=appName
+        Holders.config.app.appId=appId
         def properties = new Properties()
         properties.put('grails.plugin.springsecurity.interceptUrlMap', getInterceptedURLMap())
         def configSlurper = new ConfigSlurper()
@@ -141,19 +143,16 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
 
         generalPageRoleMappingService.seedInterceptUrlMapAtServerStartup()
 
-        LinkedHashMap<String, ArrayList<GeneralPageRoleMapping>> pageRoleMappingList = generalPageRoleMappingService.getPageRoleMappingList()
-        LinkedHashMap<String, List<String>> interceptedUrlMapFromDB = new LinkedHashMap<String, List<String>>()
-        pageRoleMappingList.each { String key, ArrayList<GeneralPageRoleMapping> grmList ->
-            def roleList = []
-            grmList.each { GeneralPageRoleMapping grm ->
-                roleList << grm.roleCode
-            }
-            grmList.each {
-                interceptedUrlMapFromDB.put(key, generalPageRoleMappingService.split(roleList?.join(',')))
-            }
+        LinkedHashSet<Map<String, ?>> pageRoleMappingList = generalPageRoleMappingService.getPageRoleMappingList()
+        ArrayList<Map<String, ?>> interceptedUrlMapFromDB = new ArrayList<Map<String, ?>>()
+        pageRoleMappingList.each {grmList ->
+            Map generalPageMap = new LinkedHashMap()
+            generalPageMap.put('pattern',grmList.pattern)
+            generalPageMap.put('access',grmList.access)
+            interceptedUrlMapFromDB.add(generalPageMap)
         }
 
-        assertTrue(interceptedUrlMapFromDB == Holders.config.grails.plugin.springsecurity.interceptUrlMap)
+        assertEquals(interceptedUrlMapFromDB, Holders.config.grails.plugin.springsecurity.interceptUrlMap)
     }
 
     private ConfigApplication saveDomains() {
@@ -228,33 +227,33 @@ class GeneralPageRoleMappingServiceIntegrationTests extends BaseIntegrationTestC
 
     private def getInterceptedURLMap() {
         return [
-                '/'                         : ['IS_AUTHENTICATED_ANONYMOUSLY'],
-                '/login/**'                 : ['IS_AUTHENTICATED_ANONYMOUSLY'],
-                '/logout/**'                : ['IS_AUTHENTICATED_ANONYMOUSLY'],
-                '/ssb/uiCatalog/index'      : ['IS_AUTHENTICATED_ANONYMOUSLY'],
-                '/ssb/AuthenticationTesting': ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                [pattern:'/',                  access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
+                [pattern:'/login/**',                 access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
+                [pattern:'/logout/**',            access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
+                [pattern:'/ssb/uiCatalog/index',      access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
+                [pattern:'/ssb/AuthenticationTesting',access: ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M',
-                                               'WEBUSER'],
-                '/ssb/survey/**'            : ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                               'WEBUSER']],
+                [pattern:'/ssb/survey/**',            access: ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
-                                               'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M'],
-                '/ssb/userAgreement/**'     : ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M']],
+                [pattern:'/ssb/userAgreement/**',     access: ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
-                                               'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M'],
-                '/ssb/securityQA/**'        : ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
+                                               'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M']],
+                [pattern:'/ssb/securityQA/**',        access: ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE_BAN_DEFAULT_M',
                                                'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
-                                               'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M'],
-                '/ssb/theme/**'             : ['IS_AUTHENTICATED_ANONYMOUSLY'],
-                '/ssb/themeEditor/**'       : ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M'],
-                '/ssb/themeEditor/test**'       : ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M'],
-                '/ssb/AuthenticationTesting/testingEndPoint1/testingEndPoint2/homePage': ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M'],
-                '/**'                       : ['IS_AUTHENTICATED_ANONYMOUSLY']
+                                               'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M']],
+                [pattern:'/ssb/theme/**',             access: ['IS_AUTHENTICATED_ANONYMOUSLY']],
+                [pattern:'/ssb/themeEditor/**',       access: ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M']],
+                [pattern:'/ssb/themeEditor/test**',       access: ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M']],
+                [pattern:'/ssb/AuthenticationTesting/testingEndPoint1/testingEndPoint2/homePage',access: ['ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M']],
+                [pattern:'/**',                     access: ['IS_AUTHENTICATED_ANONYMOUSLY']]
         ]
     }
 }

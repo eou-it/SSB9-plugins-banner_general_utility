@@ -119,7 +119,7 @@ class SelfServiceMenuService {
                 }
                 parentList.add(name: pName, caption: pCaption)
             }
-            sql.close()
+            //sql.close()
 
         }
         if (pName == null && !menuName.equalsIgnoreCase("bmenu.P_MainMnu")) {
@@ -136,7 +136,7 @@ class SelfServiceMenuService {
             sql.eachRow(sqlQuery, [menuName, "standalone_role_nav_bar", menuName]) {
                 parentList.add(name: it.TWGRMENU_NAME, caption: it.TWGRMENU_URL_TEXT)
             }
-            sql.close()
+            //sql.close()
         }
         log.trace("SelfServiceMenuService.getParent  url is $parentList ")
         return parentList
