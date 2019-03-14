@@ -29,6 +29,7 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     @After
     public void tearDown() {
         super.tearDown()
+        logout()
     }
 
     @Test
