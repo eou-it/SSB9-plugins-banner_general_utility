@@ -38,9 +38,9 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         println aboutData
         assertEquals(MessageHelper.message("about.banner.title"),aboutData.get("api.title"))
         assertEquals(MessageHelper.message("about.banner.close"),aboutData.get("api.close"))
-        def copyrightLegalNotice = MessageHelper.message("default.copyright.startyear")
-        copyrightLegalNotice+=MessageHelper.message("default.copyright.endyear")
-        copyrightLegalNotice += ' ' + MessageHelper.message("default.copyright.message")
+        String startyear = MessageHelper.message("default.copyright.startyear")
+        String endyear = MessageHelper.message("default.copyright.endyear")
+        def copyrightLegalNotice  = MessageHelper.message("default.copyright.message",startyear,endyear)
         assertEquals (copyrightLegalNotice,aboutData.get("about.banner.copyright"))
         assertEquals(MessageHelper.message("net.hedtech.banner.login.copyright2"),aboutData.get("about.banner.copyrightLegalNotice"))
     }
