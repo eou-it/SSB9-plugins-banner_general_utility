@@ -29,9 +29,8 @@ class AboutService {
         about['api.close'] = getMessage("about.banner.close")
         about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
-        def authorities = springSecurityService?.getAuthentication()?.getAuthorities()?.asList()
-        def roles = Holders?.config?.aboutInfoAccessRoles as ArrayList
-        if (springSecurityService?.isLoggedIn() && isUserHasRequiredRoles(roles, authorities)) {
+
+        if (displayPlatformVersion()) {
             about['about.banner.platform.version'] = getPlatformVersion()
         }
 
@@ -48,14 +47,15 @@ class AboutService {
         return about
     }
 
-    private boolean isUserHasRequiredRoles(ArrayList requiredRoles, ArrayList availableRoles){
-        for (String requiredRole in requiredRoles) {
-            for(String availableRole in availableRoles) {
-                if (availableRole.equalsIgnoreCase(requiredRole))
-                    return true
-            }
+    private boolean displayPlatformVersion(){
+        boolean displayPlatformVersion = false
+        ArrayList  userLoggedRoles = springSecurityService?.getAuthentication()?.getAuthorities()?.authority?.asList()
+        ArrayList  roles = Holders?.config?.aboutInfoAccessRoles as ArrayList
+
+        if (springSecurityService?.isLoggedIn() && !Collections.disjoint(userLoggedRoles , roles)) {
+            displayPlatformVersion = true
         }
-        return false
+        return displayPlatformVersion
     }
 
     private String getApplicationName(){

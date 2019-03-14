@@ -24,7 +24,7 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        app.platform.version="9.32"
+        Holders.config.app.platform.version="9.32"
     }
 
     @After
