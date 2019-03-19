@@ -68,8 +68,7 @@ class AboutService {
             if(resourceProperties){
                 formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
             } else {
-                //grailsApplication.metadata['app.name']
-                grailsApplication.config.info.app.name
+                grailsApplication.metadata['info.app.name']
             }
         }
     }
@@ -127,7 +126,7 @@ class AboutService {
         if (resourceProperties) {
             getMessage("about.banner.application.version") + " " + resourceProperties.getProperty("application.version")
         } else {
-            getMessage("about.banner.application.version") + " " + grailsApplication.config.info.app.version
+            getMessage("about.banner.application.version") + " " + grailsApplication.metadata['info.app.version']
         }
     }
 
