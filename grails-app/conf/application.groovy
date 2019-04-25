@@ -196,3 +196,10 @@ grails.config.locations = [
         BANNER_APP_CONFIG: "banner_configuration.groovy"
 ]
 
+//Added for integration tests to test with role
+environments {
+    test {
+        aboutInfoAccessRoles = ["ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M"]
+    }
+}
+

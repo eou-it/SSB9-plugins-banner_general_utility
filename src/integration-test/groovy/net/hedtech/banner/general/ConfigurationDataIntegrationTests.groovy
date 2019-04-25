@@ -5,9 +5,11 @@ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.general
 
 import grails.gorm.transactions.Rollback
+import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.util.GrailsWebMockUtil
 import groovy.sql.Sql
+import net.hedtech.banner.general.configuration.ConfigApplication
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.AfterClass
@@ -20,21 +22,24 @@ import org.springframework.web.context.request.RequestContextHolder
 import static groovy.test.GroovyAssert.shouldFail
 
 @Integration
+@Transactional
 @Rollback
 class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 
 	@Autowired
 	WebApplicationContext ctx
-	
+
 	@Before
     public void setUp() {
 		formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
 		super.setUp()
+		creatConfigApplication()
 	}
 
 	@After
     public void tearDown() {
 		super.tearDown()
+		deleteConfigApplication()
 	}
 
 	@AfterClass
@@ -46,7 +51,7 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	void testCreateConfigurationData() {
 		def configurationData = newConfigurationData()
 		save configurationData
-		//Test if the generated entity now has an id assigned		
+		//Test if the generated entity now has an id assigned
         assertNotNull configurationData.id
 	}
 
@@ -54,7 +59,7 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	void testFetchByNameAndType(){
 		def configurationData = newConfigurationData()
 		save configurationData
-		configurationData = ConfigurationData.fetchByNameAndType("TTTTT", "json","EXTZ")
+		configurationData = ConfigurationData.fetchByNameAndType("TTTTT", "json","EXTZTEST")
 		assertNotNull configurationData.id
 	}
 
@@ -62,7 +67,7 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	void testFetchTypes(){
 		def configurationData = newConfigurationData()
 		save configurationData
-		configurationData = ConfigurationData.fetchByType("json","EXTZ")
+		configurationData = ConfigurationData.fetchByType("json","EXTZTEST")
 		assertNotNull configurationData.id
 	}
 
@@ -82,7 +87,7 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	void testUpdateConfigurationData() {
 		def configurationData = newConfigurationData()
 		save configurationData
-       
+
         assertNotNull configurationData.id
         assertEquals 0L, configurationData.version
         assertEquals "TTTTT", configurationData.name
@@ -138,6 +143,8 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
 	}
 
   private def newConfigurationData() {
+	  ConfigApplication configApplication = creatConfigApplication()
+	  println(configApplication.appId)
     def configurationData = new ConfigurationData(
     		name: "TTTTT",
     		type: "json",
@@ -146,10 +153,31 @@ class ConfigurationDataIntegrationTests extends BaseIntegrationTestCase {
             lastModified: new Date(),
 			lastModifiedBy: "test",
 			dataOrigin: "Banner",
-			appId: "EXTZ"
+			appId: configApplication.appId
         )
         return configurationData
     }
 
+	def  creatConfigApplication() {
+		ConfigApplication configApplication = ConfigApplication.find {appName=='EXTZTEST' && appId=='EXTZTEST' }
+		if(!configApplication){
+		     configApplication = new ConfigApplication(
+				lastModified: new Date(),
+				appName: 'EXTZTEST',
+				appId: 'EXTZTEST'
+				)
+			configApplication = save configApplication
+		}
+
+		return configApplication
+	}
+
+	def deleteConfigApplication(){
+		ConfigApplication configApplication = ConfigApplication.find {appName=='EXTZTEST' && appId=='EXTZTEST' }
+		if(configApplication){
+			configApplication.delete( failOnError:true, flush: true )
+		}
+
+	}
 
 }
