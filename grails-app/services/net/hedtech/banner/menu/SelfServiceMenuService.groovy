@@ -1,25 +1,24 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.menu
 
+import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.commons.lang.math.RandomUtils
-import org.apache.log4j.Logger
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 
 /**
  * Service for retrieving Banner menu item for Classic SSB.
  */
-
+@Transactional
 class SelfServiceMenuService {
-    static transactional = true
+
     def sessionFactory
     def grailsApplication
     def messageSource
-    private static final Logger log = Logger.getLogger(getClass())
     static final String FETCH_ROLES = "{? = call TWBKSLIB.F_CASCADEFETCHROLE(?)}"
 
     /**
@@ -120,7 +119,7 @@ class SelfServiceMenuService {
                 }
                 parentList.add(name: pName, caption: pCaption)
             }
-            sql.close()
+            //sql.close()
 
         }
         if (pName == null && !menuName.equalsIgnoreCase("bmenu.P_MainMnu")) {
@@ -137,7 +136,7 @@ class SelfServiceMenuService {
             sql.eachRow(sqlQuery, [menuName, "standalone_role_nav_bar", menuName]) {
                 parentList.add(name: it.TWGRMENU_NAME, caption: it.TWGRMENU_URL_TEXT)
             }
-            sql.close()
+            //sql.close()
         }
         log.trace("SelfServiceMenuService.getParent  url is $parentList ")
         return parentList
