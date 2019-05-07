@@ -14,7 +14,7 @@ import java.text.ParseException
 import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
 import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import net.hedtech.banner.supplemental.SupplementalPropertyDiscriminatorContent
 import net.hedtech.banner.supplemental.SupplementalPropertyValue
 import org.hibernate.persister.entity.SingleTableEntityPersister
@@ -32,7 +32,6 @@ class SupplementalDataService {
     def grailsApplication        // injected by Spring
     private static String DEFAULT_DATE_FORMAT = "dd-MMM-yyyy"
 
-    private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(SupplementalDataService.class)
     def public i = 0
 
@@ -97,7 +96,7 @@ class SupplementalDataService {
             log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
             throw e
         } finally {
-            sql?.close()
+            //sql?.close()
         }
     }
 
@@ -133,7 +132,7 @@ class SupplementalDataService {
             log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
             throw e
         } finally {
-            sql?.close()
+            //sql?.close()
         }
     }
 
@@ -624,7 +623,7 @@ class SupplementalDataService {
                 }
 
                 log.debug("Querying on SDE Lookup Table executed")
-                sql.connection.close()
+                //sql.connection.close()
             }
 
             SupplementalPropertyDiscriminatorContent discProp =
@@ -850,7 +849,7 @@ class SupplementalDataService {
             }
 
             staticLogger.debug("Querying on SDE Lookup Table executed" )
-            sql.connection.close()
+            //sql.connection.close()
         }
         (lookupDomainList == [])?null:lookupDomainList[0]
     }
@@ -885,7 +884,7 @@ class SupplementalDataService {
             }
 
             staticLogger.debug("Querying on SDE Lookup Table executed" )
-            sql.connection.close()
+            //sql.connection.close()
         }
 
         return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
@@ -929,7 +928,7 @@ class SupplementalDataService {
             }
 
             staticLogger.debug("Querying on SDE Lookup Table executed" )
-            sql.connection.close()
+            //sql.connection.close()
         }
         return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
     }

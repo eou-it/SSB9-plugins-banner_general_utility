@@ -1,9 +1,10 @@
 /*******************************************************************************
 Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 
-import org.apache.log4j.Logger
+import org.slf4j.Logger;
 import org.springframework.security.core.context.SecurityContextHolder
+
 
 /**
  * SelfService controller returns menu as XML format
@@ -14,7 +15,7 @@ class SelfServiceMenuController {
 
     def selfServiceMenuService
     def mnuLabel = "Banner"
-    private static final def log = Logger.getLogger(getClass())
+
 
     def data = {
         def mnuParams
@@ -73,11 +74,21 @@ class SelfServiceMenuController {
         return session[currentMenu]
     }
     private def setHideSSBHeaderCompsParam(def mnuList){
+        Boolean hideSSBHeader = false
+        if(session['hideSSBHeaderComps'] != null){
+            if(session['hideSSBHeaderComps'] instanceof Boolean){
+                hideSSBHeader = session['hideSSBHeaderComps']
+            }else{
+                session['hideSSBHeaderComps'] = hideSSBHeader
+            }
+        }else{
+            session['hideSSBHeaderComps'] = hideSSBHeader
+        }
         mnuList.eachWithIndex{ SelfServiceMenu,  i ->
             if(SelfServiceMenu.url.indexOf(MEPCODE)>-1 && session["mep"]!=null){
                 SelfServiceMenu.url=SelfServiceMenu.url.replace("{mepCode}", session["mep"])
             }
-            if(session['hideSSBHeaderComps']!=null && session['hideSSBHeaderComps'].trim()=='true'){
+            if(hideSSBHeader){
                 String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
                 SelfServiceMenu.url=SelfServiceMenu.url+symbol+hideSSBHeaderComps;
             }
