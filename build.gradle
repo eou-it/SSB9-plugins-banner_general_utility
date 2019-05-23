@@ -21,6 +21,17 @@ apply plugin:"asset-pipeline"
 apply plugin:"org.grails.grails-gsp"
 apply plugin:'net.saliman.cobertura'
 
+codenarc {
+    toolVersion = '0.27.0'
+    configFile = file("${rootProject.projectDir}/config/codenarc/rules.groovy")
+    reportFormat = 'html'
+    ignoreFailures = true
+}
+
+cobertura {
+    coverageFormats = ['html', 'xml']
+}
+
 repositories {
     mavenLocal()
     maven { url "https://repo.grails.org/grails/core" }
