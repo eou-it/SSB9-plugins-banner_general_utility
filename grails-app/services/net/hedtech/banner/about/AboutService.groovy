@@ -51,7 +51,8 @@ class AboutService {
         boolean displayPlatformVersion = false
         if (springSecurityService?.isLoggedIn()) {
             ArrayList  userLoggedRoles = springSecurityService?.getAuthentication()?.getAuthorities()?.authority?.asList()
-            ArrayList  roles = (Holders?.config?.aboutInfoAccessRoles as ArrayList == null) ? new ArrayList() : roles
+            ArrayList  roles = Holders?.config?.aboutInfoAccessRoles as ArrayList
+            roles = (roles == null) ? new ArrayList() : roles
             if (!Collections.disjoint(userLoggedRoles , roles)) {
                 displayPlatformVersion = true
             }
