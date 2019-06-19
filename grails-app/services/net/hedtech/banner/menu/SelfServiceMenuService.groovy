@@ -19,6 +19,9 @@ class SelfServiceMenuService {
     def sessionFactory
     def grailsApplication
     def messageSource
+    static final String AMPERSAND="&";
+    static final String QUESTION_MARK="?";
+    static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
     static final String FETCH_ROLES = "{? = call TWBKSLIB.F_CASCADEFETCHROLE(?)}"
 
     /**
@@ -82,7 +85,8 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
-            mnu.url = it.twgrmenu_db_link_ind == "Y" ? getBanner8SsUrlFromConfig() + it.twgrmenu_url : it.twgrmenu_url
+            mnu.url = it.twgrmenu_db_link_ind == "Y" ? getBanner8SsUrlFromConfig() + it.twgrmenu_url :
+                    it.twgrmenu_url.indexOf(QUESTION_MARK) > -1 ? it.twgrmenu_url + AMPERSAND : it.twgrmenu_url + QUESTION_MARK + hideSSBHeaderComps
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
             mnu.sourceIndicator = it.twgrmenu_source_ind
