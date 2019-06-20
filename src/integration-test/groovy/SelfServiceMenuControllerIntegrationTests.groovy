@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 import grails.gorm.transactions.Rollback
@@ -25,6 +25,7 @@ class SelfServiceMenuControllerIntegrationTests extends BaseIntegrationTestCase{
     @Before
     public void setUp() {
         formContext = ['SELFSERVICE']
+        super.setUp()
         Holders.config.ssbEnabled = true
         Holders.config.banner.sso.authenticationProvider = "default";
         controller = new SelfServiceMenuController()

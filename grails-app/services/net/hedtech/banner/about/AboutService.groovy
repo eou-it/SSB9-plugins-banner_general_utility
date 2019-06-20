@@ -5,16 +5,13 @@
 package net.hedtech.banner.about
 
 import grails.util.Holders
-import grails.web.context.ServletContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
-import org.springframework.security.core.context.SecurityContextHolder
 import net.hedtech.banner.i18n.MessageHelper
 
 class AboutService {
 
     static transactional = false
     def grailsApplication
-    def pluginManager
     def sessionFactory
     def resourceProperties
     def messageSource
@@ -86,41 +83,6 @@ class AboutService {
 
     }
 
-/*
-    private String getMepDescription() {
-
-        String mepDescription
-        try {
-            def user = SecurityContextHolder.context.authentication?.user
-
-            if (user && user.mepHomeContext) {
-                mepDescription = user?.mepHomeContextDescription
-            }
-        } catch (Exception e) {
-            log.error "Exception Occured in method getMepDescription", e
-        }
-
-        return mepDescription
-
-    }
-
-
-    private Map getAppInfo() {
-        def appInfo = [:]
-        if (resourceProperties) {
-            appInfo[getMessage("about.banner.application.build.number")] = resourceProperties.getProperty("application.build.number")
-            appInfo[getMessage("about.banner.application.build.time")] = resourceProperties.getProperty("application.build.time");
-        } else {
-            appInfo[getMessage("about.banner.application.name")] = grailsApplication.metadata['app.name']
-            appInfo[getMessage("about.banner.application.version")] = grailsApplication.metadata['app.version']
-        }
-        //appInfo[getMessage("about.banner.db.instance.name")] = getDbInstanceName()
-        if (getUserName())
-            appInfo[getMessage("about.banner.username")] = getUserName()
-
-        return appInfo
-    }
- */
 
     private String getVersion(){
         if (resourceProperties) {
@@ -134,22 +96,10 @@ class AboutService {
         getMessage("about.banner.platform.version") + " " + Holders.config.app.platform.version
     }
 
-/*    private Map getPluginsInfo(def pattern) {
-        def pluginInfo = [:]
-        // plugin details
-        def plugins = pluginManager.allPlugins.findAll { plugin -> plugin.name ==~ pattern  }
-        //plugins.collect { def key = it.name; [key: it.value]}
-        plugins.each {
-            String name = formatCamelCaseToEnglish(it.name)
-            String version = it.version
-            pluginInfo[name] = version
-        }
-        return pluginInfo.sort { formatCamelCaseToEnglish(it.key) }
-    }*/
 
     private String getCopyright() {
-        def startYear = getMessage("default.copyright.startyear")
-        def endYear = getMessage("default.copyright.endyear")
+        String startYear = getMessage("default.copyright.startyear")
+        String endYear = getMessage("default.copyright.endyear")
         Object[] args = [startYear,endYear]
         getMessage("default.copyright.message",args)
 
@@ -159,18 +109,6 @@ class AboutService {
         getMessage("net.hedtech.banner.login.copyright2")
     }
 
-/*    private String getUserName() {
-        String userName = ""
-        try {
-            userName = SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase()
-        } catch (Exception e) {
-            log.error "Exception occured while executing getUserName method" , e
-        }
-        if("__grails.anonymous.user__".toUpperCase().equals(userName)){
-            userName = "N/A"
-        }
-        return userName
-    }*/
 
     private String formatCamelCaseToEnglish(value) {
         if(value) {
