@@ -1,9 +1,10 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
 
+import grails.util.Holders
 import grails.web.context.ServletContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.core.context.SecurityContextHolder
@@ -17,7 +18,7 @@ class AboutService {
     def sessionFactory
     def resourceProperties
     def messageSource
-
+    def springSecurityService
 
     def getAbout() {
         def about = [:]
@@ -28,6 +29,10 @@ class AboutService {
         about['api.close'] = getMessage("about.banner.close")
         about['about.banner.application.name'] = getApplicationName()
         about['about.banner.application.version'] = getVersion()
+
+        if (displayPlatformVersion()) {
+            about['about.banner.platform.version'] = getPlatformVersion()
+        }
 
         /* Commented for now because we need only application name & version number.
          For specific role we have to show all the details but still not decided for which role to show all details.
@@ -42,6 +47,17 @@ class AboutService {
         return about
     }
 
+    private boolean displayPlatformVersion(){
+        boolean displayPlatformVersion = false
+        ArrayList  userLoggedRoles = springSecurityService?.getAuthentication()?.getAuthorities()?.authority?.asList()
+        ArrayList  roles = Holders?.config?.aboutInfoAccessRoles as ArrayList
+
+        if (springSecurityService?.isLoggedIn() && !Collections.disjoint(userLoggedRoles , roles)) {
+            displayPlatformVersion = true
+        }
+        return displayPlatformVersion
+    }
+
     private String getApplicationName(){
         String aboutApplicationName = MessageHelper.message("about.application.name")
         if(!aboutApplicationName.equalsIgnoreCase("about.application.name"))
@@ -52,8 +68,7 @@ class AboutService {
             if(resourceProperties){
                 formatCamelCaseToEnglish(resourceProperties.getProperty("application.name"))
             } else {
-                //grailsApplication.metadata['app.name']
-                grailsApplication.config.info.app.name
+                grailsApplication.metadata['info.app.name']
             }
         }
     }
@@ -111,8 +126,12 @@ class AboutService {
         if (resourceProperties) {
             getMessage("about.banner.application.version") + " " + resourceProperties.getProperty("application.version")
         } else {
-            getMessage("about.banner.application.version") + " " + grailsApplication.config.info.app.version
+            getMessage("about.banner.application.version") + " " + grailsApplication.metadata['info.app.version']
         }
+    }
+
+    private String getPlatformVersion(){
+        getMessage("about.banner.platform.version") + " " + Holders.config.app.platform.version
     }
 
 /*    private Map getPluginsInfo(def pattern) {
@@ -129,10 +148,11 @@ class AboutService {
     }*/
 
     private String getCopyright() {
-        getMessage("default.copyright.startyear")
-                .concat(getMessage("default.copyright.endyear")
-                .concat(" ")
-                .concat(getMessage("default.copyright.message")))
+        def startYear = getMessage("default.copyright.startyear")
+        def endYear = getMessage("default.copyright.endyear")
+        Object[] args = [startYear,endYear]
+        getMessage("default.copyright.message",args)
+
     }
 
     private String getCopyrightLegalNotice() {
@@ -160,8 +180,7 @@ class AboutService {
         }
     }
 
-    private String getMessage(String key) {
-        messageSource.getMessage(key, null, LocaleContextHolder.getLocale())
+    private String getMessage(String key,args= null) {
+        messageSource.getMessage(key, args, LocaleContextHolder.getLocale())
     }
-
 }
