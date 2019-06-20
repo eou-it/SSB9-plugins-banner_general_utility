@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -25,7 +25,7 @@ class ConfigPropertiesIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        appName = Holders.grailsApplication.config.info.app.name
+        appName = 'TESTAPP'
         appId = 'TESTAPP'
     }
 

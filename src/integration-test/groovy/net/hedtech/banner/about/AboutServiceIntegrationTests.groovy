@@ -17,13 +17,17 @@ import org.junit.Test
 @Rollback
 class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     def aboutService
-    def grailsApplication
+    def messageSource
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+        //aboutService = new AboutService()
+        //aboutService.messageSource = messageSource
         Holders.config.app.platform.version="9.32"
+        Holders.config.info.app.version="9.32"
+        Holders.config.EnableLoginAudit='N'
     }
 
     @After
