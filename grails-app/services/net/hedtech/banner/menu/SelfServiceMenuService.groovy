@@ -7,6 +7,7 @@ import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.commons.lang.math.RandomUtils
+import org.hibernate.Session
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 
@@ -44,6 +45,17 @@ class SelfServiceMenuService {
         def dataMap = []
         def firstMenu = messageSource.getMessage("selfService.first.menu", null, LocaleContextHolder.getLocale())
 
+        Boolean hideSSBHeader = false
+        def session = RequestContextHolder.currentRequestAttributes()?.request?.session
+        if(session['hideSSBHeaderComps'] != null){
+            if(session['hideSSBHeaderComps'] instanceof Boolean){
+                hideSSBHeader = session['hideSSBHeaderComps']
+            }else{
+                session['hideSSBHeaderComps'] = hideSSBHeader
+            }
+        }else{
+            session['hideSSBHeaderComps'] = hideSSBHeader
+        }
         Sql sql
         log.trace("Process Menu started for nenu:" + menuName)
         sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -77,6 +89,7 @@ class SelfServiceMenuService {
         sql.eachRow(sqlQuery, [menuName, menuName, menuName]) {
 
             def mnu = new SelfServiceMenu()
+            String  hideSSBHeaderURL =" "
             mnu.formName = it.twgrmenu_url
             mnu.pageName = it.twgrmenu_submenu_ind == "Y" ? null : it.twgrmenu_url
             mnu.name = it.twgrmenu_url_text
@@ -85,8 +98,12 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
+            if (hideSSBHeader){
+                String symbol = it.twgrmenu_url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
+                hideSSBHeaderURL =it.twgrmenu_url+symbol+hideSSBHeaderComps
+            }
             mnu.url = it.twgrmenu_db_link_ind == "Y" ? getBanner8SsUrlFromConfig() + it.twgrmenu_url :
-                    it.twgrmenu_url.indexOf(QUESTION_MARK) > -1 ? it.twgrmenu_url + AMPERSAND : it.twgrmenu_url + QUESTION_MARK + hideSSBHeaderComps
+                    (hideSSBHeader ? hideSSBHeaderURL : it.twgrmenu_url)
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
             mnu.sourceIndicator = it.twgrmenu_source_ind
