@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 
 
 /**
+ *
  * SelfService controller returns menu as XML format
  * Request parameters
  *  menuName current menu
@@ -74,32 +75,14 @@ class SelfServiceMenuController {
         return session[currentMenu]
     }
     private def setHideSSBHeaderCompsParam(def mnuList){
-        Boolean hideSSBHeader = false
-        if(session['hideSSBHeaderComps'] != null){
-            if(session['hideSSBHeaderComps'] instanceof Boolean){
-                hideSSBHeader = session['hideSSBHeaderComps']
-            }else{
-                session['hideSSBHeaderComps'] = hideSSBHeader
-            }
-        }else{
-            session['hideSSBHeaderComps'] = hideSSBHeader
-        }
         mnuList.eachWithIndex{ SelfServiceMenu,  i ->
             if(SelfServiceMenu.url.indexOf(MEPCODE)>-1 && session["mep"]!=null){
                 SelfServiceMenu.url=SelfServiceMenu.url.replace("{mepCode}", session["mep"])
-            }
-            if(hideSSBHeader){
-                String symbol = SelfServiceMenu.url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
-                SelfServiceMenu.url=SelfServiceMenu.url+symbol+hideSSBHeaderComps;
             }
         }
         return mnuList
     }
 
-
-    static final String AMPERSAND="&";
-    static final String QUESTION_MARK="?";
-    static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
     static final String MEPCODE="{mepCode}";
 
 }
