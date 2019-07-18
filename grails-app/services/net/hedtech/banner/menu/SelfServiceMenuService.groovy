@@ -1,25 +1,28 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.menu
 
+import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import groovy.sql.Sql
 import org.apache.commons.lang.math.RandomUtils
-import org.apache.log4j.Logger
+import org.hibernate.Session
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.context.i18n.LocaleContextHolder
 
 /**
  * Service for retrieving Banner menu item for Classic SSB.
  */
-
+@Transactional
 class SelfServiceMenuService {
-    static transactional = true
+
     def sessionFactory
     def grailsApplication
     def messageSource
-    private static final Logger log = Logger.getLogger(getClass())
+    static final String AMPERSAND="&";
+    static final String QUESTION_MARK="?";
+    static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
     static final String FETCH_ROLES = "{? = call TWBKSLIB.F_CASCADEFETCHROLE(?)}"
 
     /**
@@ -42,6 +45,17 @@ class SelfServiceMenuService {
         def dataMap = []
         def firstMenu = messageSource.getMessage("selfService.first.menu", null, LocaleContextHolder.getLocale())
 
+        Boolean hideSSBHeader = false
+        def session = RequestContextHolder.currentRequestAttributes()?.request?.session
+        if(session['hideSSBHeaderComps'] != null){
+            if(session['hideSSBHeaderComps'] instanceof Boolean){
+                hideSSBHeader = session['hideSSBHeaderComps']
+            }else{
+                session['hideSSBHeaderComps'] = hideSSBHeader
+            }
+        }else{
+            session['hideSSBHeaderComps'] = hideSSBHeader
+        }
         Sql sql
         log.trace("Process Menu started for nenu:" + menuName)
         sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -75,6 +89,7 @@ class SelfServiceMenuService {
         sql.eachRow(sqlQuery, [menuName, menuName, menuName]) {
 
             def mnu = new SelfServiceMenu()
+            String  hideSSBHeaderURL =" "
             mnu.formName = it.twgrmenu_url
             mnu.pageName = it.twgrmenu_submenu_ind == "Y" ? null : it.twgrmenu_url
             mnu.name = it.twgrmenu_url_text
@@ -83,7 +98,12 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
-            mnu.url = it.twgrmenu_db_link_ind == "Y" ? getBanner8SsUrlFromConfig() + it.twgrmenu_url : it.twgrmenu_url
+            if (hideSSBHeader){
+                String symbol = it.twgrmenu_url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
+                hideSSBHeaderURL =it.twgrmenu_url+symbol+hideSSBHeaderComps
+            }
+            mnu.url = it.twgrmenu_db_link_ind == "Y" ? getBanner8SsUrlFromConfig() + it.twgrmenu_url :
+                    (hideSSBHeader ? hideSSBHeaderURL : it.twgrmenu_url)
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
             mnu.sourceIndicator = it.twgrmenu_source_ind
@@ -120,7 +140,7 @@ class SelfServiceMenuService {
                 }
                 parentList.add(name: pName, caption: pCaption)
             }
-            sql.close()
+            //sql.close()
 
         }
         if (pName == null && !menuName.equalsIgnoreCase("bmenu.P_MainMnu")) {
@@ -137,7 +157,7 @@ class SelfServiceMenuService {
             sql.eachRow(sqlQuery, [menuName, "standalone_role_nav_bar", menuName]) {
                 parentList.add(name: it.TWGRMENU_NAME, caption: it.TWGRMENU_URL_TEXT)
             }
-            sql.close()
+            //sql.close()
         }
         log.trace("SelfServiceMenuService.getParent  url is $parentList ")
         return parentList

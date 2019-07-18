@@ -32,7 +32,8 @@ class BannerMessagesTagLib {
 
     def String getMessages() {
         def map = [:]
-        grailsApplication.mainContext.getBean('messageSource').getMergedPluginProperties(LocaleContextHolder.getLocale()).properties.each { key ->
+
+        grailsApplication.mainContext.getBean( 'messageSource' ).getMergedBinaryPluginProperties(LocaleContextHolder.getLocale()).properties.each {key ->
             map.put key.key, key.value
         }
 

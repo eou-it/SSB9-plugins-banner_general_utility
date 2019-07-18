@@ -4,23 +4,22 @@
 
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Transactional
 import grails.util.Holders as CH
 import groovy.sql.Sql
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
-import org.apache.log4j.Logger
 import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 /**
  * The service is used to fetch all the global/app based config properties from DB
  * and will merge those props to Context Holder by the help of bootstrap.
  */
+
+
+@Transactional
 class ConfigPropertiesService extends ServiceBase {
-
-    static transactional = true
-
-    private static final LOGGER = Logger.getLogger(ConfigPropertiesService.class.name)
 
     private static final String GLOBAL = "GLOBAL"
 
@@ -46,8 +45,8 @@ class ConfigPropertiesService extends ServiceBase {
      * This method will be get called in bootstrap to load all the config properties from the DB.
      */
     public void setConfigFromDb() {
-        String appId = grailsApplication.metadata['app.appId']
-        LOGGER.info("Fetching config from DB for appId = ${ appId }")
+        String appId = CH.config.app.appId
+        log.info("Fetching config from DB for appId = ${ appId }")
         try {
             ArrayList configProp = ConfigProperties.fetchSimpleConfigByAppId(GLOBAL)
             mergeConfigProperties(configProp)
@@ -58,7 +57,7 @@ class ConfigPropertiesService extends ServiceBase {
             }
         }
         catch (InvalidDataAccessResourceUsageException ex) {
-            LOGGER.error("Exception occured  while fetching ConfigProperties from DB, Self Service Config Table doesn't exist")
+            log.error("Exception occured  while fetching ConfigProperties from DB, Self Service Config Table doesn't exist")
         }
 
     }
@@ -68,7 +67,7 @@ class ConfigPropertiesService extends ServiceBase {
      * @param configProps Data type is ArrayList, this list will hold the config properties.
      */
     private void mergeConfigProperties(ArrayList configProps) {
-        LOGGER.debug('Config fetched from DB' + configProps)
+        log.debug('Config fetched from DB' + configProps)
         configProps?.each {configProp ->
             Properties property = new Properties()
             def configKey   = configProp?.configName
@@ -79,7 +78,7 @@ class ConfigPropertiesService extends ServiceBase {
             property.put(configKey, configValue)
             CH.config.merge(configSlurper.parse(property))
         }
-        LOGGER.debug('Setting config from DB')
+        log.debug('Setting config from DB')
     }
 
 
@@ -113,8 +112,8 @@ class ConfigPropertiesService extends ServiceBase {
 
 
     public void seedDataToDBFromConfig() {
-        String appName = grailsApplication.metadata['app.name']
-        String appId = grailsApplication.metadata['app.appId']
+        String appName = CH.config.app.name
+        String appId = CH.config.app.appId
         if (appId) {
             try {
                 ConfigApplication configApp = ConfigApplication.fetchByAppId(appId)
@@ -127,17 +126,17 @@ class ConfigPropertiesService extends ServiceBase {
                 }
                 def appSeedDataKey = CH.config.ssconfig.app.seeddata.keys
                 def globalSeedDataKey = CH.config.ssconfig.global.seeddata.keys
-                LOGGER.debug("App seeddata defined in config is : " + appSeedDataKey)
-                LOGGER.debug("Global seeddata defined in config is : " + globalSeedDataKey)
+                log.debug("App seeddata defined in config is : " + appSeedDataKey)
+                log.debug("Global seeddata defined in config is : " + globalSeedDataKey)
 
                 seedConfigDataToDB(appId, appSeedDataKey)
                 seedConfigDataToDB(GLOBAL, globalSeedDataKey)
             }
             catch (InvalidDataAccessResourceUsageException ex) {
-                LOGGER.error("Exception occured while running seedDataToDBFromConfig method, SelfService Config Table doesn't exist" + ex.getMessage())
+                log.error("Exception occured while running seedDataToDBFromConfig method, SelfService Config Table doesn't exist" + ex.getMessage())
             }
         } else {
-            LOGGER.error("No App Id Specified in application.properties");
+            log.error("No App Id Specified in application.properties");
         }
     }
 
@@ -157,7 +156,7 @@ class ConfigPropertiesService extends ServiceBase {
                 this.create(cp)
             }
             catch (InvalidDataAccessResourceUsageException ex) {
-                LOGGER.error("Exception occured while executing seedUserPreferenceConfig " + ex.getMessage())
+                log.error("Exception occured while executing seedUserPreferenceConfig " + ex.getMessage())
             }
         }
     }

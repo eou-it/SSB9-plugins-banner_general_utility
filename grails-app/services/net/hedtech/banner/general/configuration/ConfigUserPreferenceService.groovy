@@ -1,22 +1,20 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
-
 package net.hedtech.banner.general.configuration
 
+import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.service.ServiceBase
-import org.apache.log4j.Logger
 
+
+@Transactional
 class ConfigUserPreferenceService extends ServiceBase {
 
-    static transactional = true
-
     def grailsApplication
-
-    private static final LOGGER = Logger.getLogger(ConfigUserPreferenceService.class.name)
+    def sessionFactory
 
     private static String CONFIGNAME_LOCALE = "locale"
 
@@ -37,13 +35,13 @@ class ConfigUserPreferenceService extends ServiceBase {
                 selectedUserLocale = new Locale(userLocale)
             }
         }
-        LOGGER.debug("User locale is = ${selectedUserLocale}")
+        log.debug("User locale is = ${selectedUserLocale}")
         return selectedUserLocale
     }
 
 
     public static getUserPreferenceByConfigNameAppIdAndPidm(String configName, String appId, Integer pidm = null) {
-        LOGGER.debug("Fetching config with config name = ${ configName } and appId = ${ appId }")
+        log.debug("Fetching config with config name = ${ configName } and appId = ${ appId }")
         ConfigProperties configProperties
         def userConfiguration
         if (appId) {
@@ -64,7 +62,7 @@ class ConfigUserPreferenceService extends ServiceBase {
         } else {                                                     // GUROCFG_USERPREF_IND = 'N"
             userConfiguration = configProperties
         }
-        LOGGER.debug("Fetched config with config name = ${ configName } and value = ${ userConfiguration?.configValue }")
+        log.debug("Fetched config with config name = ${ configName } and value = ${ userConfiguration?.configValue }")
         return userConfiguration
     }
 
@@ -91,7 +89,7 @@ class ConfigUserPreferenceService extends ServiceBase {
             status = 'success'
         }
         catch (ApplicationException ae) {
-            LOGGER.error('SaveLocale failed with error ', ae)
+            log.error('SaveLocale failed with error ', ae)
             status = 'failure'
         }
         return [status: status]
@@ -119,10 +117,9 @@ class ConfigUserPreferenceService extends ServiceBase {
                 supportedLocales.add([locale: newlocale, description: localeDisplayName])
             }
         }
-        LOGGER.debug("Banner Supported Locales are before = ${supportedLocales}")
+        log.debug("Banner Supported Locales are before = ${supportedLocales}")
         supportedLocales.unique()
-        LOGGER.debug("Banner Supported Locales are after = ${supportedLocales}")
+        log.debug("Banner Supported Locales are after = ${supportedLocales}")
         return supportedLocales
     }
-
 }
