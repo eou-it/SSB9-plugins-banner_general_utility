@@ -46,11 +46,13 @@ class AboutService {
 
     private boolean displayPlatformVersion(){
         boolean displayPlatformVersion = false
-        ArrayList  userLoggedRoles = springSecurityService?.getAuthentication()?.getAuthorities()?.authority?.asList()
-        ArrayList  roles = Holders?.config?.aboutInfoAccessRoles as ArrayList
-
-        if (springSecurityService?.isLoggedIn() && !Collections.disjoint(userLoggedRoles , roles)) {
-            displayPlatformVersion = true
+        if (springSecurityService?.isLoggedIn()) {
+            ArrayList  userLoggedRoles = springSecurityService?.getAuthentication()?.getAuthorities()?.authority?.asList()
+            ArrayList  roles = Holders?.config?.aboutInfoAccessRoles as ArrayList
+            roles = (roles == null) ? new ArrayList() : roles
+            if (!Collections.disjoint(userLoggedRoles , roles)) {
+                displayPlatformVersion = true
+            }
         }
         return displayPlatformVersion
     }
