@@ -45,7 +45,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
     void testfetchAll() {
         ConfigRolePageMapping configRolePageMap = saveConfigRolePageMapping()
 
-        def list = configRolePageMap.fetchAll()
+        def list = configRolePageMap.findAll()
         assert (list.size() >= 0)
     }
 
@@ -96,7 +96,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull newConfigRolePageMap.id
         assertEquals 0L, newConfigRolePageMap.version
 
-        def configRolePageMaps = ConfigRolePageMapping.fetchAll()
+        def configRolePageMaps = ConfigRolePageMapping.findAll()
         assertFalse configRolePageMaps.isEmpty()
         configRolePageMaps.each { configRolePageMap ->
             String configRolePageMapToString = configRolePageMap.toString()
@@ -112,7 +112,7 @@ class ConfigRolePageMappingIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull newConfigRolePageMap.id
         assertEquals 0L, newConfigRolePageMap.version
 
-        def configRolePageMaps = ConfigRolePageMapping.fetchAll()
+        def configRolePageMaps = ConfigRolePageMapping.findAll()
         assertFalse configRolePageMaps.isEmpty()
         configRolePageMaps.each { configRolePageMap ->
             Integer configRolePageMapHashCode = configRolePageMap.hashCode()
