@@ -200,6 +200,8 @@ grails.config.locations = [
 environments {
     test {
         aboutInfoAccessRoles = ["ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M"]
+        app.platform.version = "9.32"
+        info.app.version = "9.32"
     }
 }
 
