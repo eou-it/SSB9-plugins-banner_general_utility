@@ -27,8 +27,8 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         super.setUp()
         //aboutService = new AboutService()
         //aboutService.messageSource = messageSource
-        applicationVersion = Holders.config.app.platform.version
-        platformVersion = Holders.config.info.app.version
+        applicationVersion = Holders.config.info.app.version
+        platformVersion= Holders.config.app.platform.version
         Holders.config.EnableLoginAudit='N'
     }
 
@@ -56,6 +56,9 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         def aboutData = aboutService.getAbout()
         assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion,aboutData.get("about.banner.application.version"))
         assertNull(aboutData.get("about.banner.platform.version"))
+        println("#########################################################################################")
+        println("Application Version: " + applicationVersion)
+        println("#########################################################################################")
     }
 
     @Test
@@ -65,6 +68,9 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion,aboutData.get("about.banner.application.version"))
         Holders.config.app.platform.version
         assertNull(aboutData.get("about.banner.platform.version"))
+        println("#########################################################################################")
+        println("Application Version: " + applicationVersion)
+        println("#########################################################################################")
     }
 
     @Test
@@ -73,7 +79,15 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         def aboutData = aboutService.getAbout()
         assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion,aboutData.get("about.banner.application.version"))
         platformVersion = ""
+        println("#########################################################################################")
+        println("Application Version: " + applicationVersion)
+        println("Platform Version: " + platformVersion)
+        println("#########################################################################################")
         assertNotEquals(MessageHelper.message("about.banner.platform.version") + " " + platformVersion, aboutData.get("about.banner.platform.version"))
+        platformVersion = Holders.config.app.platform.version
+        println("#########################################################################################")
+        println("Platform Version after reset: " + platformVersion)
+        println("#########################################################################################")
     }
 
     @Test
@@ -82,6 +96,10 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         def aboutData = aboutService.getAbout()
         assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion, aboutData.get("about.banner.application.version"))
         assertEquals(MessageHelper.message("about.banner.platform.version") + " " + platformVersion, aboutData.get("about.banner.platform.version"))
+        println("#########################################################################################")
+        println("Application Version: " + applicationVersion)
+        println("Platform Version: " + platformVersion)
+        println("#########################################################################################")
     }
 
     @Test
