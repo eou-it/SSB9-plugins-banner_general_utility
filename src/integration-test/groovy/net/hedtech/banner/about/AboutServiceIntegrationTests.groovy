@@ -18,6 +18,8 @@ import org.junit.Test
 class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     def aboutService
     def messageSource
+    def applicationVersion
+    def platformVersion
 
     @Before
     public void setUp() {
@@ -25,8 +27,8 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         super.setUp()
         //aboutService = new AboutService()
         //aboutService.messageSource = messageSource
-        Holders.config.app.platform.version="9.32"
-        Holders.config.info.app.version="9.32"
+        applicationVersion = Holders.config.app.platform.version
+        platformVersion = Holders.config.info.app.version
         Holders.config.EnableLoginAudit='N'
     }
 
@@ -49,22 +51,37 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void checkPlatformVersionWithNecessaryRoles(){
-        loginSSB("CBUNTE3", "111111")
+    public void checkPlatformVersionWithoutNecessaryRolesAndConfig(){
+        loginSSB("HOSH00001", "111111")
         def aboutData = aboutService.getAbout()
-        String applicationVersion = Holders.config.info.app.version
-        String platformVersion = Holders.config.app.platform.version
         assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion,aboutData.get("about.banner.application.version"))
-        assertEquals(MessageHelper.message("about.banner.platform.version") + " " + platformVersion,aboutData.get("about.banner.platform.version"))
+        assertNull(aboutData.get("about.banner.platform.version"))
     }
 
     @Test
-    public void checkPlatformVersionWithoutNecessaryRoles(){
+    public void checkPlatformVersionWithoutNecessaryRolesAndWithConfig(){
         loginSSB("HOSH00001", "111111")
         def aboutData = aboutService.getAbout()
-        String applicationVersion = Holders.config.info.app.version
         assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion,aboutData.get("about.banner.application.version"))
+        Holders.config.app.platform.version
         assertNull(aboutData.get("about.banner.platform.version"))
+    }
+
+    @Test
+    public void checkPlatformVersionWithNecessaryRolesAndWithoutConfig(){
+        loginSSB("CBUNTE3", "111111")
+        def aboutData = aboutService.getAbout()
+        assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion,aboutData.get("about.banner.application.version"))
+        platformVersion = ""
+        assertNotEquals(MessageHelper.message("about.banner.platform.version") + " " + platformVersion, aboutData.get("about.banner.platform.version"))
+    }
+
+    @Test
+    public void checkPlatformVersionWithNecessaryRolesAndConfig(){
+        loginSSB("CBUNTE3", "111111")
+        def aboutData = aboutService.getAbout()
+        assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion, aboutData.get("about.banner.application.version"))
+        assertEquals(MessageHelper.message("about.banner.platform.version") + " " + platformVersion, aboutData.get("about.banner.platform.version"))
     }
 
     @Test
