@@ -78,7 +78,7 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     @Test
     public void checkPlatformVersionWithNecessaryRolesAndConfig(){
         loginSSB("CBUNTE3", "111111")
-        Holders.config.aboutInfoAccessRoles=[ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M]
+        Holders.config.aboutInfoAccessRoles=["ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M"]
         def aboutData = aboutService.getAbout()
         def applicationVersion = Holders.config.info.app.version
         assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion, aboutData.get("about.banner.application.version"))
