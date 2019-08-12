@@ -6,6 +6,7 @@ package net.hedtech.banner.supplemental
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import groovy.sql.Sql
+import groovy.util.logging.Slf4j
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.supplemental.test.ZipTest
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -22,9 +23,9 @@ import java.text.ParseException
  */
 @Integration
 @Rollback
+@Slf4j
 class SupplementalDataSSBServiceIntegrationTests extends BaseIntegrationTestCase {
     def supplementalDataSSBService        // injected by Spring
-    private static final def log = Logger.getLogger(getClass())
     def sessionFactory
 
     @Before
