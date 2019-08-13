@@ -1,13 +1,12 @@
 /*******************************************************************************
- Copyright 2014-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2014-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.supplemental
 
 import grails.util.Holders
 import groovy.sql.Sql
-
-import org.apache.log4j.Logger
+import groovy.util.logging.Slf4j
 
 import java.text.SimpleDateFormat
 import java.text.ParseException
@@ -15,8 +14,6 @@ import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
 import org.springframework.context.ApplicationContext
 import grails.core.GrailsApplication
-import net.hedtech.banner.supplemental.SupplementalPropertyDiscriminatorContent
-import net.hedtech.banner.supplemental.SupplementalPropertyValue
 import org.hibernate.persister.entity.SingleTableEntityPersister
 import org.hibernate.MappingException
 import groovy.sql.GroovyRowResult
@@ -25,6 +22,7 @@ import groovy.sql.GroovyRowResult
  * DAO for supplemental data. This strategy works against the
  * GOVSDAV view for both reading and writing supplemental data.
  */
+@Slf4j
 class SupplementalDataService {
 
     def dataSource               // injected by Spring

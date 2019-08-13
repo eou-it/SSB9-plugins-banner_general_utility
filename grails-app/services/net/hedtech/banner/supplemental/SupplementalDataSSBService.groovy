@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.supplemental
@@ -7,9 +7,9 @@ package net.hedtech.banner.supplemental
 import grails.util.Holders
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
+import groovy.util.logging.Slf4j
 import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
-import org.apache.log4j.Logger
 import grails.core.GrailsApplication
 import org.hibernate.MappingException
 import org.hibernate.persister.entity.SingleTableEntityPersister
@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat
  * This strategy works against the
  * GOVSDAV view for both reading and writing supplemental data.
  */
+@Slf4j
 class SupplementalDataSSBService {
 
     def dataSource               // injected by Spring
