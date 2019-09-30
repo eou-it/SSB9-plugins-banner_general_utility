@@ -254,6 +254,47 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         })
         return entry
     }
+    /**
+     * Base method implementation taken from PluginAwareResourceBundleMessageSource in grails 3.x
+     *
+     * Added functionality to have application messages override plugin messages.
+     *
+     * Added functionality to have TextManager messages override all others.
+     */
+    @Override
+    protected PropertiesHolder getMergedBinaryPluginProperties(final Locale locale) {
+        return CacheEntry.getValue(bannerCachedMergedPluginProperties, locale, cacheMillis, new Callable<PropertiesHolder>() {
+            @Override
+            public PropertiesHolder call() throws Exception {
+                Properties mergedProps = new Properties();
+                PropertiesHolder mergedHolder = new PropertiesHolder(mergedProps);
+                mergeBinaryPluginProperties(locale, mergedProps);
+
+                log.debug "After get resources loop: ${mergedProps.size()}"
+                for (String basename : pluginBaseNames) {
+                    List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(basename, locale)
+                    for (int j = filenamesAndResources.size() - 1; j >= 0; j--) {
+                        Pair<String, Resource> filenameAndResource = filenamesAndResources.get(j)
+                        if(filenameAndResource.getbValue() != null) {
+                            PropertiesHolder propHolder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue())
+                            mergedProps.putAll(propHolder.getProperties())
+                        }
+                    }
+                }
+                // override plugin messages with application messages
+                getMergedProperties(locale).properties.each { key ->
+                    mergedProps.put key.key, key.value
+                }
+                log.debug "After get application resources loop: ${mergedProps.size()}"
+
+
+                mergeTextManagerProperties(locale, mergedProps)
+                log.debug "After mergeTextManager: ${mergedProps.size()}}"
+                return mergedHolder;
+            }
+
+        });
+    }
 
     /**
      * Merge all text manager properties for this locale into props
