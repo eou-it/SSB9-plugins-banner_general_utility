@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.i18n
 
@@ -53,7 +53,7 @@ class BannerMessageSourceIntegrationTests extends BaseIntegrationTestCase {
         subDir.deleteDir()
     }
 
-    @Test
+   @Test
     void testMessageSource() {
         def names = messageSource.getNormalizedNames()
         def properties = []
@@ -64,6 +64,8 @@ class BannerMessageSourceIntegrationTests extends BaseIntegrationTestCase {
         assert properties.size  > 0
     }
 
+
+    @Test
     void "test getMergedPluginProperties"() {
         when:
         def properties = messageSource.getMergedPluginProperties(new Locale('en')).properties
@@ -72,6 +74,13 @@ class BannerMessageSourceIntegrationTests extends BaseIntegrationTestCase {
         then:
         count > 0
         count == properties.count( { _, value -> value.startsWith( StubbyTextManagerService.MOCK_PREFIX )})
+    }
+
+    @Test
+    void getMergedBinaryPluginPropertiesTest() {
+        def properties = messageSource.getMergedBinaryPluginProperties(new Locale('en')).properties
+        def count = properties.size()
+        assert count > 0
     }
 
 }
