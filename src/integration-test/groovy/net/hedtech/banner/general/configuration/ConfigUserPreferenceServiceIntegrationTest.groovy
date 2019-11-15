@@ -37,7 +37,7 @@ class ConfigUserPreferenceServiceIntegrationTest extends BaseIntegrationTestCase
         super.setUp()
         configUserPreferenceService = new ConfigUserPreferenceService()
         configUserPreferenceService.sessionFactory = Holders.grailsApplication.getMainContext().sessionFactory
-        appName = Holders.grailsApplication.config.info.app.name
+        appName = 'TESTAPP'
         appId = 'TESTAPP'
         pidm = getPidmBySpridenId("HOSH00002")
     }

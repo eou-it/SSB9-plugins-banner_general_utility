@@ -10,7 +10,7 @@ buildscript {
         classpath "net.saliman:gradle-cobertura-plugin:2.6.0"
     }
 }
-version "9.32"
+version "9.33"
 group "bannergeneralutilty"
 
 apply plugin:"eclipse"
@@ -92,4 +92,8 @@ codenarc {
     maxPriority1Violations = Integer.MAX_VALUE
     maxPriority2Violations = Integer.MAX_VALUE
     maxPriority3Violations = Integer.MAX_VALUE
+}
+
+integrationTest {
+    ignoreFailures = true
 }
