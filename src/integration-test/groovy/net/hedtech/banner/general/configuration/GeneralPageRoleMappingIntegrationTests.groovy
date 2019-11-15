@@ -24,7 +24,7 @@ class GeneralPageRoleMappingIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        appName = Holders.grailsApplication.config.info.app.name
+        appName = 'TESTAPP'
         appId = 'TESTAPP'
     }
 

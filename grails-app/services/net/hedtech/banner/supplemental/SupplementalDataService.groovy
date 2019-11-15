@@ -1,13 +1,12 @@
 /*******************************************************************************
- Copyright 2014-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2014-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.supplemental
 
 import grails.util.Holders
 import groovy.sql.Sql
-
-import org.apache.log4j.Logger
+import groovy.util.logging.Slf4j
 
 import java.text.SimpleDateFormat
 import java.text.ParseException
@@ -15,8 +14,6 @@ import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
 import org.springframework.context.ApplicationContext
 import grails.core.GrailsApplication
-import net.hedtech.banner.supplemental.SupplementalPropertyDiscriminatorContent
-import net.hedtech.banner.supplemental.SupplementalPropertyValue
 import org.hibernate.persister.entity.SingleTableEntityPersister
 import org.hibernate.MappingException
 import groovy.sql.GroovyRowResult
@@ -25,6 +22,7 @@ import groovy.sql.GroovyRowResult
  * DAO for supplemental data. This strategy works against the
  * GOVSDAV view for both reading and writing supplemental data.
  */
+@Slf4j
 class SupplementalDataService {
 
     def dataSource               // injected by Spring
@@ -32,7 +30,6 @@ class SupplementalDataService {
     def grailsApplication        // injected by Spring
     private static String DEFAULT_DATE_FORMAT = "dd-MMM-yyyy"
 
-    private static final Logger staticLogger = Logger.getLogger(SupplementalDataService.class)
     def public i = 0
 
 
@@ -837,18 +834,18 @@ class SupplementalDataService {
                     query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    log.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table started")
+            log.debug("Querying on SDE Lookup Table started")
             Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
 
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            log.debug("Querying on SDE Lookup Table executed" )
             //sql.connection.close()
         }
         (lookupDomainList == [])?null:lookupDomainList[0]
@@ -872,18 +869,18 @@ class SupplementalDataService {
                     query += " where GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    log.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table started")
+            log.debug("Querying on SDE Lookup Table started")
             Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
 
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            log.debug("Querying on SDE Lookup Table executed" )
             //sql.connection.close()
         }
 
@@ -916,18 +913,18 @@ class SupplementalDataService {
                     query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
                     query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
                 } else {
-                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                    log.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
                 }
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table started")
+            log.debug("Querying on SDE Lookup Table started")
             Sql sql = new Sql(Holders.getGrailsApplication().getMainContext().sessionFactory.getCurrentSession().connection())
 
             sql.rows(query)?.each { row ->
                 createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
             }
 
-            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            log.debug("Querying on SDE Lookup Table executed" )
             //sql.connection.close()
         }
         return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
