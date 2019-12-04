@@ -42,6 +42,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     protected List basenamesExposed = []
     protected List pluginBaseNames = []
     private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> bannerCachedMergedPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>()
+    private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> bannerCachedMergedBinaryPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>()
 
     LinkedHashMap normalizedNamesIndex
 
@@ -263,11 +264,15 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
      */
     @Override
     protected PropertiesHolder getMergedBinaryPluginProperties(final Locale locale) {
-        return CacheEntry.getValue(bannerCachedMergedPluginProperties, locale, cacheMillis, new Callable<PropertiesHolder>() {
+        PluginAwareResourceBundleMessageSource self = this
+        if(bannerCachedMergedBinaryPluginProperties.size()>0){
+            bannerCachedMergedBinaryPluginProperties.clear()
+        }
+        return CacheEntry.getValue(bannerCachedMergedBinaryPluginProperties, locale, cacheMillis, new Callable<PropertiesHolder>() {
             @Override
             public PropertiesHolder call() throws Exception {
                 Properties mergedProps = new Properties();
-                PropertiesHolder mergedHolder = new PropertiesHolder(mergedProps);
+                PropertiesHolder mergedHolder = new PropertiesHolder(self, mergedProps);
                 mergeBinaryPluginProperties(locale, mergedProps);
 
                 log.debug "After get resources loop: ${mergedProps.size()}"
