@@ -13,12 +13,15 @@ import grails.util.Holders
  * */
 
 class BootStrap {
-    def menuService
     def configPropertiesService
     def generalPageRoleMappingService
     def springSecurityService
 
     def init = { servletContext ->
+        ExpandoMetaClass.enableGlobally();
+        Holders.metaClass.static.getConfig = {
+            return BannerHolders.config
+        }
         if (Environment.current != Environment.TEST) {
             configPropertiesService.seedDataToDBFromConfig()
             configPropertiesService.seedUserPreferenceConfig()
