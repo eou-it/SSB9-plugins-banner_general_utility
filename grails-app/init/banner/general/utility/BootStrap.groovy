@@ -18,7 +18,6 @@ class BootStrap {
     def springSecurityService
 
     def init = { servletContext ->
-        ExpandoMetaClass.enableGlobally();
         Holders.metaClass.static.getConfig = {
             return BannerHolders.config
         }

@@ -5,7 +5,6 @@ package banner.general.utility
 
 import grails.config.Config
 import grails.util.Holders
-import groovy.transform.Synchronized
 import groovy.util.logging.Slf4j
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -28,8 +27,15 @@ public class BannerHolders {
         // RequestContextHolder.currentRequestAttributes() method will throws an exception when the
         // call to this block from BootStrap or Cron jobs etc., in this case it should return the non mep'd config object.
         try {
-            String sessionMepCode = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
-            setConfiguration( sessionMepCode, result )
+            final boolean isWebRequest = ( RequestContextHolder.getRequestAttributes() != null )
+
+            // Check if this call is from web-request
+            if ( isWebRequest ) {
+                String sessionMepCode = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+                setConfiguration( sessionMepCode, result )
+            }
+        } catch (Exception e) {
+            log.debug( "Exception in BannerHolders.setConfiguration()", e.stackTrace );
         } finally {
             // Returning the Config object.
             return result
@@ -37,14 +43,13 @@ public class BannerHolders {
     }
 
     /**
-     * This is the private synchronized static method and used to MEP the config object for MEP environment.
+     * This is the private static method and used to MEP the config object for MEP environment.
      * If the MEP code is empty and config object is not null then it will process the config object and will replace the
      * config properties with respect to MEP code.
      *
      * @param mep       String type of MEP code
      * @param config    Config type of config object.
      */
-    @Synchronized
     private static void setConfiguration(mep, config) {
         try {
             if ( mep != null && config != null ) {
