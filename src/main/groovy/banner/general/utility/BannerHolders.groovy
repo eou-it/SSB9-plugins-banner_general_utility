@@ -23,9 +23,9 @@ public class BannerHolders {
      */
     public static Config getConfig () {
         Config result = Holders.getGrailsApplication().config
-        // try and finally block, returning the config object in the finally block, we know that
-        // RequestContextHolder.currentRequestAttributes() method will throws an exception when the
-        // call to this block from BootStrap or Cron jobs etc., in this case it should return the non mep'd config object.
+        // try, catch and finally block, returning the config object in the finally block, we know that
+        // request attributes from RequestContextHolder will return null when the
+        // call to this method from BootStrap or Cron jobs etc., in this case it should return the non MEP'd config object.
         try {
             final boolean isWebRequest = ( RequestContextHolder.getRequestAttributes() != null )
 
@@ -61,7 +61,7 @@ public class BannerHolders {
                     configMap.put( entry.getKey(), config.get( entry.getKey() ) )
                 }
 
-                def foundMap = configMap.findAll { key, value ->
+                Map<Object, Object> foundMap = configMap.findAll { key, value ->
                     key.toLowerCase().endsWith ( mepKey.toLowerCase() )
                 }
 

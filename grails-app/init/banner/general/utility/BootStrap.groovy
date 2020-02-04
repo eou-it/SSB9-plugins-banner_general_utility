@@ -18,6 +18,9 @@ class BootStrap {
     def springSecurityService
 
     def init = { servletContext ->
+        // Overriding the static getConfig() from the Holders class using meta-programming.
+        // Whenever we call Holders.config or grailsApplication.config then the 'BannerHolders.config" whill
+        // get called.
         Holders.metaClass.static.getConfig = {
             return BannerHolders.config
         }
