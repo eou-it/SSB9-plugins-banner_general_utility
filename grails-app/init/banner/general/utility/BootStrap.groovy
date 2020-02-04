@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2020 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package banner.general.utility
 
@@ -19,8 +19,7 @@ class BootStrap {
 
     def init = { servletContext ->
         // Overriding the static getConfig() from the Holders class using meta-programming.
-        // Whenever we call Holders.config or grailsApplication.config then the 'BannerHolders.config" whill
-        // get called.
+        // Whenever we call Holders.config or grailsApplication.config then the 'BannerHolders.config" will get called.
         Holders.metaClass.static.getConfig = {
             return BannerHolders.config
         }
