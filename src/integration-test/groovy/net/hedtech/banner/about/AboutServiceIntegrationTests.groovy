@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2016-2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
@@ -23,8 +23,7 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        //Holders.config.info.app.version = "9.32"
-        Holders.config.app.platform.version = "9.32"
+        Holders.config.app.platform.version = Holders.config.info.app.version
         Holders.config.EnableLoginAudit='N'
     }
 
