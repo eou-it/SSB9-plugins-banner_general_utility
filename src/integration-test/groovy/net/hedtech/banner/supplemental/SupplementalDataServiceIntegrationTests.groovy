@@ -11,8 +11,6 @@ import groovy.util.logging.Slf4j
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.supplemental.test.ZipTest
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import org.apache.log4j.Level
-import org.apache.log4j.Logger
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
@@ -40,13 +38,11 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         super.setUp()
         updateGorsdamTableValidation()
-        log.setLevel(Level.DEBUG)
     }
 
 
     @After
     public void tearDown() {
-        log.setLevel(Level.OFF)
         super.tearDown()
     }
 
