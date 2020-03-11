@@ -69,6 +69,12 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         loginSSB("CBUNTE3", "111111")
         def aboutData = aboutService.getAbout()
         def applicationVersion = Holders.config.info.app.version
+        println "================================================ "
+        println "aboutData = "+ aboutData
+        println "applicationVersion = "+ applicationVersion
+        println "Holders.config.app.platform.version = "+ Holders.config.app.platform.version
+        println "Holders.config.info.app.version = "+ Holders.config.info.app.version
+        println "================================================ "
         assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion,aboutData.get("about.banner.application.version"))
         def platformVersion = ""
         assertNotEquals(MessageHelper.message("about.banner.platform.version") + " " + platformVersion, aboutData.get("about.banner.platform.version"))
