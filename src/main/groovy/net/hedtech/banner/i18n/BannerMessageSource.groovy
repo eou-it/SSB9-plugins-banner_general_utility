@@ -61,14 +61,15 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 
         for (Resource resource : resources) {
             String fileStr = resource.getURL().file.toString()
+            log.info "resource url : ${fileStr}"
             if(Environment.isDevelopmentEnvironmentAvailable()){
-                if(fileStr.contains(APPLICATION_PATH_DEV)) {
+                if(fileStr.contains(APPLICATION_PATH_DEV) || fileStr.contains(APPLICATION_PATH_PROD)) {
                     basenamesExposed.add(fileStr)
                 } else {
                     pluginBaseNames.add(fileStr)
                 }
             } else {
-                if(fileStr.contains(APPLICATION_PATH_PROD)){
+                if(fileStr.contains(APPLICATION_PATH_PROD) || fileStr.contains(APPLICATION_PATH_DEV)){
                     basenamesExposed.add(fileStr)
                 } else {
                     pluginBaseNames.add(fileStr)
