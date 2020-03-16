@@ -58,21 +58,21 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     private def setBaseNamesSuper(){
         Resource[] resources
         resources  = new org.grails.io.support.PathMatchingResourcePatternResolver(this.class.getClassLoader()).getResources(messageBundleLocationPattern)
-        log.info('################## this classloader start ####################')
+        println('################## this classloader start ####################')
         for (Resource resource : resources) {
             String fileStr = resource.getURL().file.toString()
-            log.info(fileStr)
+            println(fileStr)
         }
-        log.info('################## this classloader end ####################')
+        println('################## this classloader end ####################')
 
         Resource[] resources1  = new org.grails.io.support.PathMatchingResourcePatternResolver(Thread.currentThread().getContextClassLoader()).getResources(messageBundleLocationPattern)
 
-        log.info('################## thread context classloader start ####################')
+        println('################## thread context classloader start ####################')
         for (Resource resource : resources1) {
             String fileStr = resource.getURL().file.toString()
-            log.info(fileStr)
+            println(fileStr)
         }
-        log.info('################## thread context classloader end ####################')
+        println('################## thread context classloader end ####################')
         for (Resource resource : resources) {
             String fileStr = resource.getURL().file.toString()
             if(Environment.isDevelopmentEnvironmentAvailable()){
