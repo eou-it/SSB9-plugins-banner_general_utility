@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2013-2020 Ellucian Company L.P. and its affiliates.
+ * Copyright 2013-2019 Ellucian Company L.P. and its affiliates.
  ******************************************************************************/
 package net.hedtech.banner.i18n
 
@@ -31,7 +31,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 
     static final String APPLICATION_PATH_PROD = "/WEB-INF/classes/"
     static final String PLUGIN_PATH_PROD = "/WEB-INF/lib/"
-    static final String WEBLOGIC_PROPS_JAR = "_wl_cls_gen.jar"
+
     private String messageBundleLocationPattern = "classpath*:messages.properties"
 
     ExternalMessageSource externalMessageSource
@@ -57,8 +57,22 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 
     private def setBaseNamesSuper(){
         Resource[] resources
-        resources  = new org.grails.io.support.PathMatchingResourcePatternResolver().getResources(messageBundleLocationPattern)
+        resources  = new org.grails.io.support.PathMatchingResourcePatternResolver(this.class.getClassLoader()).getResources(messageBundleLocationPattern)
+        log.info('################## this classloader start ####################')
+        for (Resource resource : resources) {
+            String fileStr = resource.getURL().file.toString()
+            log.info(fileStr)
+        }
+        log.info('################## this classloader end ####################')
 
+        Resource[] resources1  = new org.grails.io.support.PathMatchingResourcePatternResolver(Thread.currentThread().getContextClassLoader()).getResources(messageBundleLocationPattern)
+
+        log.info('################## thread context classloader start ####################')
+        for (Resource resource : resources1) {
+            String fileStr = resource.getURL().file.toString()
+            log.info(fileStr)
+        }
+        log.info('################## thread context classloader end ####################')
         for (Resource resource : resources) {
             String fileStr = resource.getURL().file.toString()
             if(Environment.isDevelopmentEnvironmentAvailable()){
@@ -68,7 +82,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
                     pluginBaseNames.add(fileStr)
                 }
             } else {
-                if(fileStr.contains(APPLICATION_PATH_PROD) || fileStr.contains(WEBLOGIC_PROPS_JAR)){
+                if(fileStr.contains(APPLICATION_PATH_PROD)){
                     basenamesExposed.add(fileStr)
                 } else {
                     pluginBaseNames.add(fileStr)
@@ -340,26 +354,12 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
             Properties properties = new Properties()
             def fileName = "messages${langSuffix}.properties"
             file = file.substring(0,file.lastIndexOf('/'))+"/${fileName}"
-            if(file.contains(WEBLOGIC_PROPS_JAR)){
-                try
-                {
-                    def url = new URL("jar:file:/" + file)
-                    def jarConnection = (JarURLConnection) url.openConnection()
-                    properties.load(jarConnection.inputStream)
-                }
-                catch (Exception exception)
-                {
-                    log.debug "Unable to load properties from ${file} - ${exception}"
+            File propertiesFile=checkFileExists(file)
+            if(propertiesFile) {
+                propertiesFile.withInputStream {
+                    properties.load(it)
                 }
                 propertiesMap.put('i18n/messages', properties)
-            }else{
-                File propertiesFile=checkFileExists(file)
-                if(propertiesFile) {
-                    propertiesFile.withInputStream {
-                        properties.load(it)
-                    }
-                    propertiesMap.put('i18n/messages', properties)
-                }
             }
         }
         return propertiesMap
