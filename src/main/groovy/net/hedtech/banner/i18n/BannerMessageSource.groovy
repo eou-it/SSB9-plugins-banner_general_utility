@@ -31,7 +31,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 
     static final String APPLICATION_PATH_PROD = "/WEB-INF/classes/"
     static final String PLUGIN_PATH_PROD = "/WEB-INF/lib/"
-
+    static final String WEBLOGIC_PROPS_JAR = "_wl_cls_gen.jar"
     private String messageBundleLocationPattern = "classpath*:messages.properties"
 
     ExternalMessageSource externalMessageSource
@@ -61,15 +61,14 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 
         for (Resource resource : resources) {
             String fileStr = resource.getURL().file.toString()
-            log.info "resource url : ${fileStr}"
             if(Environment.isDevelopmentEnvironmentAvailable()){
-                if(fileStr.contains(APPLICATION_PATH_DEV) || fileStr.contains(APPLICATION_PATH_PROD)) {
+                if(fileStr.contains(APPLICATION_PATH_DEV)) {
                     basenamesExposed.add(fileStr)
                 } else {
                     pluginBaseNames.add(fileStr)
                 }
             } else {
-                if(fileStr.contains(APPLICATION_PATH_PROD) || fileStr.contains(APPLICATION_PATH_DEV)){
+                if(fileStr.contains(APPLICATION_PATH_PROD) || fileStr.contains(WEBLOGIC_PROPS_JAR)){
                     basenamesExposed.add(fileStr)
                 } else {
                     pluginBaseNames.add(fileStr)
@@ -341,12 +340,26 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
             Properties properties = new Properties()
             def fileName = "messages${langSuffix}.properties"
             file = file.substring(0,file.lastIndexOf('/'))+"/${fileName}"
-            File propertiesFile=checkFileExists(file)
-            if(propertiesFile) {
-                propertiesFile.withInputStream {
-                    properties.load(it)
+            if(file.contains(WEBLOGIC_PROPS_JAR)){
+                try
+                {
+                    def url = new URL("jar:file:/" + file)
+                    def jarConnection = (JarURLConnection) url.openConnection()
+                    properties.load(jarConnection.inputStream)
+                }
+                catch (Exception exception)
+                {
+                    log.debug "Unable to load properties from ${file} - ${exception}"
                 }
                 propertiesMap.put('i18n/messages', properties)
+            }else{
+                File propertiesFile=checkFileExists(file)
+                if(propertiesFile) {
+                    propertiesFile.withInputStream {
+                        properties.load(it)
+                    }
+                    propertiesMap.put('i18n/messages', properties)
+                }
             }
         }
         return propertiesMap
