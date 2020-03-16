@@ -66,22 +66,34 @@ public class BannerHolders {
                     key.toLowerCase().startsWith ( mepKey.toLowerCase() )
                 }
 
-                foundMap.each { foundKey, foundValue ->
+                if ( !foundMap ) {
                     configMap.each { key, value ->
-                        if ( key.equals( foundKey.minus( mepKey ) ) ) {
-                            if ( !Holders.getGrailsApplication().config.get( "${defaultKey}" + key ) ) {
-                                Properties defaultToMerge = new Properties()
-                                defaultToMerge.put ( "${defaultKey}" + key, value );
-                                config.merge( configSlurper.parse( defaultToMerge ) )
-                            }
-
+                        if ( Holders.getGrailsApplication().config.get( "${defaultKey}" + key ) ) {
                             Properties propertyToMerge = new Properties()
-                            propertyToMerge.put( key, foundValue )
+                            propertyToMerge.put( key, Holders.getGrailsApplication().config.get( "${defaultKey}" + key ) )
                             config.merge( configSlurper.parse( propertyToMerge ) )
                         } else {
-                            if ( Holders.getGrailsApplication().config.get( "${defaultKey}" + key ) ) {
+                            Properties defaultToMergeDefault = new Properties()
+                            defaultToMergeDefault.put ( "${defaultKey}" + key, value );
+                            config.merge( configSlurper.parse( defaultToMergeDefault ) )
+
+                            Properties propertyToMerge = new Properties()
+                            propertyToMerge.put( key, Holders.getGrailsApplication().config.get( "${defaultKey}" + key ) )
+                            config.merge( configSlurper.parse( propertyToMerge ) )
+                        }
+                    }
+                } else {
+                    foundMap.each { foundKey, foundValue ->
+                        configMap.each { key, value ->
+                            if ( key.equals( foundKey.minus( mepKey ) ) ) {
+                                if ( !Holders.getGrailsApplication().config.get( "${defaultKey}" + key ) ) {
+                                    Properties defaultToMerge = new Properties()
+                                    defaultToMerge.put ( "${defaultKey}" + key, value );
+                                    config.merge( configSlurper.parse( defaultToMerge ) )
+                                }
+
                                 Properties propertyToMerge = new Properties()
-                                propertyToMerge.put( key, Holders.getGrailsApplication().config.get( "${defaultKey}" + key ) )
+                                propertyToMerge.put( key, foundValue )
                                 config.merge( configSlurper.parse( propertyToMerge ) )
                             }
                         }
