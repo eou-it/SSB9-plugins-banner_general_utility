@@ -57,15 +57,17 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 
     private def setBaseNamesSuper(){
         Resource[] resources
-        resources  = new org.grails.io.support.PathMatchingResourcePatternResolver(this.class.getClassLoader()).getResources(messageBundleLocationPattern)
+        resources  = new org.grails.io.support.PathMatchingResourcePatternResolver().findPathMatchingResources(messageBundleLocationPattern)
+
+        Resource[] resources2  = new org.grails.io.support.PathMatchingResourcePatternResolver(this.class.getClassLoader()).findPathMatchingResources(messageBundleLocationPattern)
         println('################## this classloader start ####################')
-        for (Resource resource : resources) {
+        for (Resource resource : resources2) {
             String fileStr = resource.getURL().file.toString()
             println(fileStr)
         }
         println('################## this classloader end ####################')
 
-        Resource[] resources1  = new org.grails.io.support.PathMatchingResourcePatternResolver(Thread.currentThread().getContextClassLoader()).getResources(messageBundleLocationPattern)
+        Resource[] resources1  = new org.grails.io.support.PathMatchingResourcePatternResolver(Thread.currentThread().getContextClassLoader()).findPathMatchingResources(messageBundleLocationPattern)
 
         println('################## thread context classloader start ####################')
         for (Resource resource : resources1) {
@@ -75,6 +77,8 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         println('################## thread context classloader end ####################')
         for (Resource resource : resources) {
             String fileStr = resource.getURL().file.toString()
+            println(fileStr)
+
             if(Environment.isDevelopmentEnvironmentAvailable()){
                 if(fileStr.contains(APPLICATION_PATH_DEV)) {
                     basenamesExposed.add(fileStr)
