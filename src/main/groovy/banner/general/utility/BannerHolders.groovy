@@ -4,9 +4,10 @@
 package banner.general.utility
 
 import grails.config.Config
-import grails.util.Holders
 import groovy.util.logging.Slf4j
 import org.springframework.web.context.request.RequestContextHolder
+
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Customized Holders class, and this singleton will used to support the MEP environment for SS-Configurations.
@@ -16,13 +17,17 @@ import org.springframework.web.context.request.RequestContextHolder
 @Singleton
 public class BannerHolders {
 
+    private static ConcurrentHashMap<String, Config> MEPPED_CONFIG_OBJS = new ConcurrentHashMap<String, Config>()
+    private static List<String> MEP_CODES = new ArrayList<String>()
+    static final String DEFAULT_MEP_KEY = "DEFAULT"
+
     /**
      * This static method is used to get Config object for MEP environment.
      *
      * @return Config   Config type of config object.
      */
     public static Config getConfig () {
-        Config result = Holders.getGrailsApplication().config
+        Config result = MEPPED_CONFIG_OBJS.get( DEFAULT_MEP_KEY )
         // try, catch and finally block, returning the config object in the finally block, we know that
         // request attributes from RequestContextHolder will return null when the
         // call to this method from BootStrap or Cron jobs etc., in this case it should return the non MEP'd config object.
@@ -32,7 +37,9 @@ public class BannerHolders {
             // Check if this call is from web-request
             if ( isWebRequest ) {
                 String sessionMepCode = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
-                setConfiguration( sessionMepCode, result )
+                if ( MEP_CODES.contains( sessionMepCode ) ) {
+                    result = MEPPED_CONFIG_OBJS.get( sessionMepCode )
+                }
             }
         } catch (Exception e) {
             log.debug( "Exception in BannerHolders.setConfiguration()", e.stackTrace );
@@ -42,73 +49,16 @@ public class BannerHolders {
         }
     }
 
-    /**
-     * This is the private static method and used to MEP the config object for MEP environment.
-     * If the MEP code is empty and config object is not null then it will process the config object and will replace the
-     * config properties with respect to MEP code.
-     *
-     * @param mep       String type of MEP code
-     * @param config    Config type of config object.
-     */
-    private static void setConfiguration(mep, config) {
-        try {
-            if ( mep != null && config != null ) {
-                final String mepKey = "${mep}.";
-                final String defaultKey = "DEFAULT.";
-                final ConfigSlurper configSlurper = new ConfigSlurper()
-                final Map<Object, Object> configMap = [:]
+    def static addMepCodes ( mepCode ) {
+        MEP_CODES.add(mepCode)
+    }
 
-                for ( def entry : config.entrySet() ) {
-                    configMap.put( entry.getKey(), config.get( entry.getKey() ) )
-                }
+    def static getMepCodes ( ) {
+        return MEP_CODES
+    }
 
-                Map<Object, Object> foundMap = configMap.findAll { key, value ->
-                    key.toLowerCase().startsWith ( mepKey.toLowerCase() )
-                }
-
-                if ( !foundMap ) {
-                    configMap.each { key, value ->
-                        def defaultKeyFound = Holders.getGrailsApplication().config.find { k, v ->
-                            k == "${defaultKey}${key}"
-                        }
-                        if ( defaultKeyFound ) {
-                            Properties propertyToMerge = new Properties()
-                            propertyToMerge.put( key, Holders.getGrailsApplication().config.get( "${defaultKey}${key}" ) )
-                            config.merge( configSlurper.parse( propertyToMerge ) )
-                        } else {
-                            Properties defaultToMergeDefault = new Properties()
-                            defaultToMergeDefault.put ( "${defaultKey}${key}", value );
-                            config.merge( configSlurper.parse( defaultToMergeDefault ) )
-
-                            Properties propertyToMerge = new Properties()
-                            propertyToMerge.put( key, Holders.getGrailsApplication().config.get( "${defaultKey}${key}" ) )
-                            config.merge( configSlurper.parse( propertyToMerge ) )
-                        }
-                    }
-                } else {
-                    foundMap.each { foundKey, foundValue ->
-                        configMap.each { key, value ->
-                            if ( key.equals( foundKey.minus( mepKey ) ) ) {
-                                def defaultKeyFound = Holders.getGrailsApplication().config.find { k, v ->
-                                    k == "${defaultKey}${key}"
-                                }
-                                if ( !defaultKeyFound ) {
-                                    Properties defaultToMerge = new Properties()
-                                    defaultToMerge.put ( "${defaultKey}${key}", value );
-                                    config.merge( configSlurper.parse( defaultToMerge ) )
-                                }
-
-                                Properties propertyToMerge = new Properties()
-                                propertyToMerge.put( key, foundValue )
-                                config.merge( configSlurper.parse( propertyToMerge ) )
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.debug( "Exception in BannerHolders.setConfiguration()", e.stackTrace );
-        }
+    def static getMeppedConfigObjs () {
+        return MEPPED_CONFIG_OBJS
     }
 
 }

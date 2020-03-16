@@ -16,6 +16,7 @@ class BootStrap {
     def configPropertiesService
     def generalPageRoleMappingService
     def springSecurityService
+    def bannerHoldersService
 
     def init = { servletContext ->
         // Overriding the static getConfig() from the Holders class using meta-programming.
@@ -39,6 +40,7 @@ class BootStrap {
         configPropertiesService.setLoginEndPointUrl()
         configPropertiesService.setLogOutEndPointUrl()
         configPropertiesService.setGuestLoginEnabled()
+        bannerHoldersService.setMeppedConfigObjs ()
     }
 
     def destroy = {

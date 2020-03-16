@@ -12,6 +12,7 @@ class ConfigJob {
 
     def configPropertiesService
     def springSecurityService
+    def bannerHoldersService
 
     // TODO :grails_332_change, needs to revisit
     Boolean concurrent = false
@@ -37,7 +38,7 @@ class ConfigJob {
                 configPropertiesService.setLogOutEndPointUrl()
                 configPropertiesService.setGuestLoginEnabled()
                 springSecurityService.clearCachedRequestmaps()
-
+                bannerHoldersService.setMeppedConfigObjs()
             } catch (InvalidDataAccessResourceUsageException e) {
                 log.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
             }
