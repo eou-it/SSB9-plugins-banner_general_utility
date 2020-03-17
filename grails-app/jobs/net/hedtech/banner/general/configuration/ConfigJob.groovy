@@ -38,7 +38,7 @@ class ConfigJob {
                 configPropertiesService.setLogOutEndPointUrl()
                 configPropertiesService.setGuestLoginEnabled()
                 springSecurityService.clearCachedRequestmaps()
-                bannerHoldersService.setMeppedConfigObjs()
+                bannerHoldersService.setMeppedConfigObj()
             } catch (InvalidDataAccessResourceUsageException e) {
                 log.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
             }

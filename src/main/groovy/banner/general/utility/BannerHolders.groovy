@@ -18,10 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Slf4j
 @Singleton
 public class BannerHolders {
-
-    private static ConcurrentHashMap<String, Config> MEPPED_CONFIG_OBJS = new ConcurrentHashMap<String, Config>()
-    private static List<String> MEP_CODES = new ArrayList<String>()
-    static final String DEFAULT_MEP_KEY = "DEFAULT"
+    private static ConcurrentHashMap<String, Config> MEPPED_CONFIG_OBJ = new ConcurrentHashMap<String, Config>()
 
     /**
      * This static method is used to get Config object for MEP environment.
@@ -34,14 +31,8 @@ public class BannerHolders {
         // request attributes from RequestContextHolder will return null when the
         // call to this method from BootStrap or Cron jobs etc., in this case it should return the non MEP'd config object.
         try {
-            final boolean isWebRequest = ( RequestContextHolder.getRequestAttributes() != null )
-
-            // Check if this call is from web-request
-            if ( isWebRequest ) {
-                String sessionMepCode = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
-                if ( MEP_CODES.contains( sessionMepCode ) ) {
-                    result = MEPPED_CONFIG_OBJS.get( sessionMepCode )
-                }
+            if ( MEPPED_CONFIG_OBJ.get( 'config' ) != null ) {
+                result = MEPPED_CONFIG_OBJ.get( 'config' )
             }
         } catch (Exception e) {
             log.debug( "Exception in BannerHolders.setConfiguration()", e.stackTrace );
@@ -51,16 +42,8 @@ public class BannerHolders {
         }
     }
 
-    def static addMepCodes ( mepCode ) {
-        MEP_CODES.add(mepCode)
-    }
-
-    def static getMepCodes ( ) {
-        return MEP_CODES
-    }
-
     def static getMeppedConfigObjs () {
-        return MEPPED_CONFIG_OBJS
+        return MEPPED_CONFIG_OBJ
     }
 
 }

@@ -40,7 +40,7 @@ class BootStrap {
         configPropertiesService.setLoginEndPointUrl()
         configPropertiesService.setLogOutEndPointUrl()
         configPropertiesService.setGuestLoginEnabled()
-        bannerHoldersService.setMeppedConfigObjs ()
+        bannerHoldersService.setMeppedConfigObj ()
     }
 
     def destroy = {
