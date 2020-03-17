@@ -4,7 +4,9 @@
 package banner.general.utility
 
 import grails.config.Config
+import grails.util.Holders
 import groovy.util.logging.Slf4j
+import net.hedtech.banner.db.BannerConnection
 import org.springframework.web.context.request.RequestContextHolder
 
 import java.util.concurrent.ConcurrentHashMap
@@ -27,7 +29,7 @@ public class BannerHolders {
      * @return Config   Config type of config object.
      */
     public static Config getConfig () {
-        Config result = MEPPED_CONFIG_OBJS.get( DEFAULT_MEP_KEY )
+        Config result = Holders.getGrailsApplication().config
         // try, catch and finally block, returning the config object in the finally block, we know that
         // request attributes from RequestContextHolder will return null when the
         // call to this method from BootStrap or Cron jobs etc., in this case it should return the non MEP'd config object.
