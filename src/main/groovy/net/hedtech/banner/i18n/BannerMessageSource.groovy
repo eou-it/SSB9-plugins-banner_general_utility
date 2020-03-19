@@ -62,12 +62,15 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
         Resource[] resources1
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader()
         log.info "classloader : ${classLoader}"
+        println("classloader : ${classLoader}")
         org.grails.io.support.PathMatchingResourcePatternResolver resolver  = new org.grails.io.support.PathMatchingResourcePatternResolver(classLoader)
         resources1 = resolver.getResources('*.properties');
         log.info "resources array: ${resources1}, ${resources1.size()}"
+        println("resources array: ${resources1}, ${resources1.size()}")
         Properties props  = new Properties();
         for (Resource messageResource : resources1) {
             log.info "resource: ${messageResource.toString()}, ${messageResource.getURL().file.toString()}"
+            println("resource: ${messageResource.toString()}, ${messageResource.getURL().file.toString()}")
             String filePath = messageResource.getURL().file.toString()
             if(filePath.contains(APPLICATION_PATH_PROD)){
                 basenamesExposed.add(filePath);
