@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2013-2019 Ellucian Company L.P. and its affiliates.
+ * Copyright 2013-2020 Ellucian Company L.P. and its affiliates.
  ******************************************************************************/
 package net.hedtech.banner.i18n
 
@@ -17,6 +17,7 @@ import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.grails.spring.context.support.ReloadableResourceBundleMessageSource.PropertiesHolder
 import org.grails.web.json.JSONArray
 
+import java.nio.charset.Charset
 import java.text.MessageFormat
 import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
@@ -31,7 +32,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
 
     static final String APPLICATION_PATH_PROD = "/WEB-INF/classes/"
     static final String PLUGIN_PATH_PROD = "/WEB-INF/lib/"
-
+    static final String WEBLOGIC_PROPS_JAR = "_wl_cls_gen.jar"
     private String messageBundleLocationPattern = "classpath*:messages.properties"
 
     ExternalMessageSource externalMessageSource
@@ -58,17 +59,16 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     private def setBaseNamesSuper(){
         Resource[] resources
         resources  = new org.grails.io.support.PathMatchingResourcePatternResolver().getResources(messageBundleLocationPattern)
-
         for (Resource resource : resources) {
             String fileStr = resource.getURL().file.toString()
             if(Environment.isDevelopmentEnvironmentAvailable()){
-                if(fileStr.contains(APPLICATION_PATH_DEV)) {
+                if(fileStr.contains(APPLICATION_PATH_DEV) || fileStr.contains(WEBLOGIC_PROPS_JAR)) {
                     basenamesExposed.add(fileStr)
                 } else {
                     pluginBaseNames.add(fileStr)
                 }
             } else {
-                if(fileStr.contains(APPLICATION_PATH_PROD)){
+                if(fileStr.contains(APPLICATION_PATH_PROD) || fileStr.contains(WEBLOGIC_PROPS_JAR)){
                     basenamesExposed.add(fileStr)
                 } else {
                     pluginBaseNames.add(fileStr)
@@ -171,7 +171,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     @Override
     protected String resolveCodeWithoutArguments(String code, Locale locale) {
         if (!textManagerService) {
-             textManagerService = Holders.grailsApplication.mainContext.getBean("textManagerService")
+            textManagerService = Holders.grailsApplication.mainContext.getBean("textManagerService")
         }
         String msg = textManagerService?.findMessage(code,getLocale(locale.toString()))
         if(msg == null) {
@@ -187,7 +187,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     @Override
     protected MessageFormat resolveCode(String code, Locale locale) {
         if (!textManagerService) {
-             textManagerService = Holders.grailsApplication.mainContext.getBean("textManagerService")
+            textManagerService = Holders.grailsApplication.mainContext.getBean("textManagerService")
         }
         String msg = textManagerService?.findMessage(code,getLocale(locale.toString()))
         if(msg != null) {
@@ -307,7 +307,7 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
     public void mergeTextManagerProperties( Locale locale, Properties props ) {
         Map entries = new LinkedHashMap()
         if (!textManagerService) {
-              textManagerService = Holders.grailsApplication.mainContext.getBean("textManagerService")
+            textManagerService = Holders.grailsApplication.mainContext.getBean("textManagerService")
         }
         props.each  { key, _ ->
             String value = textManagerService?.findMessage(key, locale)
@@ -340,12 +340,23 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
             Properties properties = new Properties()
             def fileName = "messages${langSuffix}.properties"
             file = file.substring(0,file.lastIndexOf('/'))+"/${fileName}"
-            File propertiesFile=checkFileExists(file)
-            if(propertiesFile) {
-                propertiesFile.withInputStream {
-                    properties.load(it)
+            if(file.contains(WEBLOGIC_PROPS_JAR)) {
+                try {
+                    def url = new URL("jar:file:/" + file)
+                    def jarConnection = (JarURLConnection) url.openConnection()
+                    properties.load(jarConnection.inputStream)
+                } catch (Exception exception) {
+                    log.debug "Unable to load properties from ${file} - ${exception}"
                 }
                 propertiesMap.put('i18n/messages', properties)
+            } else {
+                File propertiesFile=checkFileExists(file)
+                if(propertiesFile) {
+                    propertiesFile.withInputStream {
+                        properties.load(it)
+                    }
+                    propertiesMap.put('i18n/messages', properties)
+                }
             }
         }
         return propertiesMap
