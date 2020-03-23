@@ -342,11 +342,11 @@ class BannerMessageSource extends PluginAwareResourceBundleMessageSource {
             file = file.substring(0,file.lastIndexOf('/'))+"/${fileName}"
             if(file.contains(WEBLOGIC_PROPS_JAR)) {
                 try {
-                    def url = new URL("jar:file:/" + file)
+                    def url = new URL("jar:file:" + file)
                     def jarConnection = (JarURLConnection) url.openConnection()
                     properties.load(jarConnection.inputStream)
                 } catch (Exception exception) {
-                    log.debug "Unable to load properties from ${file} - ${exception}"
+                    log.error "Unable to load properties from ${file} - ${exception}"
                 }
                 propertiesMap.put('i18n/messages', properties)
             } else {
