@@ -19,7 +19,6 @@ class BannerHoldersService {
         }
 
         BannerHolders.getMeppedConfigObjs().put('config', convertMapToConfig(configMap))
-
     }
 
     private Config convertMapToConfig ( Map<Object, Object> configMap ) {

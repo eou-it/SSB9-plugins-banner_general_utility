@@ -1,5 +1,6 @@
 package banner.general.utility
 
+import org.grails.config.NavigableMap
 import org.grails.config.PropertySourcesConfig
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -11,7 +12,9 @@ class BannerPropertySourcesConfig extends PropertySourcesConfig {
         if ( isWebRequest ) {
             String sessionMepCode = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
             if ( sessionMepCode ) {
-                result = super.get( "${sessionMepCode}.${key}" )
+                if ( !( super.get( """${sessionMepCode}.${key}""" ) instanceof NavigableMap.NullSafeNavigator ) ) {
+                    result = super.get( """${sessionMepCode}.${key}""" )
+                }
             }
         }
         return result

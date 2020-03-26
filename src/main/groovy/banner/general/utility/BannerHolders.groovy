@@ -7,6 +7,7 @@ import grails.config.Config
 import grails.util.Holders
 import groovy.util.logging.Slf4j
 import net.hedtech.banner.db.BannerConnection
+import org.grails.config.NavigableMap
 import org.springframework.web.context.request.RequestContextHolder
 
 import java.util.concurrent.ConcurrentHashMap
@@ -26,13 +27,28 @@ public class BannerHolders {
      * @return Config   Config type of config object.
      */
     public static Config getConfig () {
-        Config result = Holders.getGrailsApplication().config
+        Config result = Holders.grailsApplication.config
         // try, catch and finally block, returning the config object in the finally block, we know that
         // request attributes from RequestContextHolder will return null when the
         // call to this method from BootStrap or Cron jobs etc., in this case it should return the non MEP'd config object.
         try {
-            if ( MEPPED_CONFIG_OBJ.get( 'config' ) != null ) {
-                result = MEPPED_CONFIG_OBJ.get( 'config' )
+            final boolean isWebRequest = ( RequestContextHolder.getRequestAttributes() != null )
+
+            if ( isWebRequest ) {
+                if (!(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator)) {
+                    String sessionMepCode = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+
+                    if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
+                        final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
+                        if (meppedConfigs && meppedConfigs?.get(0) == 'all') {
+                            if ( MEPPED_CONFIG_OBJ.get( 'config' ) != null ) {
+                                result = MEPPED_CONFIG_OBJ.get( 'config' )
+                            }
+                        } else if ( meppedConfigs && meppedConfigs?.get( 0 ) != 'all' ) {
+                            result = setConfigObject(meppedConfigs, sessionMepCode, result)
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
             log.debug( "Exception in BannerHolders.setConfiguration()", e.stackTrace );
@@ -40,6 +56,42 @@ public class BannerHolders {
             // Returning the Config object.
             return result
         }
+    }
+
+    private static Config setConfigObject(List<String> meppedConfigs, String sessionMepCode, Config result) {
+        meppedConfigs?.each { key ->
+            if (Holders.grailsApplication.config."""${sessionMepCode}.${key}""" instanceof NavigableMap.NullSafeNavigator) {
+                if (Holders.grailsApplication.config."""DEFAULT.${key}""" instanceof NavigableMap.NullSafeNavigator) {
+                    ConfigSlurper configSlurper = new ConfigSlurper()
+                    Properties properties = new Properties()
+                    def defaultKey = "DEFAULT.${key}"
+                    def defaultValue = Holders.grailsApplication.config."""${key}"""
+                    properties.put(defaultKey, defaultValue)
+                    result.merge(configSlurper.parse(properties))
+                }
+
+                ConfigSlurper configSlurper = new ConfigSlurper()
+                Properties properties = new Properties()
+                properties.put(key, Holders.grailsApplication.config."""DEFAULT.${key}""")
+                result.merge(configSlurper.parse(properties))
+            } else {
+                ConfigSlurper configSlurper = new ConfigSlurper()
+                Properties properties = new Properties()
+
+                if ( Holders.grailsApplication.config."""DEFAULT.${key}""" instanceof NavigableMap.NullSafeNavigator ) {
+                    def defaultKey = "DEFAULT.${key}"
+                    def defaultValue = Holders.grailsApplication.config."""${key}"""
+                    properties.put(defaultKey, defaultValue)
+                }
+
+                def meppedKey = key
+                def meppedValue = Holders.grailsApplication.config."""${sessionMepCode}.${key}"""
+                properties.put(meppedKey, meppedValue)
+
+                result.merge(configSlurper.parse(properties))
+            }
+        }
+        result
     }
 
     def static getMeppedConfigObjs () {

@@ -40,7 +40,12 @@ class BootStrap {
         configPropertiesService.setLoginEndPointUrl()
         configPropertiesService.setLogOutEndPointUrl()
         configPropertiesService.setGuestLoginEnabled()
-        bannerHoldersService.setMeppedConfigObj ()
+        if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
+            final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
+            if (meppedConfigs && meppedConfigs?.get(0) == 'all') {
+                bannerHoldersService.setMeppedConfigObj ()
+            }
+        }
     }
 
     def destroy = {

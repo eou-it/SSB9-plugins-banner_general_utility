@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.util.Holders
 import grails.util.Holders as CH
 import org.springframework.dao.InvalidDataAccessResourceUsageException
 import groovy.util.logging.Slf4j
@@ -38,7 +39,12 @@ class ConfigJob {
                 configPropertiesService.setLogOutEndPointUrl()
                 configPropertiesService.setGuestLoginEnabled()
                 springSecurityService.clearCachedRequestmaps()
-                bannerHoldersService.setMeppedConfigObj()
+                if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
+                    final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
+                    if (meppedConfigs && meppedConfigs?.get(0) == 'all') {
+                        bannerHoldersService.setMeppedConfigObj ()
+                    }
+                }
             } catch (InvalidDataAccessResourceUsageException e) {
                 log.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
             }
