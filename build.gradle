@@ -54,8 +54,11 @@ dependencies {
     testCompile "org.grails:grails-web-testing-support"
     testCompile 'org.grails.plugins:hibernate-filter-plugin:0.5.4'
 
+    compile 'org.quartz-scheduler:quartz:2.3.2'
     //Quartz
-    compile 'org.grails.plugins:quartz:2.0.11'
+    compile ('org.grails.plugins:quartz:2.0.11'){
+        exclude group:'org.quartz-scheduler', module:'quartz'
+    }
 
     //Added for BannerXE For FileUtils and others
     compile 'commons-io:commons-io:2.6'
