@@ -13,9 +13,9 @@ class BannerHoldersService {
     def setMeppedConfigObj () {
         final Map<Object, Object> configMap = [:]
 
-        final Config cong = Holders.grailsApplication.config
-        for ( def entry : cong ) {
-            configMap.put( entry.getKey(), cong.get( entry.getKey() ) )
+        final Config config = Holders.grailsApplication.config
+        for ( def entry : config ) {
+            configMap.put( entry.getKey(), config.get( entry.getKey() ) )
         }
 
         BannerHolders.getMeppedConfigObjs().put('config', convertMapToConfig(configMap))

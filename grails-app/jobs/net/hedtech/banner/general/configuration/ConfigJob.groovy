@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -34,17 +34,17 @@ class ConfigJob {
             try {
                 configPropertiesService.setConfigFromDb()
                 configPropertiesService.setTransactionTimeOut()
+                configPropertiesService.updateDefaultWebSessionTimeout()
                 configPropertiesService.setLoginEndPointUrl()
                 configPropertiesService.setLogOutEndPointUrl()
                 configPropertiesService.setGuestLoginEnabled()
                 springSecurityService.clearCachedRequestmaps()
                 if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
                     final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
-                    if (meppedConfigs && meppedConfigs?.get(0) == 'all') {
+                    if (meppedConfigs && meppedConfigs?.get(0)?.toLowerCase() == 'all') {
                         bannerHoldersService.setMeppedConfigObj ()
                     }
                 }
-                configPropertiesService.updateDefaultWebSessionTimeout()
             } catch (InvalidDataAccessResourceUsageException e) {
                 log.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
             }

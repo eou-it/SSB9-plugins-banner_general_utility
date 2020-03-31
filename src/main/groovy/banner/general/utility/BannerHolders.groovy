@@ -60,32 +60,32 @@ public class BannerHolders {
 
     private static Config setConfigObject(List<String> meppedConfigs, String sessionMepCode, Config result) {
         meppedConfigs?.each { key ->
-            if (Holders.grailsApplication.config."""${sessionMepCode}.${key}""" instanceof NavigableMap.NullSafeNavigator) {
-                if (Holders.grailsApplication.config."""DEFAULT.${key}""" instanceof NavigableMap.NullSafeNavigator) {
+            if (Holders.grailsApplication.config."${sessionMepCode}.${key}" instanceof NavigableMap.NullSafeNavigator) {
+                if (Holders.grailsApplication.config."DEFAULT.${key}" instanceof NavigableMap.NullSafeNavigator) {
                     ConfigSlurper configSlurper = new ConfigSlurper()
                     Properties properties = new Properties()
                     def defaultKey = "DEFAULT.${key}"
-                    def defaultValue = Holders.grailsApplication.config."""${key}"""
+                    def defaultValue = Holders.grailsApplication.config."${key}"
                     properties.put(defaultKey, defaultValue)
                     result.merge(configSlurper.parse(properties))
                 }
 
                 ConfigSlurper configSlurper = new ConfigSlurper()
                 Properties properties = new Properties()
-                properties.put(key, Holders.grailsApplication.config."""DEFAULT.${key}""")
+                properties.put(key, Holders.grailsApplication.config."DEFAULT.${key}")
                 result.merge(configSlurper.parse(properties))
             } else {
                 ConfigSlurper configSlurper = new ConfigSlurper()
                 Properties properties = new Properties()
 
-                if ( Holders.grailsApplication.config."""DEFAULT.${key}""" instanceof NavigableMap.NullSafeNavigator ) {
+                if ( Holders.grailsApplication.config."DEFAULT.${key}" instanceof NavigableMap.NullSafeNavigator ) {
                     def defaultKey = "DEFAULT.${key}"
-                    def defaultValue = Holders.grailsApplication.config."""${key}"""
+                    def defaultValue = Holders.grailsApplication.config."${key}"
                     properties.put(defaultKey, defaultValue)
                 }
 
                 def meppedKey = key
-                def meppedValue = Holders.grailsApplication.config."""${sessionMepCode}.${key}"""
+                def meppedValue = Holders.grailsApplication.config."${sessionMepCode}.${key}"
                 properties.put(meppedKey, meppedValue)
 
                 result.merge(configSlurper.parse(properties))
