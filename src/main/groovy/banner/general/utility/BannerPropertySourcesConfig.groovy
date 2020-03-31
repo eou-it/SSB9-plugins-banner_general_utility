@@ -7,6 +7,9 @@ import org.grails.config.NavigableMap
 import org.grails.config.PropertySourcesConfig
 import org.springframework.web.context.request.RequestContextHolder
 
+/**
+ * This class is extends the PropertySourcesConfig to customize for getting the "MEPed" configurations.
+ */
 class BannerPropertySourcesConfig extends PropertySourcesConfig {
     @Override
     Object get(Object key) {

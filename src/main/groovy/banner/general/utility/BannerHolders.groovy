@@ -58,6 +58,14 @@ public class BannerHolders {
         }
     }
 
+    /**
+     * This method is used when 'banner.mep.configurations' configuration is not empty and not having data as all.
+     * In this case the use may defined configuration key in the list which needs to be mepped.
+     * @param meppedConfigs List of key to be MEPed
+     * @param sessionMepCode Mep code
+     * @param result Config object
+     * @return MEPed Config object
+     */
     private static Config setConfigObject(List<String> meppedConfigs, String sessionMepCode, Config result) {
         meppedConfigs?.each { key ->
             if (Holders.grailsApplication.config."${sessionMepCode}.${key}" instanceof NavigableMap.NullSafeNavigator) {
