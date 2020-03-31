@@ -34,7 +34,6 @@ class ConfigJob {
             try {
                 configPropertiesService.setConfigFromDb()
                 configPropertiesService.setTransactionTimeOut()
-                configPropertiesService.updateDefaultWebSessionTimeout()
                 configPropertiesService.setLoginEndPointUrl()
                 configPropertiesService.setLogOutEndPointUrl()
                 configPropertiesService.setGuestLoginEnabled()
@@ -45,6 +44,7 @@ class ConfigJob {
                         bannerHoldersService.setMeppedConfigObj ()
                     }
                 }
+                configPropertiesService.updateDefaultWebSessionTimeout()
             } catch (InvalidDataAccessResourceUsageException e) {
                 log.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
             }
