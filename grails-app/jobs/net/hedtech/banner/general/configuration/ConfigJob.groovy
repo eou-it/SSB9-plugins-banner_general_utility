@@ -39,6 +39,7 @@ class ConfigJob {
                 configPropertiesService.setLogOutEndPointUrl()
                 configPropertiesService.setGuestLoginEnabled()
                 springSecurityService.clearCachedRequestmaps()
+                bannerHoldersService.setBaseConfig()
                 if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
                     final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
                     if (meppedConfigs && meppedConfigs?.get(0)?.toLowerCase() == 'all') {

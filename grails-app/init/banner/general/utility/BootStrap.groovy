@@ -19,6 +19,7 @@ class BootStrap {
     def bannerHoldersService
 
     def init = { servletContext ->
+        bannerHoldersService.setBaseConfig()
         // Overriding the static getConfig() from the Holders class using meta-programming.
         // Whenever we call Holders.config or grailsApplication.config then the 'BannerHolders.config" will get called.
         Holders.metaClass.static.getConfig = {
@@ -40,6 +41,7 @@ class BootStrap {
         configPropertiesService.setLoginEndPointUrl()
         configPropertiesService.setLogOutEndPointUrl()
         configPropertiesService.setGuestLoginEnabled()
+        bannerHoldersService.setBaseConfig()
         if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
             final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
             if (meppedConfigs && meppedConfigs?.get(0)?.toLowerCase() == 'all') {
