@@ -5,8 +5,8 @@ package net.hedtech.banner.general.configuration
 
 import grails.util.Holders
 import grails.util.Holders as CH
-import org.springframework.dao.InvalidDataAccessResourceUsageException
 import groovy.util.logging.Slf4j
+import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 @Slf4j
 class ConfigJob {
@@ -14,6 +14,7 @@ class ConfigJob {
     def configPropertiesService
     def springSecurityService
     def bannerHoldersService
+    def multiEntityProcessingService
 
     // TODO :grails_332_change, needs to revisit
     Boolean concurrent = false
@@ -39,11 +40,13 @@ class ConfigJob {
                 configPropertiesService.setLogOutEndPointUrl()
                 configPropertiesService.setGuestLoginEnabled()
                 springSecurityService.clearCachedRequestmaps()
-                bannerHoldersService.setBaseConfig()
-                if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
-                    final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
-                    if (meppedConfigs && meppedConfigs?.get(0)?.toLowerCase() == 'all') {
-                        bannerHoldersService.setMeppedConfigObj ()
+                if ( multiEntityProcessingService.isMEP() ) {
+                    bannerHoldersService.setBaseConfig()
+                    if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
+                        final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
+                        if (meppedConfigs) {
+                            bannerHoldersService.setMeppedConfigObj ()
+                        }
                     }
                 }
             } catch (InvalidDataAccessResourceUsageException e) {

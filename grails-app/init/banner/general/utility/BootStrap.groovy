@@ -17,13 +17,16 @@ class BootStrap {
     def generalPageRoleMappingService
     def springSecurityService
     def bannerHoldersService
+    def multiEntityProcessingService
 
     def init = { servletContext ->
-        bannerHoldersService.setBaseConfig()
-        // Overriding the static getConfig() from the Holders class using meta-programming.
-        // Whenever we call Holders.config or grailsApplication.config then the 'BannerHolders.config" will get called.
-        Holders.metaClass.static.getConfig = {
-            return BannerHolders.config
+        if ( multiEntityProcessingService.isMEP() ) {
+            bannerHoldersService.setBaseConfig()
+            // Overriding the static getConfig() from the Holders class using meta-programming.
+            // Whenever we call Holders.config or grailsApplication.config then the 'BannerHolders.config" will get called.
+            Holders.metaClass.static.getConfig = {
+                return BannerHolders.config
+            }
         }
         if (Environment.current != Environment.TEST) {
             configPropertiesService.seedDataToDBFromConfig()
@@ -41,11 +44,12 @@ class BootStrap {
         configPropertiesService.setLoginEndPointUrl()
         configPropertiesService.setLogOutEndPointUrl()
         configPropertiesService.setGuestLoginEnabled()
-        bannerHoldersService.setBaseConfig()
-        if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
-            final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
-            if (meppedConfigs && meppedConfigs?.get(0)?.toLowerCase() == 'all') {
-                bannerHoldersService.setMeppedConfigObj ()
+        if ( multiEntityProcessingService.isMEP() ) {
+            if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
+                final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
+                if (meppedConfigs) {
+                    bannerHoldersService.setMeppedConfigObj ()
+                }
             }
         }
     }
