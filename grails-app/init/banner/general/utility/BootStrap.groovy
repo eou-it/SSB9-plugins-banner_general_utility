@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2020 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package banner.general.utility
 
@@ -13,12 +13,21 @@ import grails.util.Holders
  * */
 
 class BootStrap {
-    def menuService
     def configPropertiesService
     def generalPageRoleMappingService
     def springSecurityService
+    def bannerHoldersService
+    def multiEntityProcessingService
 
     def init = { servletContext ->
+        if ( multiEntityProcessingService.isMEP() ) {
+            bannerHoldersService.setBaseConfig()
+            // Overriding the static getConfig() from the Holders class using meta-programming.
+            // Whenever we call Holders.config or grailsApplication.config then the 'BannerHolders.config" will get called.
+            Holders.metaClass.static.getConfig = {
+                return BannerHolders.config
+            }
+        }
         if (Environment.current != Environment.TEST) {
             configPropertiesService.seedDataToDBFromConfig()
             configPropertiesService.seedUserPreferenceConfig()
@@ -35,6 +44,14 @@ class BootStrap {
         configPropertiesService.setLoginEndPointUrl()
         configPropertiesService.setLogOutEndPointUrl()
         configPropertiesService.setGuestLoginEnabled()
+        if ( multiEntityProcessingService.isMEP() ) {
+            if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
+                final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
+                if (meppedConfigs) {
+                    bannerHoldersService.setMeppedConfigObj ()
+                }
+            }
+        }
     }
 
     def destroy = {

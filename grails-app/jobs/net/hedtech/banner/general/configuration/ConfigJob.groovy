@@ -1,17 +1,20 @@
 /*******************************************************************************
- Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
+import grails.util.Holders
 import grails.util.Holders as CH
-import org.springframework.dao.InvalidDataAccessResourceUsageException
 import groovy.util.logging.Slf4j
+import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 @Slf4j
 class ConfigJob {
 
     def configPropertiesService
     def springSecurityService
+    def bannerHoldersService
+    def multiEntityProcessingService
 
     // TODO :grails_332_change, needs to revisit
     Boolean concurrent = false
@@ -37,7 +40,15 @@ class ConfigJob {
                 configPropertiesService.setLogOutEndPointUrl()
                 configPropertiesService.setGuestLoginEnabled()
                 springSecurityService.clearCachedRequestmaps()
-
+                if ( multiEntityProcessingService.isMEP() ) {
+                    bannerHoldersService.setBaseConfig()
+                    if ( !(Holders.grailsApplication.config.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
+                        final List<String> meppedConfigs = Holders.grailsApplication.config.banner.mep.configurations
+                        if (meppedConfigs) {
+                            bannerHoldersService.setMeppedConfigObj ()
+                        }
+                    }
+                }
             } catch (InvalidDataAccessResourceUsageException e) {
                 log.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
             }
