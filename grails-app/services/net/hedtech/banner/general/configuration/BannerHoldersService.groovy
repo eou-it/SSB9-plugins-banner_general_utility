@@ -7,6 +7,7 @@ import banner.general.utility.BannerHolders
 import banner.general.utility.BannerPropertySourcesConfig
 import grails.config.Config
 import grails.util.Holders
+import org.grails.config.PropertySourcesConfig
 
 /**
  * The service class to create out customised config object for MEPed DB.
@@ -20,7 +21,7 @@ class BannerHoldersService {
     def setMeppedConfigObj () {
         final Map<Object, Object> configMap = [:]
 
-        final Config config = Holders.grailsApplication.config
+        final Config config = BannerHolders.getMeppedConfigObjs()?.get( 'BASE_CONFIG' )
         for ( def entry : config ) {
             configMap.put( entry.getKey(), config.get( entry.getKey() ) )
         }
@@ -39,6 +40,32 @@ class BannerHoldersService {
             config.put(key, value)
         }
         return config
+    }
+
+    public def setBaseConfig ( ) {
+        final Map<Object, Object> configMap = [:]
+
+        final Config config = Holders.config
+        for ( def entry : config ) {
+            if ( !entry.getKey().startsWith( 'DEFAULT.' ) ) {
+                configMap.put( entry.getKey(), config.get( entry.getKey() ) )
+            }
+        }
+
+        Config pConfig = new PropertySourcesConfig()
+        configMap.each { key, value ->
+            pConfig.put(key, value)
+        }
+
+        List<String> mepConfigList = configMap.get( "banner.mep.configurations" )
+        if ( mepConfigList ) {
+            ConfigSlurper configSlurper = new PropertySourcesConfig()
+            Config configDB = new PropertySourcesConfig()
+            mepConfigList.each { configDB.merge( configSlurper.parse( it ) ) }
+            BannerHolders.getMeppedConfigObjs().put('mepConfigList', configDB)
+        }
+
+        BannerHolders.setBaseConfigObjs(pConfig)
     }
 
 }
