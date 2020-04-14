@@ -6,7 +6,7 @@ buildscript {
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.2"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.15.1"
         classpath "net.saliman:gradle-cobertura-plugin:2.6.0"
     }
 }
@@ -48,17 +48,25 @@ dependencies {
     profile "org.grails.profiles:web-plugin"
     provided "org.grails:grails-plugin-services"
     provided "org.grails:grails-plugin-domain-class"
-    runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.14.2"
+    runtime "com.bertramlabs.plugins:asset-pipeline-grails:3.0.6"
     testCompile "org.grails:grails-gorm-testing-support"
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails:grails-web-testing-support"
     testCompile 'org.grails.plugins:hibernate-filter-plugin:0.5.4'
 
+    compile 'org.quartz-scheduler:quartz:2.3.2'
     //Quartz
-    compile 'org.grails.plugins:quartz:2.0.11'
+    compile ('org.grails.plugins:quartz:2.0.11'){
+        exclude group:'org.quartz-scheduler', module:'quartz'
+    }
 
     //Added for BannerXE For FileUtils and others
     compile 'commons-io:commons-io:2.6'
+}
+
+configurations {
+    runtime.exclude group: "org.springframework.boot", module: "spring-boot-starter-actuator"
+    runtime.exclude group: "org.grails", module: "grails-gorm-testing-support"
 }
 
 // Added for BannerXE - Internal plugin dependency
