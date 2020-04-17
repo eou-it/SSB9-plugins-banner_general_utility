@@ -18,6 +18,9 @@ class BannerPropertySourcesConfig extends PropertySourcesConfig {
     Object get(Object key) {
         final boolean isWebRequest = (RequestContextHolder.getRequestAttributes() != null)
         Object result = super.get(key)
+        if ( result instanceof NavigableMap ) {
+            result = cloneNavigableMap( BannerHolders.getOriginalNavigableMap( key ) )
+        }
         try {
             if (isWebRequest) {
                 String sessionMepCode = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
@@ -25,7 +28,7 @@ class BannerPropertySourcesConfig extends PropertySourcesConfig {
                     List<String> configList = super.get( "banner.mep.configurations" )
                     if ( configList && configList.get(0)?.toLowerCase() == 'all' ) {
                         if (!(super.get("${sessionMepCode}.${key}") instanceof NavigableMap.NullSafeNavigator)) {
-                            if ( result instanceof NavigableMap && result.size() > 0 && ( result.size() != super.get("${sessionMepCode}.${key}").size() ) ) {
+                            if ( result instanceof NavigableMap ) {
                                 result.merge( super.get("${sessionMepCode}.${key}") )
                             } else {
                                 result = super.get("${sessionMepCode}.${key}")
@@ -46,5 +49,17 @@ class BannerPropertySourcesConfig extends PropertySourcesConfig {
         } finally {
             return result
         }
+    }
+
+    private NavigableMap cloneNavigableMap ( navigableMap ) {
+        NavigableMap map = new PropertySourcesConfig()
+        navigableMap.each { key, value ->
+            if ( value instanceof NavigableMap ) {
+                map.put( key, cloneNavigableMap( value ) )
+            } else {
+                map.put( key, value )
+            }
+        }
+        return map
     }
 }
