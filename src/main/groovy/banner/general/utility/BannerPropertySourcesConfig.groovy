@@ -38,7 +38,11 @@ class BannerPropertySourcesConfig extends PropertySourcesConfig {
                         Config configDB = BannerHolders.getMeppedConfigObjs().get('mepConfigList')
                         if ( !(configDB."${key}" instanceof NavigableMap.NullSafeNavigator) ) {
                             if (!(super.get("${sessionMepCode}.${key}") instanceof NavigableMap.NullSafeNavigator)) {
-                                result = super.get("${sessionMepCode}.${key}")
+                                if ( result instanceof NavigableMap ) {
+                                    result.merge( super.get("${sessionMepCode}.${key}") )
+                                } else {
+                                    result = super.get("${sessionMepCode}.${key}")
+                                }
                             }
                         }
                     }
