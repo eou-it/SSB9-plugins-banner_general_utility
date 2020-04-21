@@ -30,6 +30,7 @@ class BannerPropertySourcesConfig extends PropertySourcesConfig {
                     if ( configList && configList.get(0)?.toLowerCase() == 'all' ) {
                         if (!(super.get("${sessionMepCode}.${key}") instanceof NavigableMap.NullSafeNavigator)) {
                             if ( result instanceof NavigableMap ) {
+
                                 result.merge( super.get("${sessionMepCode}.${key}") )
                             } else {
                                 result = super.get("${sessionMepCode}.${key}")
@@ -40,7 +41,14 @@ class BannerPropertySourcesConfig extends PropertySourcesConfig {
                         if (!(super.get("${sessionMepCode}.${key}") instanceof NavigableMap.NullSafeNavigator)) {
                             if ( configDB.containsKey(key) ) {
                                 if ( result instanceof NavigableMap  ) {
-                                    result.merge( super.get("${sessionMepCode}.${key}") )
+                                    configList.each { def mepKey ->
+                                        if ( configDB.containsProperty("${mepKey}") ) {
+                                            ConfigSlurper configSlurper = new ConfigSlurper()
+                                            Properties properties = new Properties()
+                                            properties.put("${mepKey}".substring("${mepKey}".indexOf('.') + 1), super.get("${sessionMepCode}.${mepKey}"))
+                                            result.merge( configSlurper.parse(properties) )
+                                        }
+                                    }
                                 } else {
                                     result = super.get("${sessionMepCode}.${key}")
                                 }
