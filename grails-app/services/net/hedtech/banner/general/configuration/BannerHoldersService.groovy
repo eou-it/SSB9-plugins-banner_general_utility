@@ -59,7 +59,7 @@ class BannerHoldersService {
 
         List<String> mepConfigList = configMap.get( "banner.mep.configurations" )
         if ( mepConfigList ) {
-            ConfigSlurper configSlurper = new PropertySourcesConfig()
+            ConfigSlurper configSlurper = new ConfigSlurper()
             Config configDB = new PropertySourcesConfig()
             mepConfigList.each { configDB.merge( configSlurper.parse( it ) ) }
             BannerHolders.getMeppedConfigObjs().put('mepConfigList', configDB)

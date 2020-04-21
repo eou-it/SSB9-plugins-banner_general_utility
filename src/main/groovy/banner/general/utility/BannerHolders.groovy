@@ -34,16 +34,14 @@ public class BannerHolders {
 
             if ( isWebRequest ) {
                 if (!(result.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator)) {
-                    if ( !(result.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
-                        final List<String> meppedConfigs = result.banner.mep.configurations
-                        if (meppedConfigs && MEPPED_CONFIG_OBJ.get( 'config' ) != null) {
-                            result = MEPPED_CONFIG_OBJ.get( 'config' )
-                        }
+                    final List<String> meppedConfigs = result.banner.mep.configurations
+                    if (meppedConfigs && MEPPED_CONFIG_OBJ.get( 'config' ) != null) {
+                        result = MEPPED_CONFIG_OBJ.get( 'config' )
                     }
                 }
             }
         } catch (Exception e) {
-            log.debug( "Exception in BannerHolders.setConfiguration()", e.stackTrace );
+            log.error( "Exception in BannerHolders.setConfiguration()", e.stackTrace );
         } finally {
             // Returning the Config object.
             return result
