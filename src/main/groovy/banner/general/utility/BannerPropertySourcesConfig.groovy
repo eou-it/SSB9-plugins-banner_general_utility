@@ -4,6 +4,7 @@
 package banner.general.utility
 
 import grails.config.Config
+import grails.util.Holders
 import groovy.util.logging.Slf4j
 import org.grails.config.NavigableMap
 import org.grails.config.PropertySourcesConfig
@@ -37,17 +38,12 @@ class BannerPropertySourcesConfig extends PropertySourcesConfig {
                     } else if ( configList ) {
                         Config configDB = BannerHolders.getMeppedConfigObjs().get('mepConfigList')
                         if (!(super.get("${sessionMepCode}.${key}") instanceof NavigableMap.NullSafeNavigator)) {
-                            if ( result instanceof NavigableMap ) {
-                                configList.each { def mepKey ->
-                                    if ( configDB.containsProperty("${mepKey}") ) {
-                                        ConfigSlurper configSlurper = new ConfigSlurper()
-                                        Properties properties = new Properties()
-                                        properties.put("${mepKey}".substring("${mepKey}".indexOf('.') + 1), super.get("${sessionMepCode}.${mepKey}"))
-                                        result.merge( configSlurper.parse(properties) )
-                                    }
+                            if ( configDB.containsKey(key) ) {
+                                if ( result instanceof NavigableMap  ) {
+                                    result.merge( super.get("${sessionMepCode}.${key}") )
+                                } else {
+                                    result = super.get("${sessionMepCode}.${key}")
                                 }
-                            } else {
-                                result = super.get("${sessionMepCode}.${key}")
                             }
                         }
                     }
