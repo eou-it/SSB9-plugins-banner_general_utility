@@ -35,7 +35,7 @@ public class BannerHolders {
             final boolean isWebRequest = ( RequestContextHolder.getRequestAttributes() != null )
 
             if ( isWebRequest ) {
-                if (!(result.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator)) {
+                if ( !(result.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
                     final List<String> meppedConfigs = result.banner.mep.configurations
                     if (meppedConfigs && MEPPED_CONFIG_OBJ.get( 'config' ) != null) {
                         result = MEPPED_CONFIG_OBJ.get( 'config' )
