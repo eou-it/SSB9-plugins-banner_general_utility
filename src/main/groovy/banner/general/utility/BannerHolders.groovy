@@ -6,6 +6,7 @@ package banner.general.utility
 import grails.config.Config
 import grails.util.Holders
 import groovy.util.logging.Slf4j
+import org.apache.commons.collections.map.UnmodifiableMap
 import org.springframework.web.context.request.RequestContextHolder
 
 import java.util.concurrent.ConcurrentHashMap
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Singleton
 public class BannerHolders {
     private static ConcurrentHashMap<String, Config> MEPPED_CONFIG_OBJ = new ConcurrentHashMap<String, Config>()
+    private static ConcurrentHashMap<Object, Object> originalNavigableMap = new ConcurrentHashMap<Object, Object>()
 
     /**
      * This static method is used to get Config object for MEP environment.
@@ -34,16 +36,14 @@ public class BannerHolders {
 
             if ( isWebRequest ) {
                 if (!(result.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator)) {
-                    if ( !(result.banner.mep.configurations instanceof org.grails.config.NavigableMap.NullSafeNavigator) ) {
-                        final List<String> meppedConfigs = result.banner.mep.configurations
-                        if (meppedConfigs && MEPPED_CONFIG_OBJ.get( 'config' ) != null) {
-                            result = MEPPED_CONFIG_OBJ.get( 'config' )
-                        }
+                    final List<String> meppedConfigs = result.banner.mep.configurations
+                    if (meppedConfigs && MEPPED_CONFIG_OBJ.get( 'config' ) != null) {
+                        result = MEPPED_CONFIG_OBJ.get( 'config' )
                     }
                 }
             }
         } catch (Exception e) {
-            log.debug( "Exception in BannerHolders.setConfiguration()", e.stackTrace );
+            log.error( "Exception in BannerHolders.setConfiguration()", e.stackTrace );
         } finally {
             // Returning the Config object.
             return result
@@ -56,6 +56,19 @@ public class BannerHolders {
 
     def static setBaseConfigObjs ( Config config ) {
         MEPPED_CONFIG_OBJ.put('BASE_CONFIG', config)
+    }
+
+    public static void setOriginalNavigableMap ( Object key, Object config ) {
+        originalNavigableMap.put( key, config )
+    }
+
+    public static Object getOriginalNavigableMap ( key ) {
+        final UnmodifiableMap map = Collections.unmodifiableMap( originalNavigableMap )
+        return map.get(key)
+    }
+
+    public static void clearOriginalNavigableMap ( ) {
+        originalNavigableMap.clear()
     }
 
 }
