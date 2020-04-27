@@ -4,7 +4,6 @@
 package banner.general.utility
 
 import grails.config.Config
-import grails.util.Holders
 import groovy.util.logging.Slf4j
 import org.grails.config.NavigableMap
 import org.grails.config.PropertySourcesConfig
@@ -25,12 +24,11 @@ class BannerPropertySourcesConfig extends PropertySourcesConfig {
         try {
             if (isWebRequest) {
                 String sessionMepCode = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
-                if (sessionMepCode) {
+                if ( sessionMepCode && !(super.get( "banner.mep.configurations" ) instanceof NavigableMap.NullSafeNavigator) ) {
                     List<String> configList = super.get( "banner.mep.configurations" )
                     if ( configList && configList.get(0)?.toLowerCase() == 'all' ) {
                         if (!(super.get("${sessionMepCode}.${key}") instanceof NavigableMap.NullSafeNavigator)) {
                             if ( result instanceof NavigableMap ) {
-
                                 result.merge( super.get("${sessionMepCode}.${key}") )
                             } else {
                                 result = super.get("${sessionMepCode}.${key}")
@@ -58,7 +56,7 @@ class BannerPropertySourcesConfig extends PropertySourcesConfig {
                 }
             }
         } catch (e) {
-            log.error( "Error in BannerPropertySorucesConfig key = ${key}", e.stackTrace )
+            log.error( "Error in BannerPropertySorucesConfig key = ${key}" )
         } finally {
             return result
         }
