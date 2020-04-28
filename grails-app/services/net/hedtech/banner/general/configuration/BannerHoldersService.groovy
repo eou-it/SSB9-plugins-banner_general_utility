@@ -7,6 +7,7 @@ import banner.general.utility.BannerHolders
 import banner.general.utility.BannerPropertySourcesConfig
 import grails.config.Config
 import grails.util.Holders
+import org.grails.config.NavigableMap
 import org.grails.config.PropertySourcesConfig
 
 /**
@@ -53,13 +54,17 @@ class BannerHoldersService {
         }
 
         Config pConfig = new PropertySourcesConfig()
+        BannerHolders.clearOriginalNavigableMap()
         configMap.each { key, value ->
             pConfig.put(key, value)
+            if ( value instanceof NavigableMap ) {
+                BannerHolders.setOriginalNavigableMap( key, value )
+            }
         }
 
         List<String> mepConfigList = configMap.get( "banner.mep.configurations" )
         if ( mepConfigList ) {
-            ConfigSlurper configSlurper = new PropertySourcesConfig()
+            ConfigSlurper configSlurper = new ConfigSlurper()
             Config configDB = new PropertySourcesConfig()
             mepConfigList.each { configDB.merge( configSlurper.parse( it ) ) }
             BannerHolders.getMeppedConfigObjs().put('mepConfigList', configDB)
