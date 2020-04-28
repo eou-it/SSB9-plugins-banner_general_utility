@@ -9,7 +9,7 @@ import net.hedtech.banner.i18n.BannerMessageSource
 class BannerGeneralUtilityGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "3.3.2 > *"
+    def grailsVersion = "3.3.11 > *"
     def dependsOn = [
             bannerCore: '9.28.1 => *'
            /* springSecurityCore: '3.2.3 => *'*/
