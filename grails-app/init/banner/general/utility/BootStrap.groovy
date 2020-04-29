@@ -5,6 +5,8 @@ package banner.general.utility
 
 import grails.util.Environment
 import grails.util.Holders
+import groovy.util.logging.Slf4j
+import net.hedtech.banner.general.configuration.ConfigJob
 
 /**
  * Executes arbitrary code at bootstrap time.
@@ -12,6 +14,7 @@ import grails.util.Holders
  * -- Fetching the configuration from DB and setting in Holders.Config using ConfigPropertiesService
  * */
 
+@Slf4j
 class BootStrap {
     def configPropertiesService
     def generalPageRoleMappingService
@@ -39,6 +42,7 @@ class BootStrap {
                 springSecurityService.clearCachedRequestmaps()
             }
         }
+        startConfigJobWithParameter()
         configPropertiesService.setConfigFromDb()
         configPropertiesService.setTransactionTimeOut()
         configPropertiesService.setLoginEndPointUrl()
@@ -56,5 +60,15 @@ class BootStrap {
 
     def destroy = {
         // no-op
+    }
+
+
+    private startConfigJobWithParameter(){
+        Integer delay = Holders.config.configJob?.delay instanceof Integer? Holders.config.configJob?.delay : 60000
+        Integer interval = Holders.config.configJob?.interval instanceof Integer? Holders.config.configJob?.interval : 60000
+        Integer actualCount = Holders.config.configJob?.actualCount instanceof Integer? Holders.config.configJob?.actualCount > 0 ? Holders.config.configJob?.actualCount -1 : Holders.config.configJob?.actualCount : -1
+        Map mp = [name: 'configJobTigger', actualCount: actualCount]
+        log.info("Running Config Job with parameter delay = ${delay} interval =  ${interval}")
+        ConfigJob.schedule(interval, actualCount, mp)
     }
 }
