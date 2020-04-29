@@ -43,6 +43,9 @@ class BootStrap {
             }
         }
         startConfigJobWithParameter()
+/*
+   This code will be executed by Job so here its not required.
+
         configPropertiesService.setConfigFromDb()
         configPropertiesService.setTransactionTimeOut()
         configPropertiesService.setLoginEndPointUrl()
@@ -56,6 +59,7 @@ class BootStrap {
                 }
             }
         }
+ */
     }
 
     def destroy = {
@@ -64,11 +68,11 @@ class BootStrap {
 
 
     private startConfigJobWithParameter(){
-        Integer delay = Holders.config.configJob?.delay instanceof Integer? Holders.config.configJob?.delay : 60000
+        //Integer delay = Holders.config.configJob?.delay instanceof Integer? Holders.config.configJob?.delay : 60000
         Integer interval = Holders.config.configJob?.interval instanceof Integer? Holders.config.configJob?.interval : 60000
         Integer actualCount = Holders.config.configJob?.actualCount instanceof Integer? Holders.config.configJob?.actualCount > 0 ? Holders.config.configJob?.actualCount -1 : Holders.config.configJob?.actualCount : -1
-        Map mp = [name: 'configJobTigger', actualCount: actualCount]
-        log.info("Running Config Job with parameter delay = ${delay} interval =  ${interval}")
-        ConfigJob.schedule(interval, actualCount, mp)
+        Map parameterMap = [name: 'configJobTigger', actualCount: actualCount]
+        log.info("Running Config Job with parameter interval =  ${interval}")
+        ConfigJob.schedule(interval, actualCount, parameterMap)
     }
 }
