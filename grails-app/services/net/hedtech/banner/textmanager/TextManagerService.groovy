@@ -1,5 +1,5 @@
 /******************************************************************************
- *  Copyright 2017-2019 Ellucian Company L.P. and its affiliates.                  *
+ *  Copyright 2017-2020 Ellucian Company L.P. and its affiliates.                  *
  ******************************************************************************/
 
 package net.hedtech.banner.textmanager
@@ -63,9 +63,11 @@ class TextManagerService {
             sql?.close()
         }
         if (matches > 1) {
+            tmEnabled = false
             log.warn "Multiple Text Manager projects are configured for application $appName. Using ${result}. It is recommended to correct this."
         }
         if (matches == 0) {
+            tmEnabled = false
             log.warn "No Text Manager project is configured for application $appName. Text Manager customization is not possible."
         }
         tranManProjectCache = result
