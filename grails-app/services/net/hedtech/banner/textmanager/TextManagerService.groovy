@@ -63,9 +63,11 @@ class TextManagerService {
             sql?.close()
         }
         if (matches > 1) {
+            tmEnabled = false
             log.warn "Multiple Text Manager projects are configured for application $appName. Using ${result}. It is recommended to correct this."
         }
         if (matches == 0) {
+            tmEnabled = false
             log.warn "No Text Manager project is configured for application $appName. Text Manager customization is not possible."
         }
         tranManProjectCache = result
