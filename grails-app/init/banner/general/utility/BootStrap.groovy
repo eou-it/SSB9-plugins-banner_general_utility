@@ -44,8 +44,9 @@ class BootStrap {
         }
         startConfigJobWithParameter()
 /*
-   This code will be executed by Job so here its not required.
-
+   The below code required to be executed here as few configuration required by other BootStrap file will not be available
+   in Grails ConfigHolder. These configurations are only available in GUROCFG not in the config file.
+*/
         configPropertiesService.setConfigFromDb()
         configPropertiesService.setTransactionTimeOut()
         configPropertiesService.setLoginEndPointUrl()
@@ -59,7 +60,6 @@ class BootStrap {
                 }
             }
         }
- */
     }
 
     def destroy = {
