@@ -10,7 +10,7 @@ buildscript {
         classpath "net.saliman:gradle-cobertura-plugin:2.6.0"
     }
 }
-version "9.33.1.1"
+version "9.33.2"
 group "bannergeneralutilty"
 
 apply plugin:"eclipse"
