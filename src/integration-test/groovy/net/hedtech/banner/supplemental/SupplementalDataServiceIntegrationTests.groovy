@@ -3,6 +3,7 @@
  ****************************************************************************** */
 package net.hedtech.banner.supplemental
 
+import ch.qos.logback.classic.Level
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.util.GrailsWebMockUtil
@@ -11,8 +12,6 @@ import groovy.util.logging.Slf4j
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.supplemental.test.ZipTest
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import org.apache.log4j.Level
-import org.apache.log4j.Logger
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
