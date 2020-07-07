@@ -1,8 +1,9 @@
 /*******************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.supplemental
 
+import ch.qos.logback.classic.Level
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.util.GrailsWebMockUtil
