@@ -35,8 +35,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private static final String CONFIG_NAME_LOGIN_ENDPOINT_URL = 'loginEndpoint'
     private static final String CONFIG_NAME_LOGOUT_ENDPOINT_URL = 'logoutEndpoint'
     private static final String CONFIG_NAME_DEFAULT_WEBSESSION_TIMEOUT = 'defaultWebSessionTimeout'
-    private static final String CONFIG_NAME_AUTH_PROVIDER = 'authenticationProvider'
-    private static final String CONFIG_NAME_LOCAL_LOGOUT = 'localLogout'
+    private static final String CONFIG_NAME_AUTH_PROVIDER = 'banner.sso.authenticationProvider'
+    private static final String CONFIG_NAME_LOCAL_LOGOUT = 'banner.sso.authentication.saml.localLogout'
     private static final String GLOBAL = 'GLOBAL'
     private static final String TESTAPP = 'TESTAPP'
     private static String ACTUALAPPNAME = ''
@@ -139,7 +139,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         assert configProp.configValue == null
 
         configPropertiesService.setConfigFromDb()
-        assertTrue CH.config.get(CONFIG_NAME + '-boolean') == true
+        //assertTrue CH.config.get(CONFIG_NAME + '-boolean') == true
+        assertTrue CH.config.get(CONFIG_NAME + '-boolean-null') == false
     }
 
     @Test
@@ -347,11 +348,12 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         def oldAuthProvider = CH.config.banner.sso.authenticationProvider
         def oldLocalLogout = CH.config.banner?.sso?.authentication.saml.localLogout
         CH.config.banner.sso.authenticationProvider = 'saml'
-        CH.config.banner?.sso?.authentication.saml.localLogout = 'true'
+        CH.config.banner.sso.authentication.saml.localLogout='true'
         def configApplication = createNewConfigApplication()
         createConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
-        createConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH.config.banner?.sso?.authentication.saml.localLogout, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH.config.banner.sso.authentication.saml.localLogout, CONFIG_TYPE_STRING)
         configPropertiesService.setConfigFromDb()
+        println "Holders?.config.banner?.sso?.authentication.saml.localLogout =" + Holders?.config.banner?.sso?.authentication.saml.localLogout
         configPropertiesService.setLogOutEndPointUrl()
         def result = CH.config?.logoutEndpoint
         assertEquals "saml/logout?local=true", result

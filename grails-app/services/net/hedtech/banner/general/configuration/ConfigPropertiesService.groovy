@@ -4,12 +4,18 @@
 
 package net.hedtech.banner.general.configuration
 
+import grails.config.Config
 import grails.gorm.transactions.Transactional
+import grails.plugin.springsecurity.ReflectionUtils
+import grails.util.Holders
 import grails.util.Holders as CH
+import org.grails.config.NavigableMap
+import org.grails.config.NavigableMapConfig
 import groovy.sql.Sql
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
+import org.grails.config.PropertySourcesConfig
 import org.springframework.dao.InvalidDataAccessResourceUsageException
 
 /**
@@ -33,6 +39,8 @@ class ConfigPropertiesService extends ServiceBase {
 
     private static final String ENCRYPT_TEXT_FUNCTION = '{call  GSPCRPT.p_apply(?,?)}'
 
+    private static def initialConfig = new PropertySourcesConfig()
+
     def grailsApplication
 
     def configApplicationService
@@ -47,6 +55,8 @@ class ConfigPropertiesService extends ServiceBase {
     public void setConfigFromDb() {
         String appId = CH.config.app.appId
         log.info("Fetching config from DB for appId = ${ appId }")
+        backupInitialConfig()
+        clearConfigObject()
         try {
             ArrayList configProp = ConfigProperties.fetchSimpleConfigByAppId(GLOBAL)
             mergeConfigProperties(configProp)
@@ -68,6 +78,7 @@ class ConfigPropertiesService extends ServiceBase {
      */
     private void mergeConfigProperties(ArrayList configProps) {
         log.debug('Config fetched from DB' + configProps)
+        def properties = new PropertySourcesConfig()
         configProps?.each {configProp ->
             Properties property = new Properties()
             def configKey   = configProp?.configName
@@ -76,8 +87,11 @@ class ConfigPropertiesService extends ServiceBase {
                 property.put('locale_userPreferenceEnable', configProp.userPreferenceIndicator ?: false)
             }
             property.put(configKey, configValue)
-            CH.config.merge(configSlurper.parse(property))
+            //CH.config.merge(configSlurper.parse(property))
+            properties << (configSlurper.parse(property))
         }
+        Holders.config.merge(initialConfig)
+        Holders.config.merge(properties)
         log.debug('Setting config from DB')
     }
 
@@ -310,5 +324,21 @@ class ConfigPropertiesService extends ServiceBase {
             log.info("Failed to encrypt the text as ssbEnabled flag is false")
         }
         return encryptedValue
+    }
+
+
+    private backupInitialConfig(){
+        if (initialConfig?.size() == 0) {
+            Config config = Holders.config
+            Map<Object, Object> configMap = [:]
+            for ( def entry : config ) {
+                configMap.put( entry.getKey(), config.get( entry.getKey() ) )
+            }
+            initialConfig = new PropertySourcesConfig(configMap)
+        }
+    }
+
+    private clearConfigObject(){
+        Holders.config.clear()
     }
 }
