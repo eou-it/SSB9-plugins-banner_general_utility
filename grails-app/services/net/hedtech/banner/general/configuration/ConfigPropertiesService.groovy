@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.general.configuration
@@ -8,7 +8,6 @@ import grails.config.Config
 import grails.gorm.transactions.Transactional
 import grails.plugin.springsecurity.ReflectionUtils
 import grails.util.Holders
-import grails.util.Holders as CH
 import org.grails.config.NavigableMap
 import org.grails.config.NavigableMapConfig
 import groovy.sql.Sql
@@ -17,6 +16,7 @@ import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
 import org.grails.config.PropertySourcesConfig
 import org.springframework.dao.InvalidDataAccessResourceUsageException
+import banner.general.utility.BannerPropertySourcesConfig
 
 /**
  * The service is used to fetch all the global/app based config properties from DB
@@ -39,7 +39,7 @@ class ConfigPropertiesService extends ServiceBase {
 
     private static final String ENCRYPT_TEXT_FUNCTION = '{call  GSPCRPT.p_apply(?,?)}'
 
-    private static def initialConfig = new PropertySourcesConfig()
+    private static def initialConfig = new BannerPropertySourcesConfig()
 
     def grailsApplication
 
@@ -53,10 +53,9 @@ class ConfigPropertiesService extends ServiceBase {
      * This method will be get called in bootstrap to load all the config properties from the DB.
      */
     public void setConfigFromDb() {
-        String appId = CH.config.app.appId
+        String appId = Holders.config.app.appId
         log.info("Fetching config from DB for appId = ${ appId }")
-        backupInitialConfig()
-        clearConfigObject()
+        clearGrailsConfiguration()
         try {
             ArrayList configProp = ConfigProperties.fetchSimpleConfigByAppId(GLOBAL)
             mergeConfigProperties(configProp)
@@ -79,6 +78,7 @@ class ConfigPropertiesService extends ServiceBase {
     private void mergeConfigProperties(ArrayList configProps) {
         log.debug('Config fetched from DB' + configProps)
         def properties = new PropertySourcesConfig()
+        println "\n***************************************"
         configProps?.each {configProp ->
             Properties property = new Properties()
             def configKey   = configProp?.configName
@@ -88,9 +88,12 @@ class ConfigPropertiesService extends ServiceBase {
             }
             property.put(configKey, configValue)
             //CH.config.merge(configSlurper.parse(property))
-            properties << (configSlurper.parse(property))
+            println "property fetched are ="+ property
+            properties << (configSlurper.parse(property)).flatten()
         }
         Holders.config.merge(initialConfig)
+        println "Properties fetched are ="+ properties
+        println "***************************************\n\n"
         Holders.config.merge(properties)
         log.debug('Setting config from DB')
     }
@@ -126,8 +129,8 @@ class ConfigPropertiesService extends ServiceBase {
 
 
     public void seedDataToDBFromConfig() {
-        String appName = CH.config.app.name
-        String appId = CH.config.app.appId
+        String appName = Holders.config.app.name
+        String appId = Holders.config.app.appId
         if (appId) {
             try {
                 ConfigApplication configApp = ConfigApplication.fetchByAppId(appId)
@@ -138,8 +141,8 @@ class ConfigPropertiesService extends ServiceBase {
                     newConfigApp.setLastModifiedBy('BANNER')
                     configApplicationService.create(newConfigApp)
                 }
-                def appSeedDataKey = CH.config.ssconfig.app.seeddata.keys
-                def globalSeedDataKey = CH.config.ssconfig.global.seeddata.keys
+                def appSeedDataKey = Holders.config.ssconfig.app.seeddata.keys
+                def globalSeedDataKey = Holders.config.ssconfig.global.seeddata.keys
                 log.debug("App seeddata defined in config is : " + appSeedDataKey)
                 log.debug("Global seeddata defined in config is : " + globalSeedDataKey)
 
@@ -191,7 +194,7 @@ class ConfigPropertiesService extends ServiceBase {
                         ConfigProperties cp = new ConfigProperties()
                         cp.setConfigName(keyName)
 
-                        def value = CH.config.flatten()."$keyName"
+                        def value = Holders.config.flatten()."$keyName"
                         cp.setConfigValue(value.toString())
                         cp.setConfigApplication(configApp)
                         cp.setConfigType(value?.getClass()?.simpleName?.toLowerCase())
@@ -256,7 +259,7 @@ class ConfigPropertiesService extends ServiceBase {
 
 
     public void updateDefaultWebSessionTimeout() {
-        def defaultWebSessionTimeoutFromConfig = CH.config.defaultWebSessionTimeout
+        def defaultWebSessionTimeoutFromConfig = Holders.config.defaultWebSessionTimeout
         if (!(defaultWebSessionTimeoutFromConfig instanceof Map)) {
             if (AuthenticationProviderUtility.defaultWebSessionTimeout != defaultWebSessionTimeoutFromConfig) {
                 AuthenticationProviderUtility.defaultWebSessionTimeout = defaultWebSessionTimeoutFromConfig
@@ -271,7 +274,7 @@ class ConfigPropertiesService extends ServiceBase {
     public String getDecryptedValue(def encryptedValue) {
         def conn
         String decryptedValue
-        Boolean ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
+        Boolean ssbEnabled= Holders?.config?.ssbEnabled instanceof Boolean ? Holders?.config?.ssbEnabled : false
         if(ssbEnabled) {
             try {
                 if (encryptedValue) {
@@ -303,7 +306,7 @@ class ConfigPropertiesService extends ServiceBase {
     public String getEncryptedValue(String clearText) {
         def conn
         String encryptedValue
-        Boolean ssbEnabled= CH?.config?.ssbEnabled instanceof Boolean ? CH?.config?.ssbEnabled : false
+        Boolean ssbEnabled= Holders?.config?.ssbEnabled instanceof Boolean ? Holders?.config?.ssbEnabled : false
         if(ssbEnabled) {
             try {
                 conn = dataSource.getSsbConnection()
@@ -327,7 +330,7 @@ class ConfigPropertiesService extends ServiceBase {
     }
 
 
-    private backupInitialConfig(){
+    public void backupInitialConfiguration(){
         if (initialConfig?.size() == 0) {
             Config config = Holders.config
             Map<Object, Object> configMap = [:]
@@ -338,7 +341,8 @@ class ConfigPropertiesService extends ServiceBase {
         }
     }
 
-    private clearConfigObject(){
+
+    public void clearGrailsConfiguration(){
         Holders.config.clear()
     }
 }
