@@ -46,7 +46,7 @@ class SelfServiceMenuService {
         def firstMenu = messageSource.getMessage("selfService.first.menu", null, LocaleContextHolder.getLocale())
 
         def session = RequestContextHolder.currentRequestAttributes()?.request?.session
-        final boolean hideSSBHeader = ( session.getAttribute("hideSSBHeaderComps") ? session.getAttribute("hideSSBHeaderComps") : false )
+        final String hideSSBHeader = ( session.getAttribute("hideSSBHeaderComps") == "true" ? session.getAttribute("hideSSBHeaderComps") : false )
         session.setAttribute("hideSSBHeaderComps", hideSSBHeader)
 
         Sql sql
