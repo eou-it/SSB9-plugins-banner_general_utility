@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2020 Ellucian Company L.P. and its affiliates.
+ Copyright 2013-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package banner.general.utility

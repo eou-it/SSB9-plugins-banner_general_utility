@@ -1,6 +1,7 @@
 /*******************************************************************************
  Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
+
 grails.project.groupId = "net.hedtech" // used when deploying to a maven repo
 
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
@@ -8,7 +9,7 @@ grails.mime.use.accept.header = false
 grails.mime.types = [
         html: ['text/html', 'application/xhtml+xml'],
         xml: ['text/xml', 'application/xml', 'application/vnd.sungardhe.student.v0.01+xml'],
-        text: 'text/plain',
+        text: 'text/plain',s
         js: 'text/javascript',
         rss: 'application/rss+xml',
         atom: 'application/atom+xml',
