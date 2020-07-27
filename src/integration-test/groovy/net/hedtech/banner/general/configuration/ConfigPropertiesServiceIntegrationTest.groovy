@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.general.configuration
@@ -14,9 +14,12 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import groovy.sql.Sql
+import org.springframework.web.context.request.RequestContextHolder
+
 /**
  * ConfigPropertiesServiceIntegrationTest.
  */
+
 @Integration
 @Rollback
 class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
@@ -353,7 +356,6 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         createConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
         createConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH.config.banner.sso.authentication.saml.localLogout, CONFIG_TYPE_STRING)
         configPropertiesService.setConfigFromDb()
-        println "Holders?.config.banner?.sso?.authentication.saml.localLogout =" + Holders?.config.banner?.sso?.authentication.saml.localLogout
         configPropertiesService.setLogOutEndPointUrl()
         def result = CH.config?.logoutEndpoint
         assertEquals "saml/logout?local=true", result
@@ -423,6 +425,65 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         assertEquals null, configPropertiesService.getEncryptedValue(null)
      }
 
+
+    @Test
+    public void testDeleteConfigOfOverriddenConfiguration() {
+        assertNotNull configPropertiesService.initialConfig
+        Integer initialTransactionTimeout = Holders.config.banner.transactionTimeout
+        ConfigApplication configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, 'banner.transactionTimeout', 99999999, CONFIG_TYPE_INTEGER)
+        configPropertiesService.setConfigFromDb()
+        Integer newTransactionTimeout = Holders.config.banner.transactionTimeout
+        assertEquals (99999999, newTransactionTimeout)
+        assertNotEquals (initialTransactionTimeout, newTransactionTimeout)
+
+        ConfigProperties configProperties = ConfigProperties.fetchByConfigNameAndAppId('banner.transactionTimeout',appId)
+        assertNotNull configProperties
+        assertEquals (configProperties.configValue.toInteger(), Holders.config.banner.transactionTimeout)
+        configProperties.delete()
+        configPropertiesService.setConfigFromDb()
+        Integer newTransactionTimeout2 = Holders.config.banner.transactionTimeout
+        assertEquals (initialTransactionTimeout, newTransactionTimeout2)
+        assertNotEquals (newTransactionTimeout2, newTransactionTimeout)
+    }
+
+    @Test
+    public void testDeleteConfigOfNewConfiguration() {
+        assertNotNull configPropertiesService.initialConfig
+        createNewConfigProperties()
+        configPropertiesService.setConfigFromDb()
+        assertNotNull Holders.config.TEST_CONFIG
+        assertTrue Holders.config.TEST_CONFIG == CONFIG_VALUE
+
+        ConfigProperties configProperties = ConfigProperties.fetchByConfigNameAndAppId(CONFIG_NAME,appId)
+        assertNotNull configProperties
+        assertEquals(configProperties.configApplication.appId,appId)
+        assertTrue configProperties.configName == CONFIG_NAME
+        configProperties.delete()
+        configPropertiesService.setConfigFromDb()
+        assertTrue(Holders.config.TEST_CONFIG instanceof org.grails.config.NavigableMap.NullSafeNavigator)
+    }
+
+
+    @Test
+    public void testDeleteConfigOfInMEP() {
+        RequestContextHolder.currentRequestAttributes().request.session.setAttribute('mep', 'MAIN')
+        ConfigApplication configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, 'banner.mep.configurations', "[all]", 'list')
+        createConfigProperties(configApplication, 'MAIN.footerFadeAwayTime', 20000, CONFIG_TYPE_INTEGER)
+        createConfigProperties(configApplication, 'footerFadeAwayTime', 10000, CONFIG_TYPE_INTEGER)
+        configPropertiesService.setConfigFromDb()
+        assertEquals  20000, Holders.config.footerFadeAwayTime
+
+        ConfigProperties configProperties = ConfigProperties.fetchByConfigNameAndAppId('footerFadeAwayTime',appId)
+        assertNotNull configProperties
+        int mepedConfigValue=(configProperties.configValue).toInteger()
+        assertEquals  mepedConfigValue, Holders.config.footerFadeAwayTime
+
+        configProperties.delete()
+        configPropertiesService.setConfigFromDb()
+        assertEquals  10000, Holders.config.footerFadeAwayTime
+    }
 
     private void createNewGlobalConfigProps() {
         ConfigApplication configApplication = ConfigApplication.fetchByAppName(GLOBAL)

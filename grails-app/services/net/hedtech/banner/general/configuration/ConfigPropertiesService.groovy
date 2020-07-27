@@ -78,7 +78,6 @@ class ConfigPropertiesService extends ServiceBase {
     private void mergeConfigProperties(ArrayList configProps) {
         log.debug('Config fetched from DB' + configProps)
         def properties = new PropertySourcesConfig()
-        println "\n***************************************"
         configProps?.each {configProp ->
             Properties property = new Properties()
             def configKey   = configProp?.configName
@@ -87,13 +86,10 @@ class ConfigPropertiesService extends ServiceBase {
                 property.put('locale_userPreferenceEnable', configProp.userPreferenceIndicator ?: false)
             }
             property.put(configKey, configValue)
-            //CH.config.merge(configSlurper.parse(property))
-            println "property fetched are ="+ property
             properties << (configSlurper.parse(property)).flatten()
         }
         Holders.config.merge(initialConfig)
-        println "Properties fetched are ="+ properties
-        println "***************************************\n\n"
+        log.debug ("Properties fetched are = {} ", properties)
         Holders.config.merge(properties)
         log.debug('Setting config from DB')
     }
@@ -286,7 +282,7 @@ class ConfigPropertiesService extends ServiceBase {
                 }
 
             } catch (Exception ex) {
-                log.error("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue()")
+                log.error("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue() with exception = {}", ex)
             }
             finally {
                 conn?.close()
