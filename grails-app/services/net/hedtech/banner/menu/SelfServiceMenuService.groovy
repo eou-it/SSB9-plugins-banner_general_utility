@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.menu
 
@@ -46,7 +46,7 @@ class SelfServiceMenuService {
         def firstMenu = messageSource.getMessage("selfService.first.menu", null, LocaleContextHolder.getLocale())
 
         def session = RequestContextHolder.currentRequestAttributes()?.request?.session
-        final String hideSSBHeader = ( session.getAttribute("hideSSBHeaderComps") == "true" ? session.getAttribute("hideSSBHeaderComps") : false )
+        final String hideSSBHeader = ( session.getAttribute('hideSSBHeaderComps') == 'true' ? session.getAttribute('hideSSBHeaderComps') : 'false' )
         session.setAttribute("hideSSBHeaderComps", hideSSBHeader)
 
         Sql sql
@@ -91,12 +91,12 @@ class SelfServiceMenuService {
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.parent = it.twgrmenu_name
-            if (hideSSBHeader == "true"){
+            if (hideSSBHeader == 'true'){
                 String symbol = it.twgrmenu_url.indexOf(QUESTION_MARK)>-1? AMPERSAND:QUESTION_MARK
                 hideSSBHeaderURL =it.twgrmenu_url+symbol+hideSSBHeaderComps
             }
             mnu.url = it.twgrmenu_db_link_ind == "Y" ? getBanner8SsUrlFromConfig() + it.twgrmenu_url :
-                    (hideSSBHeader == "true" ? hideSSBHeaderURL : it.twgrmenu_url)
+                    (hideSSBHeader == 'true' ? hideSSBHeaderURL : it.twgrmenu_url)
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
             mnu.sourceIndicator = it.twgrmenu_source_ind
