@@ -6,17 +6,13 @@ package net.hedtech.banner.general.configuration
 
 import grails.config.Config
 import grails.gorm.transactions.Transactional
-import grails.plugin.springsecurity.ReflectionUtils
 import grails.util.Holders
-import org.grails.config.NavigableMap
-import org.grails.config.NavigableMapConfig
 import groovy.sql.Sql
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.service.ServiceBase
 import org.grails.config.PropertySourcesConfig
 import org.springframework.dao.InvalidDataAccessResourceUsageException
-import banner.general.utility.BannerPropertySourcesConfig
 
 /**
  * The service is used to fetch all the global/app based config properties from DB
@@ -27,19 +23,19 @@ import banner.general.utility.BannerPropertySourcesConfig
 @Transactional
 class ConfigPropertiesService extends ServiceBase {
 
-    private static final String GLOBAL = "GLOBAL"
+    private static final String GLOBAL = 'GLOBAL'
 
-    private static String CONFIGNAME_LOCALE = "locale"
+    private static final String CONFIGNAME_LOCALE = 'locale'
 
-    private static String localLogoutEnable = "saml/logout?local=true"
+    private static final String localLogoutEnable = 'saml/logout?local=true'
 
-    private static String globalLogoutEnable = "saml/logout"
+    private static final String globalLogoutEnable = 'saml/logout'
 
-    private static final String DECRYPT_TEXT_FUNCTION = "{?= call GSKDSEC.decrypt_string(?)}"
+    private static final String DECRYPT_TEXT_FUNCTION = '{?= call GSKDSEC.decrypt_string(?)}'
 
     private static final String ENCRYPT_TEXT_FUNCTION = '{call  GSPCRPT.p_apply(?,?)}'
 
-    private static def initialConfig = new BannerPropertySourcesConfig()
+    private static PropertySourcesConfig initialConfig = new PropertySourcesConfig()
 
     def grailsApplication
 
@@ -66,7 +62,7 @@ class ConfigPropertiesService extends ServiceBase {
             }
         }
         catch (InvalidDataAccessResourceUsageException ex) {
-            log.error("Exception occured  while fetching ConfigProperties from DB, Self Service Config Table doesn't exist")
+            log.error('While fetching ConfigProperties from DB Exception occured  {}', ex)
         }
 
     }
@@ -78,18 +74,18 @@ class ConfigPropertiesService extends ServiceBase {
     private void mergeConfigProperties(ArrayList configProps) {
         log.debug('Config fetched from DB' + configProps)
         def properties = new PropertySourcesConfig()
-        configProps?.each {configProp ->
+        configProps?.each { configProp ->
             Properties property = new Properties()
             def configKey   = configProp?.configName
             def configValue = getConfigValueFromAppropriateConfigType(configProp)
-            if ('locale' == configKey) {
+            if (CONFIGNAME_LOCALE == configKey) {
                 property.put('locale_userPreferenceEnable', configProp.userPreferenceIndicator ?: false)
             }
             property.put(configKey, configValue)
             properties << (configSlurper.parse(property)).flatten()
         }
         Holders.config.merge(initialConfig)
-        log.debug ("Properties fetched are = {} ", properties)
+        log.debug ('Properties fetched are = {} ', properties)
         Holders.config.merge(properties)
         log.debug('Setting config from DB')
     }
@@ -107,11 +103,11 @@ class ConfigPropertiesService extends ServiceBase {
             value = value ? value?.toString() : ''
         else if ('encryptedtext' == configProp.configType) {
             decryptedValue = getDecryptedValue(value)
-            value = decryptedValue ? decryptedValue : ''
+            value = decryptedValue ?: ''
         } else if ('map' == configProp.configType) {
             value = value ? Eval.me(value) : [:]
         } else if ('list' == configProp.configType) {
-            value = (value && value != "[]") ? value[1..-2].split(',') : []
+            value = (value && value != '[]') ? value[1..-2].split(',') : []
         } else if ('closure' == configProp.configType) {
             if (value) {
                 def tempValue = new ConfigSlurper().parse(key + """${value}""")
@@ -120,7 +116,7 @@ class ConfigPropertiesService extends ServiceBase {
                 value = '{}'
             }
         }
-        return value
+        value
     }
 
 
@@ -139,17 +135,17 @@ class ConfigPropertiesService extends ServiceBase {
                 }
                 def appSeedDataKey = Holders.config.ssconfig.app.seeddata.keys
                 def globalSeedDataKey = Holders.config.ssconfig.global.seeddata.keys
-                log.debug("App seeddata defined in config is : " + appSeedDataKey)
-                log.debug("Global seeddata defined in config is : " + globalSeedDataKey)
+                log.debug('App seeddata defined in config is : ' + appSeedDataKey)
+                log.debug('Global seeddata defined in config is : ' + globalSeedDataKey)
 
                 seedConfigDataToDB(appId, appSeedDataKey)
                 seedConfigDataToDB(GLOBAL, globalSeedDataKey)
             }
             catch (InvalidDataAccessResourceUsageException ex) {
-                log.error("Exception occured while running seedDataToDBFromConfig method, SelfService Config Table doesn't exist" + ex.getMessage())
+                log.error('Exception occured while running seedDataToDBFromConfig method ' + ex.message())
             }
         } else {
-            log.error("No App Id Specified in application.properties");
+            log.error('No App Id Specified in application.properties')
         }
     }
 
@@ -169,7 +165,7 @@ class ConfigPropertiesService extends ServiceBase {
                 this.create(cp)
             }
             catch (InvalidDataAccessResourceUsageException ex) {
-                log.error("Exception occured while executing seedUserPreferenceConfig " + ex.getMessage())
+                log.error('Exception occured while executing seedUserPreferenceConfig ' + ex.message)
             }
         }
     }
@@ -228,7 +224,7 @@ class ConfigPropertiesService extends ServiceBase {
 
 
     public setLoginEndPointUrl() {
-        grailsApplication?.config?.loginEndpoint = grailsApplication.config?.loginEndpoint ?: ""
+        grailsApplication?.config?.loginEndpoint = grailsApplication.config?.loginEndpoint ?: ''
     }
 
 
@@ -240,13 +236,13 @@ class ConfigPropertiesService extends ServiceBase {
                 grailsApplication?.config?.logoutEndpoint = globalLogoutEnable
             }
         } else {
-            grailsApplication?.config?.logoutEndpoint = grailsApplication.config?.logoutEndpoint ?: ""
+            grailsApplication?.config?.logoutEndpoint = grailsApplication.config?.logoutEndpoint ?: ''
         }
     }
 
 
     public setGuestLoginEnabled() {
-        if ((true == grailsApplication.config?.guestAuthenticationEnabled) && (!"default".equalsIgnoreCase(grailsApplication.config?.banner?.sso?.authenticationProvider.toString()))) {
+        if ((true == grailsApplication.config?.guestAuthenticationEnabled) && (!'default'.equalsIgnoreCase(grailsApplication.config?.banner?.sso?.authenticationProvider.toString()))) {
             grailsApplication?.config?.guestLoginEnabled = true
         } else {
             grailsApplication?.config?.guestLoginEnabled = false
@@ -271,7 +267,7 @@ class ConfigPropertiesService extends ServiceBase {
         def conn
         String decryptedValue
         Boolean ssbEnabled= Holders?.config?.ssbEnabled instanceof Boolean ? Holders?.config?.ssbEnabled : false
-        if(ssbEnabled) {
+        if (ssbEnabled) {
             try {
                 if (encryptedValue) {
                     conn = dataSource.getSsbConnection()
@@ -282,17 +278,16 @@ class ConfigPropertiesService extends ServiceBase {
                 }
 
             } catch (Exception ex) {
-                log.error("Failed to decrypt the encrypted text type in ConfigPropertiesService.getDecryptedValue() with exception = {}", ex)
+                log.error('Failed to decrypt the encrypted text with exception = {}', ex)
             }
             finally {
                 conn?.close()
             }
         }
-        else{
-            log.info("Failed to decrypt the encrypted text type  as ssbEnabled flag is false")
+        else {
+            log.info('Failed to decrypt the encrypted text type  as ssbEnabled flag is false')
         }
-
-        return decryptedValue
+        decryptedValue
     }
 
     /**
@@ -303,7 +298,7 @@ class ConfigPropertiesService extends ServiceBase {
         def conn
         String encryptedValue
         Boolean ssbEnabled= Holders?.config?.ssbEnabled instanceof Boolean ? Holders?.config?.ssbEnabled : false
-        if(ssbEnabled) {
+        if (ssbEnabled) {
             try {
                 conn = dataSource.getSsbConnection()
                 Sql db = new Sql(conn)
@@ -313,32 +308,32 @@ class ConfigPropertiesService extends ServiceBase {
                     }
                 }
             } catch (Exception ex) {
-                log.info("Failed to encrypt in ConfigPropertiesService.getEncryptedValue()")
+                log.info('Failed to encrypt in ConfigPropertiesService.getEncryptedValue() with exception {}', ex)
             }
             finally {
                 conn?.close()
             }
         }
-        else{
-            log.info("Failed to encrypt the text as ssbEnabled flag is false")
+        else {
+            log.info('Failed to encrypt the text as ssbEnabled flag is false')
         }
-        return encryptedValue
+        encryptedValue
     }
 
 
-    public void backupInitialConfiguration(){
+    public void backupInitialConfiguration() {
         if (initialConfig?.size() == 0) {
             Config config = Holders.config
             Map<Object, Object> configMap = [:]
             for ( def entry : config ) {
-                configMap.put( entry.getKey(), config.get( entry.getKey() ) )
+                configMap.put( entry.key, config.get( entry.key ) )
             }
             initialConfig = new PropertySourcesConfig(configMap)
         }
     }
 
 
-    public void clearGrailsConfiguration(){
+    public void clearGrailsConfiguration() {
         Holders.config.clear()
     }
 }
