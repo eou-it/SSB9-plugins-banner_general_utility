@@ -9,7 +9,7 @@ grails.mime.use.accept.header = false
 grails.mime.types = [
         html: ['text/html', 'application/xhtml+xml'],
         xml: ['text/xml', 'application/xml', 'application/vnd.sungardhe.student.v0.01+xml'],
-        text: 'text/plain',s
+        text: 'text/plain',
         js: 'text/javascript',
         rss: 'application/rss+xml',
         atom: 'application/atom+xml',
