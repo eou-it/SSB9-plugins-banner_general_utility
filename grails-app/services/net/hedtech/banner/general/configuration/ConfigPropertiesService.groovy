@@ -51,15 +51,15 @@ class ConfigPropertiesService extends ServiceBase {
     public void setConfigFromDb() {
         String appId = Holders.config.app.appId
         log.info("Fetching config from DB for appId = ${ appId }")
-        clearGrailsConfiguration()
         try {
-            ArrayList configProp = ConfigProperties.fetchSimpleConfigByAppId(GLOBAL)
-            mergeConfigProperties(configProp)
-            // Merge the application related configurations and global configurations
+            ArrayList globalConfigProperties = ConfigProperties.fetchSimpleConfigByAppId(GLOBAL)
+            ArrayList appConfigProperties = []
             if (appId) {
-                configProp = ConfigProperties.fetchSimpleConfigByAppId(appId)
-                mergeConfigProperties(configProp)
+                appConfigProperties = ConfigProperties.fetchSimpleConfigByAppId(appId)
             }
+            clearGrailsConfiguration()
+            mergeConfigProperties(globalConfigProperties)
+            mergeConfigProperties(appConfigProperties)
         }
         catch (InvalidDataAccessResourceUsageException ex) {
             log.error('While fetching ConfigProperties from DB Exception occured  {}', ex)

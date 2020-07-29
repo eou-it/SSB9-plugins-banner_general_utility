@@ -4,6 +4,7 @@
 
 package net.hedtech.banner.general.configuration
 
+import banner.general.utility.BannerHolders
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
@@ -26,6 +27,7 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
     def configPropertiesService
     def configApplicationService
+    def bannerHoldersService
     def grailsApplication
     private def appName
     private def appId
@@ -468,11 +470,13 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     @Test
     public void testDeleteConfigOfInMEP() {
         RequestContextHolder.currentRequestAttributes().request.session.setAttribute('mep', 'MAIN')
+        //setupMepConfiguration()
         ConfigApplication configApplication = createNewConfigApplication()
         createConfigProperties(configApplication, 'banner.mep.configurations', "[all]", 'list')
         createConfigProperties(configApplication, 'MAIN.footerFadeAwayTime', 20000, CONFIG_TYPE_INTEGER)
         createConfigProperties(configApplication, 'footerFadeAwayTime', 10000, CONFIG_TYPE_INTEGER)
         configPropertiesService.setConfigFromDb()
+        //setupMepConfiguration()
         assertEquals  20000, Holders.config.footerFadeAwayTime
 
         ConfigProperties configProperties = ConfigProperties.fetchByConfigNameAndAppId('footerFadeAwayTime',appId)
@@ -593,6 +597,14 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         )
         configProps.add(configProperties)
         configPropertiesService.create(configProps)
+    }
+
+    private void setupMepConfiguration() {
+        bannerHoldersService.setBaseConfig()
+        Holders.metaClass.static.getConfig = {
+            return BannerHolders.config
+        }
+        bannerHoldersService.setMeppedConfigObj ()
     }
 
 }
