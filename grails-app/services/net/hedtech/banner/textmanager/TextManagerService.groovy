@@ -78,7 +78,7 @@ class TextManagerService {
 
     def save(properties, name, srcLocale = ROOT_LOCALE_APP, locale) {
         if (!tmEnabled) {
-            return
+            return [error: "Unable to save - no Project configured", count: 0]
         }
         synchronized (savePropLock) {
         def project = tranManProject()
