@@ -58,6 +58,7 @@ class ConfigPropertiesService extends ServiceBase {
                 appConfigProperties = ConfigProperties.fetchSimpleConfigByAppId(appId)
             }
             clearGrailsConfiguration()
+            Holders.config.merge(initialConfig)
             mergeConfigProperties(globalConfigProperties)
             mergeConfigProperties(appConfigProperties)
         }
@@ -84,7 +85,6 @@ class ConfigPropertiesService extends ServiceBase {
             property.put(configKey, configValue)
             properties << (configSlurper.parse(property)).flatten()
         }
-        Holders.config.merge(initialConfig)
         log.debug ('Properties fetched are = {} ', properties)
         Holders.config.merge(properties)
         log.debug('Setting config from DB')
