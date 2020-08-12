@@ -10,7 +10,7 @@ buildscript {
         classpath "net.saliman:gradle-cobertura-plugin:2.6.0"
     }
 }
-version "9.33.3.1"
+version "9.34"
 group "bannergeneralutilty"
 
 apply plugin:"eclipse"
@@ -65,7 +65,6 @@ dependencies {
 }
 
 configurations {
-    runtime.exclude group: "org.springframework.boot", module: "spring-boot-starter-actuator"
     runtime.exclude group: "org.grails", module: "grails-gorm-testing-support"
 }
 
