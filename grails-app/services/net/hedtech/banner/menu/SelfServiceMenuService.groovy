@@ -73,26 +73,26 @@ class SelfServiceMenuService {
                             TWGRMENU_IMAGE,TWGRMENU_ENABLED,TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,
                             TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,
                             TWGRMENU_SOURCE_IND 
-                    FROM twgrmenu   WHERE  twgrmenu_name = ? 
+                    FROM twgrmenu   WHERE  twgrmenu_name = :name 
                     AND twgrmenu_enabled = 'Y'
                     AND twgrmenu_source_ind =  (SELECT nvl( max(twgrmenu_source_ind ),'B') 
-                                                FROM twgrmenu WHERE  twgrmenu_name = ? 
+                                                FROM twgrmenu WHERE  twgrmenu_name = :name 
                                                 AND twgrmenu_source_ind='L')
                     AND (twgrmenu_db_link_ind = 'N' 
                             OR ( REGEXP_SUBSTR(twgrmenu_url , '[^?]*') 
-                                    IN (SELECT twgrwmrl_name FROM twgrwmrl, twgrmenu WHERE twgrmenu.twgrmenu_name = ?
+                                    IN (SELECT twgrwmrl_name FROM twgrwmrl, twgrmenu WHERE twgrmenu.twgrmenu_name = :name
                     AND twgrwmrl_name = REGEXP_SUBSTR(twgrmenu.twgrmenu_url , '[^?]*') 
                     AND twgrwmrl_source_ind = (SELECT nvl( max(twgrwmrl_source_ind ), 'B')
                                                 FROM twgrwmrl WHERE  twgrwmrl_name = REGEXP_SUBSTR(twgrmenu_url , '[^?]*') 
                                                 AND twgrwmrl_source_ind= 'L' )
-                    AND twgrwmrl_role IN (?) 
+                    AND twgrwmrl_role IN (:roleCriteria) 
                     AND twgrwmrl_name IN ( SELECT TWGBWMNU_NAME FROM TWGBWMNU 
                                             WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*') 
                     AND TWGBWMNU_SOURCE_IND = (SELECT NVL( MAX(TWGBWMNU_source_ind ),'B') 
                     FROM TWGBWMNU WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*') ) 
                     AND TWGBWMNU_ENABLED_IND = 'Y')))) 
                     ORDER BY twgrmenu_sequence
-                    """, [menuName, menuName, menuName, roleCriteria]) {
+                    """, [[name: menuName, roleCriteria: roleCriteria]]) {
             def mnu = new SelfServiceMenu()
             String  hideSSBHeaderURL =" "
             mnu.formName = it.twgrmenu_url
