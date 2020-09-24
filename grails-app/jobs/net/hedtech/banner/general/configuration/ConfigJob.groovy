@@ -4,7 +4,6 @@
 package net.hedtech.banner.general.configuration
 
 import grails.util.Holders
-import grails.util.Holders as CH
 import groovy.util.logging.Slf4j
 import org.springframework.dao.InvalidDataAccessResourceUsageException
 
@@ -16,7 +15,6 @@ class ConfigJob {
     def bannerHoldersService
     def multiEntityProcessingService
 
-    // TODO :grails_332_change, needs to revisit
     Boolean concurrent = false
 
     static triggers ={}
@@ -42,7 +40,7 @@ class ConfigJob {
                     }
                 }
             } catch (InvalidDataAccessResourceUsageException e) {
-                log.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob Self Service Config Table doesn't exist")
+                log.error("InvalidDataAccessResourceUsageException in execute method of ConfigJob with Exception ${e}")
             }
             log.info("Configurations updated")
         }
