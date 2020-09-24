@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 class BannerHoldersServiceIntegrationTests extends BaseIntegrationTestCase {
     def bannerHoldersService
     Config originalConfig
+    def grailsApplication
 
     @Before
     public void setUp() {
@@ -44,8 +45,8 @@ class BannerHoldersServiceIntegrationTests extends BaseIntegrationTestCase {
         Properties properties = new Properties()
         properties.put("banner.mep.configurations", ['all'])
         mergePropToConfig( properties )
-
-        bannerHoldersService.setMeppedConfigObj ();
+        bannerHoldersService.setBaseConfig()
+        bannerHoldersService.setMeppedConfigObj()
 
         assertTrue(Holders.config.banner.test.config == "TEST DATA FOR ${mepCode}")
 
@@ -61,12 +62,14 @@ class BannerHoldersServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void testSetMeppedConfigObjsForLimited () {
-        addTestConfigDataForLimitedConfigs()
         def mepCode = 'NORTH'
         RequestContextHolder.currentRequestAttributes().request.session.setAttribute('mep', "${mepCode}")
         Properties properties = new Properties()
         properties.put("banner.mep.configurations", ['ssbPassword.reset.enabled','footerFadeAwayTime'])
         mergePropToConfig( properties )
+        addTestConfigDataForLimitedConfigs()
+        bannerHoldersService.setBaseConfig()
+        bannerHoldersService.setMeppedConfigObj()
 
         assertTrue(Holders.config.ssbPassword.reset.enabled == false)
 
@@ -87,8 +90,8 @@ class BannerHoldersServiceIntegrationTests extends BaseIntegrationTestCase {
         Properties properties = new Properties()
         properties.put("banner.mep.configurations", [])
         mergePropToConfig( properties )
-
-        bannerHoldersService.setMeppedConfigObj ();
+        bannerHoldersService.setBaseConfig()
+        bannerHoldersService.setMeppedConfigObj()
 
         assertTrue(Holders.config.banner.test.config == "TEST DATA FOR DEFAULT")
 
@@ -103,6 +106,41 @@ class BannerHoldersServiceIntegrationTests extends BaseIntegrationTestCase {
 
         RequestContextHolder.setRequestAttributes(null)
         assertTrue(Holders.config.banner.test.config == "TEST DATA FOR DEFAULT")
+    }
+
+    @Test
+    public void testGrailApplicationConfigObject () {
+        addTestConfigDataToConfigObjForAll()
+        def mepCode = 'EAST'
+        RequestContextHolder.currentRequestAttributes().request.session.setAttribute('mep', "${mepCode}")
+        Properties properties = new Properties()
+        properties.put("banner.mep.configurations", [])
+        mergePropToConfig( properties )
+        bannerHoldersService.setBaseConfig()
+        bannerHoldersService.setMeppedConfigObj()
+
+        assertTrue(Holders.config.banner.test.config == "TEST DATA FOR DEFAULT")
+
+        mepCode = 'WEST'
+        RequestContextHolder.currentRequestAttributes().request.session.setAttribute('mep', "${mepCode}")
+        assertTrue(Holders.config == Holders.grailsApplication.config)
+        assertTrue(Holders.config == grailsApplication.config)
+        assertTrue(Holders.config.banner.test.config == Holders.grailsApplication.config.banner.test.config)
+        assertTrue(Holders.config.banner.test.config == grailsApplication.config.banner.test.config)
+
+        mepCode = 'MAIN'
+        RequestContextHolder.currentRequestAttributes().request.session.setAttribute('mep', "${mepCode}")
+        assertTrue(Holders.config == Holders.grailsApplication.config)
+        assertTrue(Holders.config == grailsApplication.config)
+        assertTrue(Holders.config.banner.test.config == Holders.grailsApplication.config.banner.test.config)
+        assertTrue(Holders.config.banner.test.config == grailsApplication.config.banner.test.config)
+
+
+        RequestContextHolder.setRequestAttributes(null)
+        assertTrue(Holders.config == Holders.grailsApplication.config)
+        assertTrue(Holders.config == grailsApplication.config)
+        assertTrue(Holders.config.banner.test.config == Holders.grailsApplication.config.banner.test.config)
+        assertTrue(Holders.config.banner.test.config == grailsApplication.config.banner.test.config)
     }
 
     private def addTestConfigDataForLimitedConfigs () {
@@ -123,7 +161,7 @@ class BannerHoldersServiceIntegrationTests extends BaseIntegrationTestCase {
 
     private void mergePropToConfig ( Properties properties ) {
         ConfigSlurper configSlurper = new ConfigSlurper()
-        Holders.grailsApplication.config.merge( configSlurper.parse(properties) )
+        Holders.config.merge ( configSlurper.parse(properties) )
     }
 
 }
