@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2016-2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
@@ -23,8 +23,8 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        Holders.config.info.app.version = "9.34"
-        Holders.config.app.platform.version = "9.34"
+        Holders.config.info.app.version = "9.35"
+        Holders.config.app.platform.version = "9.35"
         Holders.config.EnableLoginAudit='N'
     }
 
@@ -70,6 +70,12 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
         loginSSB("CBUNTE3", "111111")
         def aboutData = aboutService.getAbout()
         def applicationVersion = Holders.config.info.app.version
+        println "================================================ "
+        println "aboutData = "+ aboutData
+        println "applicationVersion = "+ applicationVersion
+        println "Holders.config.app.platform.version = "+ Holders.config.app.platform.version
+        println "Holders.config.info.app.version = "+ Holders.config.info.app.version
+        println "================================================ "
         assertEquals(MessageHelper.message("about.banner.application.version") + " " + applicationVersion,aboutData.get("about.banner.application.version"))
         def platformVersion = ""
         assertNotEquals(MessageHelper.message("about.banner.platform.version") + " " + platformVersion, aboutData.get("about.banner.platform.version"))
