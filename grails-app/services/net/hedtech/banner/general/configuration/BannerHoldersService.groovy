@@ -29,11 +29,7 @@ class BannerHoldersService {
             configMap.put( entry.getKey(), config.get( entry.getKey() ) )
         }
 
-        Config bannerConfig = convertMapToConfig( configMap )
-        grailsApplication?.setConfig ( bannerConfig )
-        Holders.setGrailsApplication ( grailsApplication )
-
-        BannerHolders.getMeppedConfigObjs().put ('config', bannerConfig)
+        BannerHolders.getMeppedConfigObjs().put ('config', convertMapToConfig( configMap ))
     }
 
     /**
