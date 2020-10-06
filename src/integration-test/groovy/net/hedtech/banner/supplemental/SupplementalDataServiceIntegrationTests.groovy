@@ -39,13 +39,11 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         super.setUp()
         updateGorsdamTableValidation()
-        log.setLevel(Level.DEBUG)
     }
 
 
     @After
     public void tearDown() {
-        log.setLevel(Level.OFF)
         super.tearDown()
     }
 

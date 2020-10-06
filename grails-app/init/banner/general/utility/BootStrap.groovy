@@ -42,6 +42,7 @@ class BootStrap {
                 springSecurityService.clearCachedRequestmaps()
             }
         }
+        configPropertiesService.backupInitialConfiguration()
         startConfigJobWithParameter()
 /*
    The below code required to be executed here as few configuration required by other BootStrap file will not be available

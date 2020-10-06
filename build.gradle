@@ -10,7 +10,7 @@ buildscript {
         classpath "net.saliman:gradle-cobertura-plugin:2.6.0"
     }
 }
-version "9.34"
+version "9.35"
 group "bannergeneralutilty"
 
 apply plugin:"eclipse"
@@ -104,3 +104,16 @@ codenarc {
 integrationTest {
     ignoreFailures = true
 }
+
+cobertura{
+    coverageFormats = ['xml','html']
+}
+
+tasks.withType(Test) {
+    testLogging {
+        exceptionFormat "full"
+        events "started", "skipped", "passed", "failed"
+        showStandardStreams false
+    }
+}
+
