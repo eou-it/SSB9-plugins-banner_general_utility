@@ -84,6 +84,10 @@ class BootStrap {
 
         SimpleTrigger trigger = null;
         Trigger oldTrigger = quartzScheduler.getTrigger( new TriggerKey('net.hedtech.banner.general.configuration.ConfigJob', GrailsJobClassConstants.DEFAULT_TRIGGERS_GROUP));
+        /**
+         * Check if there is an existing trigger with this name (in-memory or DB). This will mostly return true only for BCM and AIP as the trigger is persisted in the DB.
+         * For all other SS applications, it should always go to the else block and create new in-memory trigger upon startup.
+         */
         if(oldTrigger) {
             TriggerBuilder builder = oldTrigger.getTriggerBuilder();
             trigger = builder
