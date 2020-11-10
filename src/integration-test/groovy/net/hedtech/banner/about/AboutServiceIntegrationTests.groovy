@@ -23,8 +23,8 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        Holders.config.info.app.version = "9.34"
-        Holders.config.app.platform.version = "9.34"
+        Holders.config.info.app.version = "9.34.1"
+        Holders.config.app.platform.version = "9.34.1"
         Holders.config.EnableLoginAudit='N'
     }
 
