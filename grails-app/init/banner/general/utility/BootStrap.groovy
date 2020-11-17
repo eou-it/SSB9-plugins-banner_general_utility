@@ -3,10 +3,17 @@
  ****************************************************************************** */
 package banner.general.utility
 
+import grails.plugins.quartz.GrailsJobClassConstants
 import grails.util.Environment
 import grails.util.Holders
 import groovy.util.logging.Slf4j
 import net.hedtech.banner.general.configuration.ConfigJob
+import org.quartz.SimpleScheduleBuilder
+import org.quartz.SimpleTrigger
+import org.quartz.Trigger
+import org.quartz.TriggerBuilder
+import org.quartz.TriggerKey
+import org.quartz.impl.StdScheduler
 
 /**
  * Executes arbitrary code at bootstrap time.
@@ -21,6 +28,7 @@ class BootStrap {
     def springSecurityService
     def bannerHoldersService
     def multiEntityProcessingService
+    StdScheduler quartzScheduler
 
     def init = { servletContext ->
         if ( multiEntityProcessingService.isMEP() ) {
@@ -74,6 +82,28 @@ class BootStrap {
         Integer actualCount = Holders.config.configJob?.actualCount instanceof Integer? Holders.config.configJob?.actualCount > 0 ? Holders.config.configJob?.actualCount -1 : Holders.config.configJob?.actualCount : -1
         Map parameterMap = [name: 'configJobTigger', actualCount: actualCount]
         log.info("Running Config Job with parameter interval =  ${interval}")
-        ConfigJob.schedule(interval, actualCount, parameterMap)
+
+        SimpleTrigger trigger = null;
+        Trigger oldTrigger = quartzScheduler.getTrigger( new TriggerKey('net.hedtech.banner.general.configuration.ConfigJob', GrailsJobClassConstants.DEFAULT_TRIGGERS_GROUP));
+        /**
+         * Check if there is an existing trigger with this name (in-memory or DB). This will mostly return true only for BCM and AIP as the trigger is persisted in the DB.
+         * For all other SS applications, it should always go to the else block and create new in-memory trigger upon startup.
+         */
+        if(oldTrigger) {
+            TriggerBuilder builder = oldTrigger.getTriggerBuilder();
+            trigger = builder
+                    .forJob('net.hedtech.banner.general.configuration.ConfigJob', GrailsJobClassConstants.DEFAULT_GROUP)
+                    .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInMilliseconds(interval).withRepeatCount(actualCount))
+                    .build();
+            ConfigJob.reschedule(trigger, parameterMap);
+        } else {
+            trigger = TriggerBuilder.newTrigger()
+                    .withIdentity('net.hedtech.banner.general.configuration.ConfigJob', GrailsJobClassConstants.DEFAULT_TRIGGERS_GROUP)
+                    .withPriority(6)
+                    .forJob('net.hedtech.banner.general.configuration.ConfigJob', GrailsJobClassConstants.DEFAULT_GROUP)
+                    .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInMilliseconds(interval).withRepeatCount(actualCount))
+                    .build();
+            ConfigJob.schedule(trigger, parameterMap);
+        }
     }
 }
