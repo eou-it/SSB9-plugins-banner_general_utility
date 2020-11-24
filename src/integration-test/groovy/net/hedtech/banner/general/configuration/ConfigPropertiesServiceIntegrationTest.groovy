@@ -1,9 +1,10 @@
 /*******************************************************************************
- Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.general.configuration
 
+import banner.general.utility.BannerHolders
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
@@ -14,15 +15,19 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import groovy.sql.Sql
+import org.springframework.web.context.request.RequestContextHolder
+
 /**
  * ConfigPropertiesServiceIntegrationTest.
  */
+
 @Integration
 @Rollback
 class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
 
     def configPropertiesService
     def configApplicationService
+    def bannerHoldersService
     def grailsApplication
     private def appName
     private def appId
@@ -35,8 +40,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
     private static final String CONFIG_NAME_LOGIN_ENDPOINT_URL = 'loginEndpoint'
     private static final String CONFIG_NAME_LOGOUT_ENDPOINT_URL = 'logoutEndpoint'
     private static final String CONFIG_NAME_DEFAULT_WEBSESSION_TIMEOUT = 'defaultWebSessionTimeout'
-    private static final String CONFIG_NAME_AUTH_PROVIDER = 'authenticationProvider'
-    private static final String CONFIG_NAME_LOCAL_LOGOUT = 'localLogout'
+    private static final String CONFIG_NAME_AUTH_PROVIDER = 'banner.sso.authenticationProvider'
+    private static final String CONFIG_NAME_LOCAL_LOGOUT = 'banner.sso.authentication.saml.localLogout'
     private static final String GLOBAL = 'GLOBAL'
     private static final String TESTAPP = 'TESTAPP'
     private static String ACTUALAPPNAME = ''
@@ -139,7 +144,8 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         assert configProp.configValue == null
 
         configPropertiesService.setConfigFromDb()
-        assertTrue CH.config.get(CONFIG_NAME + '-boolean') == true
+        //assertTrue CH.config.get(CONFIG_NAME + '-boolean') == true
+        assertTrue CH.config.get(CONFIG_NAME + '-boolean-null') == false
     }
 
     @Test
@@ -347,10 +353,10 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         def oldAuthProvider = CH.config.banner.sso.authenticationProvider
         def oldLocalLogout = CH.config.banner?.sso?.authentication.saml.localLogout
         CH.config.banner.sso.authenticationProvider = 'saml'
-        CH.config.banner?.sso?.authentication.saml.localLogout = 'true'
+        CH.config.banner.sso.authentication.saml.localLogout='true'
         def configApplication = createNewConfigApplication()
         createConfigProperties(configApplication, CONFIG_NAME_AUTH_PROVIDER, CH.config.banner.sso.authenticationProvider, CONFIG_TYPE_STRING)
-        createConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH.config.banner?.sso?.authentication.saml.localLogout, CONFIG_TYPE_STRING)
+        createConfigProperties(configApplication, CONFIG_NAME_LOCAL_LOGOUT, CH.config.banner.sso.authentication.saml.localLogout, CONFIG_TYPE_STRING)
         configPropertiesService.setConfigFromDb()
         configPropertiesService.setLogOutEndPointUrl()
         def result = CH.config?.logoutEndpoint
@@ -421,6 +427,67 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         assertEquals null, configPropertiesService.getEncryptedValue(null)
      }
 
+
+    @Test
+    public void testDeleteConfigOfOverriddenConfiguration() {
+        assertNotNull configPropertiesService.initialConfig
+        Integer initialTransactionTimeout = Holders.config.banner.transactionTimeout
+        ConfigApplication configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, 'banner.transactionTimeout', 99999999, CONFIG_TYPE_INTEGER)
+        configPropertiesService.setConfigFromDb()
+        Integer newTransactionTimeout = Holders.config.banner.transactionTimeout
+        assertEquals (99999999, newTransactionTimeout)
+        assertNotEquals (initialTransactionTimeout, newTransactionTimeout)
+
+        ConfigProperties configProperties = ConfigProperties.fetchByConfigNameAndAppId('banner.transactionTimeout',appId)
+        assertNotNull configProperties
+        assertEquals (configProperties.configValue.toInteger(), Holders.config.banner.transactionTimeout)
+        configProperties.delete()
+        configPropertiesService.setConfigFromDb()
+        Integer newTransactionTimeout2 = Holders.config.banner.transactionTimeout
+        assertEquals (initialTransactionTimeout, newTransactionTimeout2)
+        assertNotEquals (newTransactionTimeout2, newTransactionTimeout)
+    }
+
+    @Test
+    public void testDeleteConfigOfNewConfiguration() {
+        assertNotNull configPropertiesService.initialConfig
+        createNewConfigProperties()
+        configPropertiesService.setConfigFromDb()
+        assertNotNull Holders.config.TEST_CONFIG
+        assertTrue Holders.config.TEST_CONFIG == CONFIG_VALUE
+
+        ConfigProperties configProperties = ConfigProperties.fetchByConfigNameAndAppId(CONFIG_NAME,appId)
+        assertNotNull configProperties
+        assertEquals(configProperties.configApplication.appId,appId)
+        assertTrue configProperties.configName == CONFIG_NAME
+        configProperties.delete()
+        configPropertiesService.setConfigFromDb()
+        assertTrue(Holders.config.TEST_CONFIG instanceof org.grails.config.NavigableMap.NullSafeNavigator)
+    }
+
+
+    @Test
+    public void testDeleteConfigOfInMEP() {
+        RequestContextHolder.currentRequestAttributes().request.session.setAttribute('mep', 'MAIN')
+        //setupMepConfiguration()
+        ConfigApplication configApplication = createNewConfigApplication()
+        createConfigProperties(configApplication, 'banner.mep.configurations', "[all]", 'list')
+        createConfigProperties(configApplication, 'MAIN.footerFadeAwayTime', 20000, CONFIG_TYPE_INTEGER)
+        createConfigProperties(configApplication, 'footerFadeAwayTime', 10000, CONFIG_TYPE_INTEGER)
+        configPropertiesService.setConfigFromDb()
+        //setupMepConfiguration()
+        assertEquals  20000, Holders.config.footerFadeAwayTime
+
+        ConfigProperties configProperties = ConfigProperties.fetchByConfigNameAndAppId('footerFadeAwayTime',appId)
+        assertNotNull configProperties
+        int mepedConfigValue=(configProperties.configValue).toInteger()
+        assertEquals  mepedConfigValue, Holders.config.footerFadeAwayTime
+
+        configProperties.delete()
+        configPropertiesService.setConfigFromDb()
+        assertEquals  10000, Holders.config.footerFadeAwayTime
+    }
 
     private void createNewGlobalConfigProps() {
         ConfigApplication configApplication = ConfigApplication.fetchByAppName(GLOBAL)
@@ -530,6 +597,14 @@ class ConfigPropertiesServiceIntegrationTest extends BaseIntegrationTestCase {
         )
         configProps.add(configProperties)
         configPropertiesService.create(configProps)
+    }
+
+    private void setupMepConfiguration() {
+        bannerHoldersService.setBaseConfig()
+        Holders.metaClass.static.getConfig = {
+            return BannerHolders.config
+        }
+        bannerHoldersService.setMeppedConfigObj ()
     }
 
 }

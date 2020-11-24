@@ -1,6 +1,7 @@
 /*******************************************************************************
- Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
+
 grails.project.groupId = "net.hedtech" // used when deploying to a maven repo
 
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
@@ -200,8 +201,8 @@ grails.config.locations = [
 environments {
     test {
         aboutInfoAccessRoles = ["ROLE_SELFSERVICE-WTAILORADMIN_BAN_DEFAULT_M"]
-        app.platform.version = "9.34"
-        info.app.version = "9.34"
+        app.platform.version = "9.35"
+        info.app.version = "9.35"
     }
 }
 

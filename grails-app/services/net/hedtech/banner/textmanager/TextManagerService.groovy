@@ -1,5 +1,5 @@
 /******************************************************************************
- *  Copyright 2017-2019 Ellucian Company L.P. and its affiliates.                  *
+ *  Copyright 2017-2020 Ellucian Company L.P. and its affiliates.                  *
  ******************************************************************************/
 
 package net.hedtech.banner.textmanager
@@ -63,9 +63,11 @@ class TextManagerService {
             sql?.close()
         }
         if (matches > 1) {
+            tmEnabled = false
             log.warn "Multiple Text Manager projects are configured for application $appName. Using ${result}. It is recommended to correct this."
         }
         if (matches == 0) {
+            tmEnabled = false
             log.warn "No Text Manager project is configured for application $appName. Text Manager customization is not possible."
         }
         tranManProjectCache = result
@@ -75,85 +77,85 @@ class TextManagerService {
     }
 
     def save(properties, name, srcLocale = ROOT_LOCALE_APP, locale) {
-        if (!tmEnabled) {
-            return
-        }
-        synchronized (savePropLock) {
-        def project = tranManProject()
-        Sql sql
-        if (project) {
-            int cnt = 0
-                def textManagerDB = new TextManagerDB()
+        def errorObject = [error: "Unable to save - no Project configured", count: 0]
+        if (tmEnabled) {
+            synchronized (savePropLock) {
+                def project = tranManProject()
+                Sql sql
+                if (project) {
+                    int cnt = 0
+                    def textManagerDB = new TextManagerDB()
 
-                try {
-                    String msg = """
+                    try {
+                        String msg = """
                                 Arguments: mo=<mode> ba=<batch> lo=<db logon> pc=<TranMan Project> sl=<source language>
                                 tl=<target language>  sf=<source file> tf=<target file>
                                 mode: s (extract) | r (reverse extract) | t (translate) | q (quick translate - no check)
                                 batch: [y|n]. n (No) is default. If y (Yes), the module record will be updated with
                                 file locations etc.
                              """
-                    dbValues.projectCode = project
-                    dbValues.moduleName = name.toUpperCase()
-                    dbValues.srcLocale = ROOT_LOCALE_TM
-                    dbValues.srcFile = locale == ROOT_LOCALE_APP ? "${name}.properties" : "${name}_${locale}.properties"
-                    dbValues.srcIndicator = locale == srcLocale ? 's' : 'r'
-                    dbValues.tgtLocale = locale == srcLocale ? '' : "${locale.replace('_', '')}"
-                    if (dbValues.srcIndicator == null) {
-                        dbValues << [srcIndicator: "s"]
-                    } else if (dbValues.srcIndicator.equals("t")) {
-                        if (dbValues.tgtFile == null) {
-                            log.error "No target file specified (tgtFile=...) \n" + msg
+                        dbValues.projectCode = project
+                        dbValues.moduleName = name.toUpperCase()
+                        dbValues.srcLocale = ROOT_LOCALE_TM
+                        dbValues.srcFile = locale == ROOT_LOCALE_APP ? "${name}.properties" : "${name}_${locale}.properties"
+                        dbValues.srcIndicator = locale == srcLocale ? 's' : 'r'
+                        dbValues.tgtLocale = locale == srcLocale ? '' : "${locale.replace('_', '')}"
+                        if (dbValues.srcIndicator == null) {
+                            dbValues << [srcIndicator: "s"]
+                        } else if (dbValues.srcIndicator.equals("t")) {
+                            if (dbValues.tgtFile == null) {
+                                log.error "No target file specified (tgtFile=...) \n" + msg
+                            }
+                            if (dbValues.tgtLocale == null) {
+                                log.error "No target language specified (tgtLocale=...) \n" + msg
+                            }
+                        } else if (dbValues.srcIndicator.equals("r")) {
+                            if (dbValues.tgtLocale == null) {
+                                log.error "No target language specified (tgtLocale=...) \n" + msg
+                            }
                         }
-                        if (dbValues.tgtLocale == null) {
-                            log.error "No target language specified (tgtLocale=...) \n" + msg
-                        }
-                    } else if (dbValues.srcIndicator.equals("r")) {
-                        if (dbValues.tgtLocale == null) {
-                            log.error "No target language specified (tgtLocale=...) \n" + msg
-                        }
-                    }
-                    sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
-                    textManagerDB.sql=sql
-                    textManagerDB.setDBContext(dbValues)
-                    textManagerDB.setDefaultProp(dbValues)
-                    def defaultObjectProp = textManagerDB.getDefaultObjectProp()
-                    final String sep = "."
-                    int sepLoc
+                        sql = new Sql(underlyingSsbDataSource?: underlyingDataSource)
+                        textManagerDB.sql=sql
+                        textManagerDB.setDBContext(dbValues)
+                        textManagerDB.setDefaultProp(dbValues)
+                        def defaultObjectProp = textManagerDB.getDefaultObjectProp()
+                        final String sep = "."
+                        int sepLoc
 
-                properties.each { property ->
-                        sepLoc = 0
-                        String key = property.key
-                        String value = property.value
-                        sepLoc = key.lastIndexOf(sep)
-                        if (sepLoc == -1) {
+                        properties.each { property ->
                             sepLoc = 0
+                            String key = property.key
+                            String value = property.value
+                            sepLoc = key.lastIndexOf(sep)
+                            if (sepLoc == -1) {
+                                sepLoc = 0
+                            }
+                            defaultObjectProp.parentName = sep + key.substring(0, sepLoc) //. plus expression between brackets in [x.y...].z
+                            defaultObjectProp.objectName = key.substring(sepLoc)       // expression between brackets in x.y....[z]
+                            defaultObjectProp.string = smartQuotesReplace(value)
+                            log.info key + " = " + defaultObjectProp.string
+                            textManagerDB.setPropString(defaultObjectProp)
+                            cnt++
                         }
-                        defaultObjectProp.parentName = sep + key.substring(0, sepLoc) //. plus expression between brackets in [x.y...].z
-                        defaultObjectProp.objectName = key.substring(sepLoc)       // expression between brackets in x.y....[z]
-                        defaultObjectProp.string = smartQuotesReplace(value)
-                        log.info key + " = " + defaultObjectProp.string
-                        textManagerDB.setPropString(defaultObjectProp)
-                        cnt++
-                }
-                //Invalidate strings that are in db but not in property file
-                if (dbValues.srcIndicator.equals("s")) {
-                    textManagerDB.invalidateStrings(dbValues)
-                }
-                textManagerDB.setModuleRecord(dbValues)
+                        //Invalidate strings that are in db but not in property file
+                        if (dbValues.srcIndicator.equals("s")) {
+                            textManagerDB.invalidateStrings(dbValues)
+                        }
+                        textManagerDB.setModuleRecord(dbValues)
 
-                } catch (e) {
-                    log.error("Exception in saving properties", e)
-                } finally {
-                    if ( textManagerDB.sql) {
-                        textManagerDB.sql.commit();
-                        textManagerDB.sql.close();
+                    } catch (e) {
+                        log.error("Exception in saving properties", e)
+                    } finally {
+                        if ( textManagerDB.sql) {
+                            textManagerDB.sql.commit();
+                            textManagerDB.sql.close();
+                        }
                     }
+                    errorObject = [error: null, count: cnt]
                 }
-            return [error: null, count: cnt]
+            }
         }
-        }
-        return [error: "Unable to save - no Project configured", count: 0]
+        return errorObject
     }
 
     def cacheMsg = [:]

@@ -15,6 +15,8 @@ import org.grails.config.PropertySourcesConfig
  */
 class BannerHoldersService {
 
+    def grailsApplication
+
     /**
      * This method will clone the Config object to Map and convert all properties to 'BannerPropertySourcesConfig'.
      * @return
@@ -27,7 +29,7 @@ class BannerHoldersService {
             configMap.put( entry.getKey(), config.get( entry.getKey() ) )
         }
 
-        BannerHolders.getMeppedConfigObjs().put('config', convertMapToConfig(configMap))
+        BannerHolders.getMeppedConfigObjs().put ('config', convertMapToConfig( configMap ))
     }
 
     /**
