@@ -61,8 +61,19 @@ class SelfServiceMenuService {
 
         def randomSequence = RandomUtils.nextInt(1000);
 
+        Locale locale = LocaleContextHolder.getLocale()
+        String localeString = locale.toString()
+        String language = locale.getLanguage()
+        log.info("GURMENL locale:" + language)
         sql.eachRow("""
-                    SELECT  TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL,TWGRMENU_URL_DESC,
+                    SELECT  TWGRMENU_NAME,TWGRMENU_SEQUENCE,
+                            NVL((SELECT GURMENL_URL_TEXT
+                                FROM GURMENL
+                                WHERE GURMENL_NAME = TWGRMENU_NAME
+                                AND GURMENL_SEQUENCE = TWGRMENU_SEQUENCE
+                                AND GURMENL_SOURCE_CDE = TWGRMENU_SOURCE_IND
+                                AND GURMENL_LOCALE = :locale), TWGRMENU_URL_TEXT) AS TWGRMENU_URL_TEXT,
+                            TWGRMENU_URL,TWGRMENU_URL_DESC,
                             TWGRMENU_IMAGE,TWGRMENU_ENABLED,TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,
                             TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,
                             TWGRMENU_SOURCE_IND 
@@ -85,7 +96,7 @@ class SelfServiceMenuService {
                     FROM TWGBWMNU WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*') ) 
                     AND TWGBWMNU_ENABLED_IND = 'Y')))) 
                     ORDER BY twgrmenu_sequence
-                    """, [[name: menuName, roleCriteria: roleCriteria]]) {
+                    """, [[locale: language, name: menuName, roleCriteria: roleCriteria]]) {
             def mnu = new SelfServiceMenu()
             String  hideSSBHeaderURL =" "
             mnu.formName = it.twgrmenu_url
