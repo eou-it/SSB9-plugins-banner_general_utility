@@ -64,7 +64,7 @@ class SelfServiceMenuService {
         Locale locale = LocaleContextHolder.getLocale()
         String localeString = locale.toString()
         String language = locale.getLanguage()
-        log.info("GURMENL locale:" + language)
+        
         sql.eachRow("""
                     SELECT  TWGRMENU_NAME,TWGRMENU_SEQUENCE,
                             NVL((SELECT GURMENL_URL_TEXT
