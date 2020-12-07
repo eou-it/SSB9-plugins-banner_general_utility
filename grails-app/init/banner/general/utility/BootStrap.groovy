@@ -4,6 +4,7 @@
 package banner.general.utility
 
 import grails.plugins.quartz.GrailsJobClassConstants
+import grails.core.DefaultGrailsApplication
 import grails.util.Environment
 import grails.util.Holders
 import groovy.util.logging.Slf4j
@@ -29,6 +30,7 @@ class BootStrap {
     def bannerHoldersService
     def multiEntityProcessingService
     StdScheduler quartzScheduler
+    def grailsApplication
 
     def init = { servletContext ->
         if ( multiEntityProcessingService.isMEP() ) {
@@ -36,6 +38,10 @@ class BootStrap {
             // Overriding the static getConfig() from the Holders class using meta-programming.
             // Whenever we call Holders.config or grailsApplication.config then the 'BannerHolders.config" will get called.
             Holders.metaClass.static.getConfig = {
+                return BannerHolders.config
+            }
+
+            grailsApplication.metaClass.getConfig = {
                 return BannerHolders.config
             }
         }
