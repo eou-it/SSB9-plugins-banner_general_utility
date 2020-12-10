@@ -60,32 +60,88 @@ class SelfServiceMenuService {
         }
 
         def randomSequence = RandomUtils.nextInt(1000);
+        String language = ""
 
-        sql.eachRow("""
-                    SELECT  TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL,TWGRMENU_URL_DESC,
-                            TWGRMENU_IMAGE,TWGRMENU_ENABLED,TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,
-                            TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,
-                            TWGRMENU_SOURCE_IND 
-                    FROM twgrmenu   WHERE  twgrmenu_name = :name 
-                    AND twgrmenu_enabled = 'Y'
-                    AND twgrmenu_source_ind =  (SELECT nvl( max(twgrmenu_source_ind ),'B') 
-                                                FROM twgrmenu WHERE  twgrmenu_name = :name 
-                                                AND twgrmenu_source_ind='L')
-                    AND (twgrmenu_db_link_ind = 'N' 
-                            OR ( REGEXP_SUBSTR(twgrmenu_url , '[^?]*') 
-                                    IN (SELECT twgrwmrl_name FROM twgrwmrl, twgrmenu WHERE twgrmenu.twgrmenu_name = :name
-                    AND twgrwmrl_name = REGEXP_SUBSTR(twgrmenu.twgrmenu_url , '[^?]*') 
-                    AND twgrwmrl_source_ind = (SELECT nvl( max(twgrwmrl_source_ind ), 'B')
-                                                FROM twgrwmrl WHERE  twgrwmrl_name = REGEXP_SUBSTR(twgrmenu_url , '[^?]*') 
-                                                AND twgrwmrl_source_ind= 'L' )
-                    AND twgrwmrl_role IN (:roleCriteria) 
-                    AND twgrwmrl_name IN ( SELECT TWGBWMNU_NAME FROM TWGBWMNU 
-                                            WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*') 
-                    AND TWGBWMNU_SOURCE_IND = (SELECT NVL( MAX(TWGBWMNU_source_ind ),'B') 
-                    FROM TWGBWMNU WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*') ) 
-                    AND TWGBWMNU_ENABLED_IND = 'Y')))) 
-                    ORDER BY twgrmenu_sequence
-                    """, [[name: menuName, roleCriteria: roleCriteria]]) {
+        List<String> menuQueryParameters = new ArrayList<String>()
+        String menuQuery = """ SELECT  TWGRMENU_NAME,TWGRMENU_SEQUENCE, TWGRMENU_URL_TEXT,
+            TWGRMENU_URL,TWGRMENU_URL_DESC,
+            TWGRMENU_IMAGE,TWGRMENU_ENABLED,TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,
+            TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,
+            TWGRMENU_SOURCE_IND
+            FROM twgrmenu   WHERE  twgrmenu_name = :name
+            AND twgrmenu_enabled = 'Y'
+            AND twgrmenu_source_ind =  (SELECT nvl( max(twgrmenu_source_ind ),'B')
+            FROM twgrmenu WHERE  twgrmenu_name = :name
+            AND twgrmenu_source_ind='L')
+            AND (twgrmenu_db_link_ind = 'N'
+                    OR ( REGEXP_SUBSTR(twgrmenu_url , '[^?]*')
+                            IN (SELECT twgrwmrl_name FROM twgrwmrl, twgrmenu WHERE twgrmenu.twgrmenu_name = :name
+                                    AND twgrwmrl_name = REGEXP_SUBSTR(twgrmenu.twgrmenu_url , '[^?]*')
+                                    AND twgrwmrl_source_ind = (SELECT nvl( max(twgrwmrl_source_ind ), 'B')
+                                    FROM twgrwmrl WHERE  twgrwmrl_name = REGEXP_SUBSTR(twgrmenu_url , '[^?]*')
+                                    AND twgrwmrl_source_ind= 'L' )
+                            AND twgrwmrl_role IN (:roleCriteria)
+                            AND twgrwmrl_name IN ( SELECT TWGBWMNU_NAME FROM TWGBWMNU
+                            WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*')
+                            AND TWGBWMNU_SOURCE_IND = (SELECT NVL( MAX(TWGBWMNU_source_ind ),'B')
+                            FROM TWGBWMNU WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*') )
+                            AND TWGBWMNU_ENABLED_IND = 'Y'))))
+            ORDER BY twgrmenu_sequence
+            """;
+
+        boolean isGurmenlTableExists = false
+        try {
+            String gurmenlQuery = """ SELECT 1 FROM GURMENL WHERE 0=1"""
+            sql.execute(gurmenlQuery)
+            isGurmenlTableExists = true
+        }
+        catch (Exception ex) {
+            //catch the exception, do not propagate. as the gurmenl table doesn't exists we are good to execute
+            // fallback query to fetch menu from TWGEMRNU table.
+            // isGurmenlTableExists flag is already set to false. do not do anything.
+        }
+
+        if (isGurmenlTableExists) {
+            menuQuery = """ SELECT  TWGRMENU_NAME,TWGRMENU_SEQUENCE,
+                NVL((SELECT GURMENL_URL_TEXT
+                FROM GURMENL
+                WHERE GURMENL_NAME = TWGRMENU_NAME
+                AND GURMENL_SEQUENCE = TWGRMENU_SEQUENCE
+                AND GURMENL_SOURCE_CDE = TWGRMENU_SOURCE_IND
+                AND GURMENL_LOCALE = :locale), TWGRMENU_URL_TEXT) AS TWGRMENU_URL_TEXT,
+                TWGRMENU_URL,TWGRMENU_URL_DESC,
+                TWGRMENU_IMAGE,TWGRMENU_ENABLED,TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,
+                TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,
+                TWGRMENU_SOURCE_IND
+                FROM twgrmenu   WHERE  twgrmenu_name = :name
+                AND twgrmenu_enabled = 'Y'
+                AND twgrmenu_source_ind =  (SELECT nvl( max(twgrmenu_source_ind ),'B')
+                FROM twgrmenu WHERE  twgrmenu_name = :name
+                AND twgrmenu_source_ind='L')
+                AND (twgrmenu_db_link_ind = 'N'
+                        OR ( REGEXP_SUBSTR(twgrmenu_url , '[^?]*')
+                                IN (SELECT twgrwmrl_name FROM twgrwmrl, twgrmenu WHERE twgrmenu.twgrmenu_name = :name
+                                        AND twgrwmrl_name = REGEXP_SUBSTR(twgrmenu.twgrmenu_url , '[^?]*')
+                                        AND twgrwmrl_source_ind = (SELECT nvl( max(twgrwmrl_source_ind ), 'B')
+                                        FROM twgrwmrl WHERE  twgrwmrl_name = REGEXP_SUBSTR(twgrmenu_url , '[^?]*')
+                                        AND twgrwmrl_source_ind= 'L' )
+                                AND twgrwmrl_role IN (:roleCriteria)
+                                AND twgrwmrl_name IN ( SELECT TWGBWMNU_NAME FROM TWGBWMNU
+                                WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*')
+                                AND TWGBWMNU_SOURCE_IND = (SELECT NVL( MAX(TWGBWMNU_source_ind ),'B')
+                                FROM TWGBWMNU WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*') )
+                                AND TWGBWMNU_ENABLED_IND = 'Y'))))
+                ORDER BY twgrmenu_sequence
+                """
+            Locale locale = LocaleContextHolder.getLocale()
+            language = locale.getLanguage()
+            menuQueryParameters = [[locale: language, name: menuName, roleCriteria: roleCriteria]]
+        }
+        else {
+            menuQueryParameters = [[name: menuName, roleCriteria: roleCriteria]]
+        }
+
+        sql.eachRow(menuQuery, menuQueryParameters) {
             def mnu = new SelfServiceMenu()
             String  hideSSBHeaderURL =" "
             mnu.formName = it.twgrmenu_url
