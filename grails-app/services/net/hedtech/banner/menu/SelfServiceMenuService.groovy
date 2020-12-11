@@ -54,9 +54,11 @@ class SelfServiceMenuService {
         log.trace("SQL Connection:" + sql.useConnection.toString())
 
         menuName = menuName ?: "bmenu.P_MainMnu"
-        String roleCriteria = ""
+        String roleCriteria = "''"
         if (pidm) {
             roleCriteria = getAllRoles("${pidm}").join(',')
+            roleCriteria = getAllRoles("${pidm}").collect {"'$it'"}.join(',')
+            roleCriteria = roleCriteria ? roleCriteria : "''"
         }
 
         def randomSequence = RandomUtils.nextInt(1000);
@@ -80,7 +82,7 @@ class SelfServiceMenuService {
                                     AND twgrwmrl_source_ind = (SELECT nvl( max(twgrwmrl_source_ind ), 'B')
                                     FROM twgrwmrl WHERE  twgrwmrl_name = REGEXP_SUBSTR(twgrmenu_url , '[^?]*')
                                     AND twgrwmrl_source_ind= 'L' )
-                            AND twgrwmrl_role IN (:roleCriteria)
+                            AND twgrwmrl_role IN (${roleCriteria})
                             AND twgrwmrl_name IN ( SELECT TWGBWMNU_NAME FROM TWGBWMNU
                             WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*')
                             AND TWGBWMNU_SOURCE_IND = (SELECT NVL( MAX(TWGBWMNU_source_ind ),'B')
@@ -125,7 +127,7 @@ class SelfServiceMenuService {
                                         AND twgrwmrl_source_ind = (SELECT nvl( max(twgrwmrl_source_ind ), 'B')
                                         FROM twgrwmrl WHERE  twgrwmrl_name = REGEXP_SUBSTR(twgrmenu_url , '[^?]*')
                                         AND twgrwmrl_source_ind= 'L' )
-                                AND twgrwmrl_role IN (:roleCriteria)
+                                AND twgrwmrl_role IN (${roleCriteria})
                                 AND twgrwmrl_name IN ( SELECT TWGBWMNU_NAME FROM TWGBWMNU
                                 WHERE TWGBWMNU_NAME = REGEXP_SUBSTR(twgrmenu.TWGRMENU_URL , '[^?]*')
                                 AND TWGBWMNU_SOURCE_IND = (SELECT NVL( MAX(TWGBWMNU_source_ind ),'B')
@@ -135,10 +137,10 @@ class SelfServiceMenuService {
                 """
             Locale locale = LocaleContextHolder.getLocale()
             language = locale.getLanguage()
-            menuQueryParameters = [[locale: language, name: menuName, roleCriteria: roleCriteria]]
+            menuQueryParameters = [[locale: language, name: menuName]]
         }
         else {
-            menuQueryParameters = [[name: menuName, roleCriteria: roleCriteria]]
+            menuQueryParameters = [[name: menuName]]
         }
 
         sql.eachRow(menuQuery, menuQueryParameters) {
