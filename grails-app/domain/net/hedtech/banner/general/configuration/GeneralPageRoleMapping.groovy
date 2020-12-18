@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.configuration
 
@@ -47,7 +47,7 @@ public class GeneralPageRoleMapping implements Serializable {
 
 
     @Column(name = 'DISPLAY_SEQUENCE')
-    int displaySequence
+    Integer displaySequence
 
     @Column(name = 'PAGE_URL')
     String pageUrl
