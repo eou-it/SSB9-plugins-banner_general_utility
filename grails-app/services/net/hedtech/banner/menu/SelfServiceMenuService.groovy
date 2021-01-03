@@ -135,8 +135,7 @@ class SelfServiceMenuService {
                                 AND TWGBWMNU_ENABLED_IND = 'Y'))))
                 ORDER BY twgrmenu_sequence
                 """
-            Locale locale = LocaleContextHolder.getLocale()
-            language = locale.getLanguage()
+            language = LocaleContextHolder.getLocale().toLanguageTag()
             menuQueryParameters = [[locale: language, name: menuName]]
         }
         else {
