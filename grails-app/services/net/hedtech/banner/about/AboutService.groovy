@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
@@ -41,6 +41,8 @@ class AboutService {
         about['api.close'] = getMessage("about.banner.close") */
         about['about.banner.copyright'] = getCopyright()
         about['about.banner.copyrightLegalNotice'] = getCopyrightLegalNotice()
+        about['about.banner.ellucianPrivacyNotice'] = getEllucianPrivacyNotice()
+        about['about.banner.ellucianPrivacyNoticeLink'] = getEllucianPrivacyNoticeLink()
         return about
     }
 
@@ -109,6 +111,14 @@ class AboutService {
 
     private String getCopyrightLegalNotice() {
         getMessage("net.hedtech.banner.login.copyright2")
+    }
+
+    private String getEllucianPrivacyNotice() {
+        getMessage("net.hedtech.banner.ellucianPrivacyNotice")
+    }
+
+    private String getEllucianPrivacyNoticeLink() {
+        Holders.config.banner.ellucianPrivacyNotice
     }
 
 
