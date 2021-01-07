@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2016-2020 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2021 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
@@ -23,8 +23,6 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        Holders.config.info.app.version = "9.35"
-        Holders.config.app.platform.version = "9.35"
         Holders.config.EnableLoginAudit='N'
     }
 
@@ -100,5 +98,28 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testFormatCamelCaseToEnglishEmpty() {
         assertEquals("", aboutService.formatCamelCaseToEnglish(""))
+    }
+
+    @Test
+    void testGetEllucianPrivacyNotice() {
+        assertEquals(MessageHelper.message("net.hedtech.banner.ellucianPrivacyNotice"), aboutService.getEllucianPrivacyNotice())
+    }
+
+    @Test
+    void getEllucianPrivacyNoticeLinkWithDefault() {
+        Holders.config.banner.ellucianPrivacyNotice= 'https://www.ellucian.com/privacy'
+        assertEquals(Holders.config.banner.ellucianPrivacyNotice, aboutService.getEllucianPrivacyNoticeLink())
+    }
+
+    @Test
+    void testgetEllucianPrivacyNoticeLinkEmpty() {
+        Holders.config.banner.ellucianPrivacyNotice= null
+        assertEquals("https://www.ellucian.com/privacy", aboutService.getEllucianPrivacyNoticeLink())
+    }
+
+    @Test
+    void getEllucianPrivacyNoticeLinkWithUserInput() {
+        Holders.config.banner.ellucianPrivacyNotice= 'https://www.google.com/'
+        assertEquals(Holders.config.banner.ellucianPrivacyNotice, aboutService.getEllucianPrivacyNoticeLink())
     }
 }
