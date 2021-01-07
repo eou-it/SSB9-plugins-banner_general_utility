@@ -18,17 +18,26 @@ import org.junit.Test
 class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     def aboutService
     def messageSource
+    def grailsApplication
+    def actualAppVersion
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+        Holders.config.info.app.version= 9.34
+        Holders.config.app.platform.version=9.34
+        actualAppVersion=grailsApplication.metadata['info.app.version']
+        grailsApplication.metadata['info.app.version']=9.34
         Holders.config.EnableLoginAudit='N'
     }
 
     @After
     public void tearDown() {
         super.tearDown()
+        Holders.config.info.app.version=actualAppVersion
+        Holders.config.app.platform.version=actualAppVersion
+        grailsApplication.metadata['info.app.version']=actualAppVersion
         logout()
     }
 
@@ -106,19 +115,12 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    void getEllucianPrivacyNoticeLinkWithDefault() {
-        Holders.config.banner.ellucianPrivacyNotice= 'https://www.ellucian.com/privacy'
-        assertEquals(Holders.config.banner.ellucianPrivacyNotice, aboutService.getEllucianPrivacyNoticeLink())
+    void testDefaultEllucianPrivacyNotice() {
+        assertEquals('https://www.ellucian.com/privacy', aboutService.getEllucianPrivacyNoticeLink())
     }
 
     @Test
-    void testgetEllucianPrivacyNoticeLinkEmpty() {
-        Holders.config.banner.ellucianPrivacyNotice= null
-        assertEquals("https://www.ellucian.com/privacy", aboutService.getEllucianPrivacyNoticeLink())
-    }
-
-    @Test
-    void getEllucianPrivacyNoticeLinkWithUserInput() {
+    void testUserDefinedEllucianPrivacyNotice() {
         Holders.config.banner.ellucianPrivacyNotice= 'https://www.google.com/'
         assertEquals(Holders.config.banner.ellucianPrivacyNotice, aboutService.getEllucianPrivacyNoticeLink())
     }

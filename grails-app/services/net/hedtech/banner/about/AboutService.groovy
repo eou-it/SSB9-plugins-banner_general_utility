@@ -118,8 +118,8 @@ class AboutService {
     }
 
     private String getEllucianPrivacyNoticeLink() {
-        String config=Holders.config.banner.ellucianPrivacyNotice
-        (config)?config:'https://www.ellucian.com/privacy'
+        String userDefinePrivacyNotice=Holders.config.banner.ellucianPrivacyNotice
+        (userDefinePrivacyNotice)?:'https://www.ellucian.com/privacy'
     }
 
 
