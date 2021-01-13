@@ -135,7 +135,7 @@ class SelfServiceMenuService {
                                 AND TWGBWMNU_ENABLED_IND = 'Y'))))
                 ORDER BY twgrmenu_sequence
                 """
-            language = LocaleContextHolder.getLocale().toLanguageTag()
+            language = getLanguage(LocaleContextHolder.getLocale().getLanguage(), LocaleContextHolder.getLocale().toLanguageTag())
             menuQueryParameters = [[locale: language, name: menuName]]
         }
         else {
@@ -294,4 +294,26 @@ class SelfServiceMenuService {
         return url
     }
 
+    private String getLanguage(String language, String languageVariant) {
+        switch(language) {
+            case 'ar':
+            case 'es':
+            case 'pt':
+                break;
+            case 'en':
+                if (languageVariant.equalsIgnoreCase('en-GB') || languageVariant.equalsIgnoreCase('en-AU')) {
+                    language = languageVariant
+                }
+                break;
+            case 'fr':
+                if (languageVariant.equalsIgnoreCase('fr-CA')) {
+                    language = languageVariant
+                }
+                break;
+            default:
+                language = 'en'
+                break;
+        }
+        language
+    }
 }
