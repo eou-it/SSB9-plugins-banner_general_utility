@@ -45,6 +45,8 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
     private final String SA = "SA"
     private final String CH = "CH"
     private final String MD = "MD"
+    private final String MX = "MX"
+    private final String BR = "BR"
 
     private final String MEP_GVU = "GVU"
     private final String MEP_BANNER = "BANNER"
@@ -693,4 +695,129 @@ class SelfServiceMenuServiceIntegrationTests extends BaseIntegrationTestCase {
         webRequest?.session?.removeAttribute("mep")
     }
 
+    //Test to fetch Menu in Arabic
+    @Test
+    void testSelfServiceBannerLocalizeMenuAr() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(AR))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in Arabic-Saudi Arabia, fallback to Arabic.
+    @Test
+    void testSelfServiceBannerLocalizeMenuArSa() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(AR, SA))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in Spanish
+    @Test
+    void testSelfServiceBannerLocalizeMenuEs() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(ES))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in Spanish-Mexico, fallback to Spanish.
+    @Test
+    void testSelfServiceBannerLocalizeMenuEsMx() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(ES, MX))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in Portuguese.
+    @Test
+    void testSelfServiceBannerLocalizeMenuPt() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(PT))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in Portuguese, fallback to Portuguese-Brazil.
+    @Test
+    void testSelfServiceBannerLocalizeMenuPtBr() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(PT, BR))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in English
+    @Test
+    void testSelfServiceBannerLocalizeMenuEn() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(EN))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in English-Australia
+    @Test
+    void testSelfServiceBannerLocalizeMenuEnAu() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(EN, AU))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in English-UnitedKingdom
+    @Test
+    void testSelfServiceBannerLocalizeMenuEnGb() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(EN, GB))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in English-India, fallback to English
+    @Test
+    void testSelfServiceBannerLocalizeMenuEnIn() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(EN, IN))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in French
+    @Test
+    void testSelfServiceBannerLocalizeMenuFr() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(FR))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in French-Canada
+    @Test
+    void testSelfServiceBannerLocalizeMenuFrCa() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(FR, CA))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in French-France, fallback to French
+    @Test
+    void testSelfServiceBannerLocalizeMenuFrFr() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(FR, FR))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
+
+    //Test to fetch Menu in Chinese, fallback to English as it is not a banner supported language.
+    @Test
+    void testSelfServiceBannerLocalizeMenuCh() {
+        def pidm = getPidm(BANNER_ID_WITH_OUT_STUDENT_ROLE)
+        LocaleContextHolder.setLocale(new Locale(CH))
+        def map = selfServiceMenuService.bannerMenu(null, null, pidm)
+        assert map?.size() > 0
+    }
 }

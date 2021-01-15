@@ -6,6 +6,7 @@ package net.hedtech.banner.menu
 import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import groovy.sql.Sql
+import net.hedtech.banner.general.configuration.ConfigUserPreferenceService
 import org.apache.commons.lang.math.RandomUtils
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.web.context.request.RequestContextHolder
@@ -19,10 +20,19 @@ class SelfServiceMenuService {
     def sessionFactory
     def grailsApplication
     def messageSource
+    def configUserPreferenceService
     static final String AMPERSAND="&";
     static final String QUESTION_MARK="?";
     static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
     static final String FETCH_ROLES = "{? = call TWBKSLIB.F_CASCADEFETCHROLE(?)}"
+    static final String AR = "ar"
+    static final String ES = "es"
+    static final String PT = "pt"
+    static final String EN = "en"
+    static final String ENGB = "en-GB"
+    static final String ENAU = "en-AU"
+    static final String FR = "fr"
+    static final String FRCA = "fr-CA"
 
     /**
      * This is returns map of all menu items based on user access
@@ -296,22 +306,31 @@ class SelfServiceMenuService {
 
     private String getLanguage(String language, String languageVariant) {
         switch(language) {
-            case 'ar':
-            case 'es':
-            case 'pt':
+            case AR:
+            case ES:
+            case PT:
                 break;
-            case 'en':
-                if (languageVariant.equalsIgnoreCase('en-GB') || languageVariant.equalsIgnoreCase('en-AU')) {
+            case EN:
+                if (languageVariant.equalsIgnoreCase(ENGB) || languageVariant.equalsIgnoreCase(ENAU)) {
                     language = languageVariant
                 }
                 break;
-            case 'fr':
-                if (languageVariant.equalsIgnoreCase('fr-CA')) {
+            case FR:
+                if (languageVariant.equalsIgnoreCase(FRCA)) {
                     language = languageVariant
                 }
                 break;
             default:
-                language = 'en'
+                boolean localeExists = false
+                def bannerSupportedLocales = configUserPreferenceService.getAllBannerSupportedLocales()
+                bannerSupportedLocales.each { e->
+                    if (e.locale.getLanguage().equalsIgnoreCase(language) || e.locale.toLanguageTag().equalsIgnoreCase(languageVariant)) {
+                        localeExists = true
+                        language = e.locale.toLanguageTag().equalsIgnoreCase(languageVariant) ? languageVariant : language
+                        return
+                    }
+                }
+                language = localeExists ? language : EN
                 break;
         }
         language
