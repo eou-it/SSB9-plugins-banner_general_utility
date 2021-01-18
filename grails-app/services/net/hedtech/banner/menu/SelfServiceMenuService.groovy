@@ -1,12 +1,11 @@
 /*******************************************************************************
- Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2021 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.menu
 
 import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import groovy.sql.Sql
-import net.hedtech.banner.general.configuration.ConfigUserPreferenceService
 import org.apache.commons.lang.math.RandomUtils
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.web.context.request.RequestContextHolder
