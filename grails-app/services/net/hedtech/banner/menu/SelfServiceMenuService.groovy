@@ -20,19 +20,10 @@ class SelfServiceMenuService {
     def sessionFactory
     def grailsApplication
     def messageSource
-    def configUserPreferenceService
     static final String AMPERSAND="&";
     static final String QUESTION_MARK="?";
     static final String hideSSBHeaderComps="hideSSBHeaderComps=true";
     static final String FETCH_ROLES = "{? = call TWBKSLIB.F_CASCADEFETCHROLE(?)}"
-    static final String AR = "ar"
-    static final String ES = "es"
-    static final String PT = "pt"
-    static final String EN = "en"
-    static final String ENGB = "en-GB"
-    static final String ENAU = "en-AU"
-    static final String FR = "fr"
-    static final String FRCA = "fr-CA"
 
     /**
      * This is returns map of all menu items based on user access
@@ -72,7 +63,6 @@ class SelfServiceMenuService {
         }
 
         def randomSequence = RandomUtils.nextInt(1000);
-        String language = ""
 
         List<String> menuQueryParameters = new ArrayList<String>()
         String menuQuery = """ SELECT  TWGRMENU_NAME,TWGRMENU_SEQUENCE, TWGRMENU_URL_TEXT,
@@ -116,11 +106,16 @@ class SelfServiceMenuService {
         if (isGurmenlTableExists) {
             menuQuery = """ SELECT  TWGRMENU_NAME,TWGRMENU_SEQUENCE,
                 NVL((SELECT GURMENL_URL_TEXT
-                FROM GURMENL
-                WHERE GURMENL_NAME = TWGRMENU_NAME
-                AND GURMENL_SEQUENCE = TWGRMENU_SEQUENCE
-                AND GURMENL_SOURCE_CDE = TWGRMENU_SOURCE_IND
-                AND GURMENL_LOCALE = :locale), TWGRMENU_URL_TEXT) AS TWGRMENU_URL_TEXT,
+                    FROM GURMENL
+                    WHERE GURMENL_NAME = TWGRMENU_NAME
+                    AND GURMENL_SEQUENCE = TWGRMENU_SEQUENCE
+                    AND GURMENL_SOURCE_CDE = TWGRMENU_SOURCE_IND
+                    AND GURMENL_LOCALE = :localeCountry), NVL( (SELECT GURMENL_URL_TEXT
+                                                FROM GURMENL
+                                                WHERE GURMENL_NAME = TWGRMENU_NAME
+                                                AND GURMENL_SEQUENCE = TWGRMENU_SEQUENCE
+                                                AND GURMENL_SOURCE_CDE = TWGRMENU_SOURCE_IND
+                                                AND GURMENL_LOCALE = :locale), TWGRMENU_URL_TEXT) ) AS TWGRMENU_URL_TEXT,
                 TWGRMENU_URL,TWGRMENU_URL_DESC,
                 TWGRMENU_IMAGE,TWGRMENU_ENABLED,TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,
                 TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,
@@ -145,8 +140,9 @@ class SelfServiceMenuService {
                                 AND TWGBWMNU_ENABLED_IND = 'Y'))))
                 ORDER BY twgrmenu_sequence
                 """
-            language = getLanguage(LocaleContextHolder.getLocale().getLanguage(), LocaleContextHolder.getLocale().toLanguageTag())
-            menuQueryParameters = [[locale: language, name: menuName]]
+            String language = LocaleContextHolder.getLocale().getLanguage()
+            String languageCountry = LocaleContextHolder.getLocale().toLanguageTag()
+            menuQueryParameters = [[localeCountry: languageCountry, locale: language, name: menuName]]
         }
         else {
             menuQueryParameters = [[name: menuName]]
@@ -304,35 +300,4 @@ class SelfServiceMenuService {
         return url
     }
 
-    private String getLanguage(String language, String languageVariant) {
-        switch(language) {
-            case AR:
-            case ES:
-            case PT:
-                break;
-            case EN:
-                if (languageVariant.equalsIgnoreCase(ENGB) || languageVariant.equalsIgnoreCase(ENAU)) {
-                    language = languageVariant
-                }
-                break;
-            case FR:
-                if (languageVariant.equalsIgnoreCase(FRCA)) {
-                    language = languageVariant
-                }
-                break;
-            default:
-                boolean localeExists = false
-                def bannerSupportedLocales = configUserPreferenceService.getAllBannerSupportedLocales()
-                bannerSupportedLocales.each { e->
-                    if (e.locale.getLanguage().equalsIgnoreCase(language) || e.locale.toLanguageTag().equalsIgnoreCase(languageVariant)) {
-                        localeExists = true
-                        language = e.locale.toLanguageTag().equalsIgnoreCase(languageVariant) ? languageVariant : language
-                        return
-                    }
-                }
-                language = localeExists ? language : EN
-                break;
-        }
-        language
-    }
 }
