@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2016-2020 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2021 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.about
@@ -18,19 +18,26 @@ import org.junit.Test
 class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     def aboutService
     def messageSource
+    def grailsApplication
+    def actualAppVersion
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        Holders.config.info.app.version = "9.35"
-        Holders.config.app.platform.version = "9.35"
+        Holders.config.info.app.version= 9.34
+        Holders.config.app.platform.version=9.34
+        actualAppVersion=grailsApplication.metadata['info.app.version']
+        grailsApplication.metadata['info.app.version']=9.34
         Holders.config.EnableLoginAudit='N'
     }
 
     @After
     public void tearDown() {
         super.tearDown()
+        Holders.config.info.app.version=actualAppVersion
+        Holders.config.app.platform.version=actualAppVersion
+        grailsApplication.metadata['info.app.version']=actualAppVersion
         logout()
     }
 
@@ -100,5 +107,21 @@ class AboutServiceIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testFormatCamelCaseToEnglishEmpty() {
         assertEquals("", aboutService.formatCamelCaseToEnglish(""))
+    }
+
+    @Test
+    void testGetEllucianPrivacyNotice() {
+        assertEquals(MessageHelper.message("net.hedtech.banner.ellucianPrivacyNotice"), aboutService.getEllucianPrivacyNotice())
+    }
+
+    @Test
+    void testDefaultEllucianPrivacyNotice() {
+        assertEquals('https://www.ellucian.com/privacy', aboutService.getEllucianPrivacyNoticeLink())
+    }
+
+    @Test
+    void testUserDefinedEllucianPrivacyNotice() {
+        Holders.config.banner.ellucianPrivacyNotice= 'https://www.google.com/'
+        assertEquals(Holders.config.banner.ellucianPrivacyNotice, aboutService.getEllucianPrivacyNoticeLink())
     }
 }
